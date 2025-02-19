@@ -43,6 +43,7 @@
       border: 1px solid #ccc;
       margin-left: 10px;
     }
+
     /* Table Styling */
     #bingo-table {
       margin: 20px auto;
@@ -57,7 +58,7 @@
       text-align: center;
       font-size: 16px;
       cursor: pointer;
-      transition: background 0.2s, transform 0.2s;
+      transition: background 0.2s, transform 0.2s, border-color 0.2s, color 0.2s;
       padding: 8px;
       vertical-align: middle;
       min-width: 80px;
@@ -73,10 +74,14 @@
       font-size: 18px;
       font-weight: bold;
     }
+
+    /* Default "marked" style (transform, etc.) */
     td.marked {
-      font-weight: bold;
       transform: scale(1.05);
+      font-weight: bold;
     }
+
+    /* Bingo glow animation */
     td.bingo {
       animation: glow 1s infinite alternate;
     }
@@ -84,6 +89,7 @@
       0% { box-shadow: 0 0 10px rgba(255,215,0,0.5); }
       100% { box-shadow: 0 0 20px rgba(255,215,0,0.9); }
     }
+
     /* Modal for Bingo Celebration */
     #bingoModal {
       position: fixed;
@@ -102,7 +108,8 @@
       font-weight: bold;
       transition: color 0.3s, text-shadow 0.3s;
     }
-    /* Popcorn Rain Overlay */
+
+    /* Popcorn Rain Overlay (for the Bingo reaction) */
     #popcornOverlay {
       position: fixed;
       top: 0;
@@ -122,13 +129,18 @@
       0% { top: -10%; opacity: 1; }
       100% { top: 100%; opacity: 0; }
     }
-    /* Themes */
-    /* Classic Oscars (Gold & Black) */
+
+    /* THEME-SPECIFIC STYLES */
+
+    /* 1) Classic Oscars (Gold & Black) */
     .theme-classic {
       background-color: #1c1c1c;
       color: #ffd700;
     }
-    .theme-classic h1 { color: #ffd700; text-shadow: 2px 2px 5px rgba(255,215,0,0.6); }
+    .theme-classic h1 { 
+      color: #ffd700; 
+      text-shadow: 2px 2px 5px rgba(255,215,0,0.6);
+    }
     .theme-classic button {
       background: linear-gradient(45deg, #ffd700, #e5c100);
       color: black;
@@ -144,15 +156,32 @@
     .theme-classic td {
       background-color: #1c1c1c;
       color: #fff;
+      border-color: #ffd700;
     }
-    .theme-classic td.free-space { background-color: #ffd700; color: black; }
-    #bingoModal.theme-classic #bingoMessage { color: #ffd700; text-shadow: 2px 2px 10px rgba(255,215,0,0.8); }
-    /* Modern Red Carpet (Red & Silver) */
+    .theme-classic td.free-space {
+      background-color: #ffd700; 
+      color: black;
+    }
+    /* Marked cell for Classic theme */
+    .theme-classic td.marked {
+      background-color: #ffd700 !important;
+      color: #000 !important;
+      border-color: #ffd700 !important;
+    }
+    #bingoModal.theme-classic #bingoMessage {
+      color: #ffd700;
+      text-shadow: 2px 2px 10px rgba(255,215,0,0.8);
+    }
+
+    /* 2) Modern Red Carpet (Red & Silver) */
     .theme-modern {
       background-color: #2c2c2c;
       color: #c0c0c0;
     }
-    .theme-modern h1 { color: #e60000; text-shadow: 2px 2px 5px rgba(230,0,0,0.6); }
+    .theme-modern h1 {
+      color: #e60000;
+      text-shadow: 2px 2px 5px rgba(230,0,0,0.6);
+    }
     .theme-modern button {
       background: linear-gradient(45deg, #e60000, #c70000);
       color: white;
@@ -161,16 +190,39 @@
       background-color: #3d3d3d;
       border: 2px solid #c0c0c0;
     }
-    .theme-modern th { background-color: #c0c0c0; color: black; }
-    .theme-modern td { background-color: #2c2c2c; color: #c0c0c0; }
-    .theme-modern td.free-space { background-color: #c0c0c0; color: black; }
-    #bingoModal.theme-modern #bingoMessage { color: #e60000; text-shadow: 2px 2px 10px rgba(230,0,0,0.8); }
-    /* Silent Film Era (Sepia & Vintage) */
+    .theme-modern th {
+      background-color: #c0c0c0;
+      color: black;
+    }
+    .theme-modern td {
+      background-color: #2c2c2c;
+      color: #c0c0c0;
+      border-color: #c0c0c0;
+    }
+    .theme-modern td.free-space {
+      background-color: #c0c0c0; 
+      color: black;
+    }
+    /* Marked cell for Modern theme */
+    .theme-modern td.marked {
+      background-color: #1a1a1a !important;
+      color: #e60000 !important;
+      border-color: #e60000 !important;
+    }
+    #bingoModal.theme-modern #bingoMessage {
+      color: #e60000;
+      text-shadow: 2px 2px 10px rgba(230,0,0,0.8);
+    }
+
+    /* 3) Silent Film Era (Sepia & Vintage) */
     .theme-silent {
       background-color: #f4ecd8;
       color: #5b4636;
     }
-    .theme-silent h1 { color: #5b4636; text-shadow: 2px 2px 5px rgba(91,70,54,0.6); }
+    .theme-silent h1 {
+      color: #5b4636;
+      text-shadow: 2px 2px 5px rgba(91,70,54,0.6);
+    }
     .theme-silent button {
       background: linear-gradient(45deg, #c49e70, #a57c50);
       color: white;
@@ -179,16 +231,39 @@
       background-color: #fdf6e3;
       border: 2px solid #5b4636;
     }
-    .theme-silent th { background-color: #5b4636; color: white; }
-    .theme-silent td { background-color: #fdf6e3; color: #5b4636; }
-    .theme-silent td.free-space { background-color: #5b4636; color: white; }
-    #bingoModal.theme-silent #bingoMessage { color: #5b4636; text-shadow: 2px 2px 10px rgba(91,70,54,0.8); }
-    /* Silver Screen (Greyscale) */
+    .theme-silent th {
+      background-color: #5b4636;
+      color: white;
+    }
+    .theme-silent td {
+      background-color: #fdf6e3;
+      color: #5b4636;
+      border-color: #5b4636;
+    }
+    .theme-silent td.free-space {
+      background-color: #5b4636; 
+      color: white;
+    }
+    /* Marked cell for Silent theme */
+    .theme-silent td.marked {
+      background-color: #5b4636 !important;
+      color: #fdf6e3 !important;
+      border-color: #5b4636 !important;
+    }
+    #bingoModal.theme-silent #bingoMessage {
+      color: #5b4636;
+      text-shadow: 2px 2px 10px rgba(91,70,54,0.8);
+    }
+
+    /* 4) Silver Screen (Greyscale) */
     .theme-silver {
       background-color: #fff;
       color: #333;
     }
-    .theme-silver h1 { color: #333; text-shadow: none; }
+    .theme-silver h1 { 
+      color: #333; 
+      text-shadow: none; 
+    }
     .theme-silver button {
       background: linear-gradient(45deg, #ccc, #aaa);
       color: #333;
@@ -197,11 +272,29 @@
       background-color: #f7f7f7;
       border: 2px solid #aaa;
     }
-    .theme-silver th { background-color: #aaa; color: #333; }
-    .theme-silver td { background-color: #fff; color: #333; }
-    .theme-silver td.free-space { background-color: #ccc; color: #333; }
-    #bingoModal.theme-silver #bingoMessage { color: #333; }
-    
+    .theme-silver th {
+      background-color: #aaa;
+      color: #333;
+    }
+    .theme-silver td {
+      background-color: #fff;
+      color: #333;
+      border-color: #aaa;
+    }
+    .theme-silver td.free-space {
+      background-color: #ccc; 
+      color: #333;
+    }
+    /* Marked cell for Silver theme */
+    .theme-silver td.marked {
+      background-color: #666 !important;
+      color: #ccc !important;
+      border-color: #999 !important;
+    }
+    #bingoModal.theme-silver #bingoMessage {
+      color: #333;
+    }
+
     /* Mobile Optimization */
     @media (max-width: 600px) {
       th, td {
@@ -251,7 +344,7 @@
     <div id="bingoMessage">Bingo!</div>
   </div>
   
-  <!-- Popcorn Rain Overlay (initially empty) -->
+  <!-- Popcorn Rain Overlay (for the Bingo reaction) -->
   <div id="popcornOverlay"></div>
   
   <!-- Audio for bingo chime and click -->
@@ -266,9 +359,9 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
   
   <script>
-    // Fetch and parse CSV from the Google Sheet
+    // CSV from your Google Sheet
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2yM00KOxREYPgLPvLL9PRm1FGQJwNu6U9UuDUOak_Wywn6DaKJBJ3obcmCVqXdRT0RTFenARDGEmw/pub?gid=0&single=true&output=csv";
-    
+
     async function fetchBingoData() {
       try {
         const response = await fetch(csvUrl);
@@ -279,18 +372,18 @@
         return null;
       }
     }
-    
+
     function parseCSV(csvText) {
       const rows = csvText.trim().split("\n").map(row => row.split(","));
       return rows;
     }
-    
-    // Extract tier data from the first three columns.
+
+    // Extract tier data from the first three columns
     async function getTierData() {
       const data = await fetchBingoData();
       if (!data) return { tier1: [], tier2: [], tier3: [] };
       let startIndex = 0;
-      // Assume first row is header if it contains keywords
+      // Check if the first row is a header
       if (data[0][0].toLowerCase().includes("definitely") ||
           data[0][0].toLowerCase().includes("tier") ||
           data[0][0].toLowerCase().includes("option")) {
@@ -307,18 +400,18 @@
       }
       return { tier1, tier2, tier3 };
     }
-    
-    // Build a weighted pool from the tiers.
+
+    // Build a weighted pool from the tiers
     async function buildWeightedPool() {
       const { tier1, tier2, tier3 } = await getTierData();
       const pool = [];
-      tier1.forEach(option => pool.push(...Array(3).fill(option))); // Weight 3
-      tier2.forEach(option => pool.push(...Array(2).fill(option))); // Weight 2
-      tier3.forEach(option => pool.push(option)); // Weight 1
+      tier1.forEach(option => pool.push(...Array(3).fill(option))); // weight 3
+      tier2.forEach(option => pool.push(...Array(2).fill(option))); // weight 2
+      tier3.forEach(option => pool.push(option));                  // weight 1
       return pool;
     }
-    
-    // Select 24 unique items from the weighted pool.
+
+    // Select 24 unique items from the weighted pool
     async function weightedSelect(count) {
       let pool = await buildWeightedPool();
       const result = [];
@@ -330,12 +423,13 @@
       }
       return result;
     }
-    
-    // Check for a winning bingo line.
+
+    // Check for Bingo
     function checkBingo() {
       const rows = document.querySelectorAll("#bingo-table tbody tr");
       const grid = Array.from(rows, row => Array.from(row.children));
       let bingoFound = false;
+      // rows & columns
       for (let i = 0; i < 5; i++) {
         if (grid[i].every(td => td.classList.contains("marked"))) {
           highlightBingo(grid[i]);
@@ -347,6 +441,7 @@
           bingoFound = true;
         }
       }
+      // diagonals
       const diag1 = [0,1,2,3,4].map(i => grid[i][i]);
       const diag2 = [0,1,2,3,4].map(i => grid[i][4-i]);
       if (diag1.every(td => td.classList.contains("marked"))) {
@@ -361,52 +456,53 @@
         triggerBingoCelebration();
       }
     }
-    
+
     function highlightBingo(cells) {
       cells.forEach(td => td.classList.add("bingo"));
     }
-    
-    // Trigger the Bingo celebration: play MP3, show modal, and trigger popcorn rain.
+
+    // Bingo reaction
     function triggerBingoCelebration() {
       // Play the custom MP3
       const bingoMp3 = document.getElementById("bingoMp3");
       bingoMp3.currentTime = 0;
       bingoMp3.play();
-      // Also play fallback sound (optional)
-      document.getElementById("bingoSound").play();
-      // Show modal (optional)
+      // Also play fallback sound
+      const fallback = document.getElementById("bingoSound");
+      fallback.currentTime = 0;
+      fallback.play();
+
+      // Show modal briefly
       const modal = document.getElementById("bingoModal");
       modal.style.display = "flex";
       setTimeout(() => { modal.style.display = "none"; }, 2000);
-      // Trigger popcorn rain effect
+
+      // Trigger popcorn rain
       triggerPopcornRain();
     }
-    
-    // Create a popcorn rain effect.
+
+    // Popcorn rain effect
     function triggerPopcornRain() {
       const overlay = document.getElementById("popcornOverlay");
-      overlay.innerHTML = ""; // Clear previous
-      const count = 50; // Number of popcorn emojis
+      overlay.innerHTML = "";
+      const count = 50;
       for (let i = 0; i < count; i++) {
         const span = document.createElement("span");
         span.classList.add("popcorn");
         span.textContent = "🍿";
-        // Random horizontal position
         span.style.left = Math.random() * 100 + "%";
-        // Random delay for the animation
         span.style.animationDelay = Math.random() * 1 + "s";
         overlay.appendChild(span);
       }
-      // Remove overlay after animation ends (2s)
       setTimeout(() => { overlay.innerHTML = ""; }, 2500);
     }
-    
-    // Generate a 5x5 bingo card (center cell is free, 🍿).
+
+    // Generate a 5x5 bingo card
     async function generateBingoCard() {
       const tbody = document.querySelector("#bingo-table tbody");
       tbody.innerHTML = "";
       const totalCells = 25;
-      const numItems = totalCells - 1;
+      const numItems = totalCells - 1; // center is FREE
       const items = await weightedSelect(numItems);
       let itemIndex = 0;
       for (let row = 0; row < 5; row++) {
@@ -433,7 +529,7 @@
         tbody.appendChild(tr);
       }
     }
-    
+
     function changeTheme(theme) {
       document.body.classList.remove("theme-classic", "theme-modern", "theme-silent", "theme-silver");
       document.getElementById("bingoModal").classList.remove("theme-classic", "theme-modern", "theme-silent", "theme-silver");
@@ -451,7 +547,7 @@
         document.getElementById("bingoModal").classList.add("theme-silver");
       }
     }
-    
+
     function saveAndShare() {
       html2canvas(document.getElementById("bingo-table")).then(canvas => {
         const dataURL = canvas.toDataURL();
@@ -461,7 +557,7 @@
         link.click();
       });
     }
-    
+
     document.addEventListener("DOMContentLoaded", () => {
       generateBingoCard();
       changeTheme(document.getElementById("themeSelector").value);
