@@ -52,8 +52,7 @@
       max-width: 500px;
       border-radius: 8px;
       overflow: hidden;
-      /* Force consistent column widths */
-      table-layout: fixed;
+      /* No table-layout: fixed */
     }
     th, td {
       border: 2px solid;
@@ -61,14 +60,12 @@
       font-size: 16px;
       cursor: pointer;
       transition: background 0.2s, transform 0.2s;
-      /* Force consistent row height */
-      height: 80px;
-      /* If text overflows, allow scroll within the cell */
-      overflow-y: auto;
-      /* Wrap long words */
-      word-wrap: break-word;
       padding: 8px;
       vertical-align: middle;
+      /* Provide a minimum size but allow expansion */
+      min-width: 80px;
+      min-height: 60px;
+      word-wrap: break-word;
     }
     th {
       font-weight: bold;
@@ -178,7 +175,8 @@
       th, td {
         font-size: 14px;
         padding: 6px;
-        height: 60px; /* slightly smaller for mobile */
+        min-width: 60px;
+        min-height: 50px;
       }
       button, select {
         font-size: 14px;
@@ -220,7 +218,7 @@
     <div id="bingoMessage">Bingo!</div>
   </div>
 
-  <!-- Audio for chime -->
+  <!-- Audio for bingo chime -->
   <audio id="bingoSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
   <!-- Audio for click -->
   <audio id="clickSound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
@@ -231,42 +229,40 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 
   <script>
-    // The full 161 options remain the same as before, divided into tier1, tier2, tier3.
-    // (Truncated here for brevity - insert your full arrays.)
-    const tier1 = ["Hank is here!", "Craft services rebrand (Chaplin's, etc.)", ...];
-    const tier2 = ["\"Celebrity\" guest interview", "Cutaway: Peter Jackson photo", ...];
-    const tier3 = ["Gregg is in legal trouble", "A new season of Decker is announced", ...];
+    // FULL TIER DATA with 161 items here, truncated for brevity:
+    const tier1 = [...];  // 62 items
+    const tier2 = [...];  // 38 items
+    const tier3 = [...];  // 61 items
 
-    // Build a weighted selection pool from the three tiers.
+    // Weighted pool
     function buildWeightedPool() {
       const pool = [];
-      tier1.forEach(option => pool.push(...Array(3).fill(option))); // Weight 3
-      tier2.forEach(option => pool.push(...Array(2).fill(option))); // Weight 2
-      tier3.forEach(option => pool.push(option)); // Weight 1
+      tier1.forEach(option => pool.push(...Array(3).fill(option)));
+      tier2.forEach(option => pool.push(...Array(2).fill(option)));
+      tier3.forEach(option => pool.push(option));
       return pool;
     }
 
-    // Select 24 unique items from the weighted pool.
+    // Select 24 unique items
     function weightedSelect(count) {
       let pool = buildWeightedPool();
       const result = [];
-      while (result.length < count && pool.length > 0) {
+      while (result.length < count && pool.length) {
         const idx = Math.floor(Math.random() * pool.length);
         const selected = pool[idx];
-        // Remove all occurrences of that item
         pool = pool.filter(item => item !== selected);
         result.push(selected);
       }
       return result;
     }
 
-    // Check for a winning bingo line.
+    // Check for Bingo
     function checkBingo() {
       const rows = document.querySelectorAll("#bingo-table tbody tr");
       const grid = [...rows].map(row => [...row.children]);
       let bingoFound = false;
 
-      // Check rows and columns.
+      // Rows & columns
       for (let i = 0; i < 5; i++) {
         if (grid[i].every(td => td.classList.contains("marked"))) {
           highlightBingo(grid[i]);
@@ -278,8 +274,7 @@
           bingoFound = true;
         }
       }
-
-      // Check diagonals.
+      // Diagonals
       const diag1 = [0,1,2,3,4].map(i => grid[i][i]);
       const diag2 = [0,1,2,3,4].map(i => grid[i][4-i]);
       if (diag1.every(td => td.classList.contains("marked"))) {
@@ -290,18 +285,17 @@
         highlightBingo(diag2);
         bingoFound = true;
       }
-
       if (bingoFound) {
         triggerBingoCelebration();
       }
     }
 
-    // Highlight winning squares with the "bingo" class.
+    // Highlight winning squares
     function highlightBingo(cells) {
       cells.forEach(td => td.classList.add("bingo"));
     }
 
-    // Trigger the Bingo celebration: play sound, show modal, and launch confetti.
+    // Bingo celebration
     function triggerBingoCelebration() {
       document.getElementById("bingoSound").play();
       const modal = document.getElementById("bingoModal");
@@ -314,12 +308,12 @@
       });
     }
 
-    // Generate a 5x5 bingo card (center cell shows 🍿).
+    // Generate the Bingo card
     function generateBingoCard() {
       const tbody = document.querySelector("#bingo-table tbody");
       tbody.innerHTML = "";
       const totalCells = 25;
-      const numItems = totalCells - 1; // Reserve center for free space.
+      const numItems = totalCells - 1;
       const items = weightedSelect(numItems);
       let itemIndex = 0;
 
@@ -328,12 +322,12 @@
         for (let col = 0; col < 5; col++) {
           const td = document.createElement("td");
           td.onclick = () => {
-            // Play click sound
+            // Play click
             const clickAudio = document.getElementById("clickSound");
             clickAudio.currentTime = 0;
             clickAudio.play();
 
-            // Toggle marking
+            // Mark/unmark
             td.classList.toggle("marked");
             if (!td.classList.contains("marked")) td.classList.remove("bingo");
             checkBingo();
@@ -351,7 +345,7 @@
       }
     }
 
-    // Change the theme based on the selector.
+    // Theme switching
     function changeTheme(theme) {
       document.body.classList.remove("theme-classic", "theme-modern", "theme-silent");
       document.getElementById("bingoModal").classList.remove("theme-classic", "theme-modern", "theme-silent");
@@ -367,7 +361,7 @@
       }
     }
 
-    // Use html2canvas to capture the bingo card and prompt download.
+    // Save & Share
     function saveAndShare() {
       html2canvas(document.getElementById("bingo-table")).then(canvas => {
         const dataURL = canvas.toDataURL();
@@ -378,7 +372,7 @@
       });
     }
 
-    // Initialize the card and theme on load.
+    // On load
     document.addEventListener("DOMContentLoaded", () => {
       generateBingoCard();
       changeTheme(document.getElementById("themeSelector").value);
