@@ -2,37 +2,77 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OSCER Bingo Card Generator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
       margin: 20px;
+      background-color: #f4f4f4;
+    }
+    h1 {
+      margin-top: 20px;
+      font-size: 24px;
+    }
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      margin: 20px;
+      border: none;
+      background-color: #ff5722;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background-color: #e64a19;
     }
     table {
       margin: 20px auto;
       border-collapse: collapse;
-      width: 80%;
-      max-width: 600px;
+      width: 90%;
+      max-width: 500px;
+      background-color: white;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
     }
     th, td {
-      border: 1px solid #333;
-      padding: 10px;
-      font-size: 16px;
-      min-width: 60px;
+      border: 2px solid #333;
+      padding: 12px;
+      text-align: center;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
     }
     th {
-      background-color: #ddd;
-    }
-    .free-space {
       background-color: #ffeb3b;
       font-weight: bold;
     }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin-bottom: 20px;
+    td {
+      background-color: white;
+    }
+    td.free-space {
+      background-color: #ffeb3b;
+      font-weight: bold;
+    }
+    td.marked {
+      background-color: #4caf50 !important;
+      color: white !important;
+      text-decoration: line-through;
+    }
+    @media (max-width: 600px) {
+      table {
+        width: 100%;
+      }
+      th, td {
+        font-size: 12px;
+        padding: 8px;
+      }
+      button {
+        font-size: 14px;
+        padding: 10px;
+      }
     }
   </style>
 </head>
@@ -129,6 +169,7 @@
         const tr = document.createElement("tr");
         for (let col = 0; col < 5; col++) {
           const td = document.createElement("td");
+          td.onclick = () => td.classList.toggle("marked");
           if (row === 2 && col === 2) {
             td.textContent = "🍿"; // Free space
             td.classList.add("free-space");
