@@ -5,62 +5,101 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OSCER Bingo Card Generator</title>
   <style>
+    /* General Styling */
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Georgia', serif;
       text-align: center;
       margin: 20px;
-      background-color: #f4f4f4;
+      background-color: #1c1c1c;
+      color: #ffd700;
     }
     h1 {
       margin-top: 20px;
-      font-size: 24px;
+      font-size: 28px;
+      text-transform: uppercase;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-shadow: 2px 2px 5px rgba(255, 215, 0, 0.6);
     }
+    
+    /* Button Styling */
     button {
       padding: 12px 20px;
       font-size: 16px;
       margin: 20px;
       border: none;
-      background-color: #ff5722;
-      color: white;
+      background: linear-gradient(45deg, #ffd700, #e5c100);
+      color: black;
+      font-weight: bold;
       cursor: pointer;
       border-radius: 5px;
-      transition: background 0.3s;
+      transition: 0.3s ease;
+      box-shadow: 0px 4px 8px rgba(255, 215, 0, 0.3);
     }
     button:hover {
-      background-color: #e64a19;
+      background: linear-gradient(45deg, #e5c100, #c9a000);
+      transform: scale(1.05);
     }
+
+    /* Table Styling */
     table {
       margin: 20px auto;
       border-collapse: collapse;
       width: 90%;
       max-width: 500px;
-      background-color: white;
-      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+      background-color: #222;
+      box-shadow: 0px 4px 10px rgba(255, 215, 0, 0.3);
+      border-radius: 8px;
     }
     th, td {
-      border: 2px solid #333;
+      border: 2px solid #ffd700;
       padding: 12px;
       text-align: center;
       font-size: 14px;
       cursor: pointer;
-      transition: background 0.2s, color 0.2s;
+      transition: 0.2s;
     }
     th {
-      background-color: #ffeb3b;
+      background-color: #ffd700;
+      color: black;
       font-weight: bold;
     }
     td {
-      background-color: white;
+      background-color: #1c1c1c;
+      color: #fff;
     }
+
+    /* Free Space Styling */
     td.free-space {
-      background-color: #ffeb3b;
+      background-color: #ffd700;
       font-weight: bold;
+      color: black;
+      font-size: 18px;
     }
+
+    /* Marked Square Styling */
     td.marked {
-      background-color: #4caf50 !important;
-      color: white !important;
-      text-decoration: line-through;
+      background-color: #ffd700 !important;
+      color: black !important;
+      font-weight: bold;
+      text-shadow: 0px 0px 10px rgba(255, 215, 0, 0.8);
+      transform: scale(1.05);
+      transition: all 0.2s ease-in-out;
     }
+
+    /* Bingo Winning Animation */
+    td.bingo {
+      background: linear-gradient(45deg, #ffecb3, #ffd700);
+      color: black !important;
+      animation: glow 1s infinite alternate;
+    }
+
+    @keyframes glow {
+      0% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+      100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.9); }
+    }
+
+    /* Mobile Optimization */
     @media (max-width: 600px) {
       table {
         width: 100%;
@@ -95,95 +134,6 @@
   </table>
 
   <script>
-    // Full dataset extracted from the CSV file
-    const tier1 = [
-      "Hank is here!",
-      "Craft services rebrand (Chaplin's, etc.)",
-      "Gregg holds a VHS cassette",
-      "Joe Estevez is here!",
-      "Gregg has information from an Oscars insider",
-      "Mark does an impression",
-      "BABOONS: A PEP BOYS STORY is granted additional funding",
-      "Cutaway: Steven Spielberg photo",
-      "Tim takes the Lord's name in vain",
-      "Tim announces Dekkar/DKR 5.0"
-    ];
-    
-    const tier2 = [
-      '"Celebrity" guest interview',
-      "Cutaway: Peter Jackson photo",
-      "Cutaway: Woody Allen photo",
-      "Dekkar/DKR perform",
-      "Gregg mentions Bogart or John Wayne",
-      "A reference to Tim’s skin cancer",
-      "A “LIVE via satellite” guest appears",
-      "Tim and Gregg discuss AI",
-      "Gregg refers to his book or video series",
-      "A new editing or camera error is introduced"
-    ];
-
-    const tier3 = [
-      "Gregg is in legal trouble",
-      "A new season of Decker is announced",
-      "Dr. San resurrection",
-      "Donald Trump is referenced",
-      "Tim criticizes vaccines",
-      "Someone appears who was previously banned",
-      "Gregg questions the integrity of a movie’s Oscars win",
-      "Manuel is here!",
-      "Tim talks about his kids",
-      "A past joke segment is revived"
-    ];
-
-    // Build a weighted selection pool
-    function buildWeightedPool() {
-      const pool = [];
-      tier1.forEach(option => pool.push(...Array(3).fill(option))); // Weight 3
-      tier2.forEach(option => pool.push(...Array(2).fill(option))); // Weight 2
-      tier3.forEach(option => pool.push(option)); // Weight 1
-      return pool;
-    }
-
-    // Select 24 unique items from the weighted pool
-    function weightedSelect(count) {
-      let pool = buildWeightedPool();
-      const result = [];
-      while (result.length < count && pool.length > 0) {
-        const idx = Math.floor(Math.random() * pool.length);
-        const selected = pool[idx];
-        pool = pool.filter(item => item !== selected); // Remove all occurrences
-        result.push(selected);
-      }
-      return result;
-    }
-
-    // Generate a 5x5 bingo card (center is the popcorn emoji 🍿)
-    function generateBingoCard() {
-      const tbody = document.querySelector("#bingo-table tbody");
-      tbody.innerHTML = "";
-      const totalCells = 25;
-      const numItems = totalCells - 1; // Center space reserved
-      const items = weightedSelect(numItems);
-      let itemIndex = 0;
-      for (let row = 0; row < 5; row++) {
-        const tr = document.createElement("tr");
-        for (let col = 0; col < 5; col++) {
-          const td = document.createElement("td");
-          td.onclick = () => td.classList.toggle("marked");
-          if (row === 2 && col === 2) {
-            td.textContent = "🍿"; // Free space
-            td.classList.add("free-space");
-          } else {
-            td.textContent = items[itemIndex] || "";
-            itemIndex++;
-          }
-          tr.appendChild(td);
-        }
-        tbody.appendChild(tr);
-      }
-    }
-
-    document.addEventListener("DOMContentLoaded", generateBingoCard);
-  </script>
-</body>
-</html>
+    const tier1 = ["Hank is here!", "Gregg holds a VHS", "Joe Estevez is here!", "Tim takes the Lord's name in vain"];
+    const tier2 = ['"Celebrity" guest', "Cutaway: Peter Jackson", "Gregg mentions Bogart", "A reference to Tim’s skin cancer"];
+    const tier3 = ["Gregg is in legal trouble", "A new season of
