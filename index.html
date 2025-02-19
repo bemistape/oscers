@@ -1,107 +1,67 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rando Bingo Card Generator</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 20px;
-        }
-        h1 {
-            margin-bottom: 10px;
-        }
-        table {
-            margin: 20px auto;
-            border-collapse: collapse;
-            width: 300px;
-        }
-        th, td {
-            border: 2px solid black;
-            padding: 10px;
-            text-align: center;
-            font-size: 18px;
-            width: 60px;
-            height: 60px;
-        }
-        th {
-            background-color: #ddd;
-        }
-        .free-space {
-            background-color: #ffeb3b;
-            font-weight: bold;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-    </style>
-</head>
-<body>
-    <h1>Bingo Cardo Generator</h1>
-    <button onclick="generateBingoCard()">Generate New Card</button>
-    <table id="bingo-table">
-        <thead>
-            <tr>
-                <th>B</th><th>I</th><th>N</th><th>G</th><th>O</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Bingo grid will be inserted here -->
-        </tbody>
-    </table>
+<script>
+    const googleSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2yM00KOxREYPgLPvLL9PRm1FGQJwNu6U9UuDUOak_Wywn6DaKJBJ3obcmCVqXdRT0RTFenARDGEmw/pub?gid=817608384&single=true&output=csv";
 
-    <script>
-        const bingoData = {
-            B: Array.from({length: 15}, (_, i) => i + 1),
-            I: Array.from({length: 15}, (_, i) => i + 16),
-            N: Array.from({length: 15}, (_, i) => i + 31),
-            G: Array.from({length: 15}, (_, i) => i + 46),
-            O: Array.from({length: 15}, (_, i) => i + 61),
+    async function fetchBingoData() {
+        const response = await fetch(googleSheetURL);
+        const data = await response.text();
+        return parseCSV(data);
+    }
+
+    function parseCSV(csvText) {
+        const rows = csvText.trim().split("\n").map(row => row.split(","));
+        let bingoData = { O: [], S: [], C: [], E: [], R: [] };
+
+        // Go through each row and categorize data under the correct letter
+        for (let row of rows.slice(1)) {  // Skip header row
+            row.forEach((cell, index) => {
+                if (!cell.trim()) return; // Skip empty cells
+
+                // Determine column by first character (O, S, C, E, R)
+                let colLetter = rows[0][index][0]; // First character of column name
+                if (bingoData[colLetter]) {
+                    bingoData[colLetter].push(cell.trim());
+                }
+            });
+        }
+        return bingoData;
+    }
+
+    async function generateBingoCard() {
+        const tbody = document.querySelector("#bingo-table tbody");
+        tbody.innerHTML = ""; // Clear existing table
+
+        let bingoData = await fetchBingoData();
+
+        let cardNumbers = {
+            O: shuffleArray(bingoData["O"]).slice(0, 5),
+            S: shuffleArray(bingoData["S"]).slice(0, 5),
+            C: shuffleArray(bingoData["C"]).slice(0, 4), // One less for FREE space
+            E: shuffleArray(bingoData["E"]).slice(0, 5),
+            R: shuffleArray(bingoData["R"]).slice(0, 5),
         };
 
-        function getRandomNumbers(column, count) {
-            let numbers = [...bingoData[column]];
-            numbers.sort(() => Math.random() - 0.5); // Shuffle
-            return numbers.slice(0, count);
+        for (let row = 0; row < 5; row++) {
+            let tr = document.createElement("tr");
+            ["O", "S", "C", "E", "R"].forEach((col, colIndex) => {
+                let td = document.createElement("td");
+
+                // Middle FREE space
+                if (row === 2 && col === "C") {
+                    td.textContent = "FREE";
+                    td.classList.add("free-space");
+                } else {
+                    td.textContent = cardNumbers[col].shift();
+                }
+
+                tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
         }
+    }
 
-        function generateBingoCard() {
-            const tbody = document.querySelector("#bingo-table tbody");
-            tbody.innerHTML = ""; // Clear existing table
+    function shuffleArray(arr) {
+        return arr.sort(() => Math.random() - 0.5);
+    }
 
-            let cardNumbers = {
-                B: getRandomNumbers("B", 5),
-                I: getRandomNumbers("I", 5),
-                N: getRandomNumbers("N", 4), // One less because of free space
-                G: getRandomNumbers("G", 5),
-                O: getRandomNumbers("O", 5),
-            };
-
-            for (let row = 0; row < 5; row++) {
-                let tr = document.createElement("tr");
-                ["B", "I", "N", "G", "O"].forEach((col, colIndex) => {
-                    let td = document.createElement("td");
-
-                    // Middle free space
-                    if (row === 2 && col === "N") {
-                        td.textContent = "FREE";
-                        td.classList.add("free-space");
-                    } else {
-                        td.textContent = cardNumbers[col].shift();
-                    }
-
-                    tr.appendChild(td);
-                });
-                tbody.appendChild(tr);
-            }
-        }
-
-        // Generate a bingo card when the page loads
-        generateBingoCard();
-    </script>
-</body>
-</html>
+    document.addEventListener("DOMContentLoaded", generateBingoCard);
+</script>
