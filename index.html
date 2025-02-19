@@ -31,7 +31,7 @@
       cursor: pointer;
       border-radius: 5px;
       transition: transform 0.3s, background 0.3s;
-      box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     }
     button:hover {
       transform: scale(1.05);
@@ -60,7 +60,7 @@
       transition: background 0.2s, transform 0.2s;
       padding: 8px;
       vertical-align: middle;
-      /* Minimum sizes to help maintain a grid */
+      /* Let the cells size naturally */
       min-width: 80px;
       min-height: 60px;
       word-wrap: break-word;
@@ -222,111 +222,65 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
   
   <script>
-    // FULL SET OF BINGO OPTIONS – Combining your supplied options and additional ideas.
-    // Tier 1 (Most Likely – 30 items)
-    const tier1 = [
-      "Tim mentions his latest ailment",
-      "Gregg does an impression",
-      "Joe Estevez makes an appearance",
-      "Tim threatens to cancel the show",
-      "Gregg talks about The Hobbit",
-      "Cutaway: Steven Spielberg photo",
-      "Tim announces Dekkar/DKR 5.0",
-      "Gregg holds a VHS cassette",
-      "Celebrity guest interview mention",
-      "Tim takes the Lord's name in vain",
-      "Tim complains about production problems",
-      "Gregg promises a big finale",
-      "Cutaway: Peter Jackson photo",
-      "Tim blames the crew",
-      "Reference to HEI Points",
-      "Mention of the Victorville Film Archive",
-      "Tim criticizes vaccines",
-      "Gregg is in legal trouble",
-      "Donald Trump is referenced",
-      "Tim discusses AI",
-      "\"LIVE via satellite\" guest appears",
-      "Tim’s meltdown on stage",
-      "Gregg mentions Bogart",
-      "Special guest cancels last minute",
-      "Tim announces a new season of Decker",
-      "Tim refers to his own health issues",
-      "Reference to Popcorn Classics",
-      "Gregg compares movies to VHS tapes",
-      "Tim threatens to shut the show down",
-      "Cutaway: Woody Allen photo"
-    ];
+    // Fetch and parse CSV from the Google Sheet
+    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2yM00KOxREYPgLPvLL9PRm1FGQJwNu6U9UuDUOak_Wywn6DaKJBJ3obcmCVqXdRT0RTFenARDGEmw/pub?gid=0&single=true&output=csv";
     
-    // Tier 2 (Medium Likelihood – 25 items)
-    const tier2 = [
-      "Tim references his own fame",
-      "Gregg makes an obscure movie reference",
-      "Tim complains about the budget",
-      "Gregg praises classic cinema",
-      "Tim mentions legal issues",
-      "Guest appears in unexpected costume",
-      "Mention of Tim’s skin cancer",
-      "Gregg delivers a deadpan remark",
-      "Tim makes a political reference",
-      "Behind-the-scenes error is shown",
-      "Tim cites a production mishap",
-      "Gregg references John Wayne",
-      "Tim interrupts a segment",
-      "Recurring character makes a cameo",
-      "Tim gets frustrated with the camera",
-      "Gregg shares obscure film trivia",
-      "Tim mentions an upcoming film",
-      "Cutaway: Unrelated viral video",
-      "Tim announces a surprising twist",
-      "Gregg shows off his film knowledge",
-      "Reference to outdated film equipment",
-      "Tim shares a personal anecdote",
-      "Gregg debates movie ratings",
-      "Tim reminisces about his childhood",
-      "Gregg mentions a cult classic"
-    ];
+    async function fetchBingoData() {
+      try {
+        const response = await fetch(csvUrl);
+        const csvText = await response.text();
+        return parseCSV(csvText);
+      } catch (error) {
+        console.error("Error fetching CSV:", error);
+        return null;
+      }
+    }
     
-    // Tier 3 (Less Likely – 20 items)
-    const tier3 = [
-      "Reference to a notorious on-set moment",
-      "Tim insults a guest",
-      "Gregg corrects Tim’s movie facts",
-      "Heated exchange between Tim and Gregg",
-      "Tim tells a bizarre tangential story",
-      "Gregg makes a snarky pop culture comment",
-      "Mention of an obscure actor",
-      "Tim’s attempt at humor falls flat",
-      "Gregg gives a signature deadpan stare",
-      "Tim announces a new segment",
-      "Gregg dismisses a film suggestion",
-      "Reference to Tim’s failed project",
-      "Tim reminisces about old Hollywood",
-      "Gregg cites a classic film line",
-      "A guest unexpectedly interrupts the broadcast",
-      "Tim’s awkward silence",
-      "Gregg smirks during a segment",
-      "Tim mentions a technical glitch",
-      "Gregg corrects a historical error",
-      "A random absurd moment occurs"
-    ];
+    function parseCSV(csvText) {
+      const rows = csvText.trim().split("\n").map(row => row.split(","));
+      return rows;
+    }
     
-    // Build a weighted selection pool from the three tiers.
-    function buildWeightedPool() {
+    // Extract tier data from the first three columns.
+    // Assumes the first row is a header if it contains text like "Definitely" or "Tier".
+    async function getTierData() {
+      const data = await fetchBingoData();
+      if (!data) return { tier1: [], tier2: [], tier3: [] };
+      let startIndex = 0;
+      // Check if the first row appears to be headers
+      if (data[0][0].toLowerCase().includes("definitely") || data[0][0].toLowerCase().includes("tier")) {
+        startIndex = 1;
+      }
+      const tier1 = [];
+      const tier2 = [];
+      const tier3 = [];
+      for (let i = startIndex; i < data.length; i++) {
+        const row = data[i];
+        if (row[0]) tier1.push(row[0].trim());
+        if (row[1]) tier2.push(row[1].trim());
+        if (row[2]) tier3.push(row[2].trim());
+      }
+      return { tier1, tier2, tier3 };
+    }
+    
+    // Build a weighted pool from the tiers.
+    async function buildWeightedPool() {
+      const { tier1, tier2, tier3 } = await getTierData();
       const pool = [];
-      tier1.forEach(option => pool.push(...Array(3).fill(option))); // Weight 3 for Tier 1
-      tier2.forEach(option => pool.push(...Array(2).fill(option))); // Weight 2 for Tier 2
-      tier3.forEach(option => pool.push(option)); // Weight 1 for Tier 3
+      tier1.forEach(option => pool.push(...Array(3).fill(option))); // Weight 3
+      tier2.forEach(option => pool.push(...Array(2).fill(option))); // Weight 2
+      tier3.forEach(option => pool.push(option)); // Weight 1
       return pool;
     }
     
     // Select 24 unique items from the weighted pool.
-    function weightedSelect(count) {
-      let pool = buildWeightedPool();
+    async function weightedSelect(count) {
+      let pool = await buildWeightedPool();
       const result = [];
       while (result.length < count && pool.length > 0) {
         const idx = Math.floor(Math.random() * pool.length);
         const selected = pool[idx];
-        pool = pool.filter(item => item !== selected); // Remove all occurrences to ensure uniqueness.
+        pool = pool.filter(item => item !== selected);
         result.push(selected);
       }
       return result;
@@ -335,10 +289,8 @@
     // Check for a winning bingo line.
     function checkBingo() {
       const rows = document.querySelectorAll("#bingo-table tbody tr");
-      const grid = [...rows].map(row => [...row.children]);
+      const grid = Array.from(rows, row => Array.from(row.children));
       let bingoFound = false;
-    
-      // Check rows and columns.
       for (let i = 0; i < 5; i++) {
         if (grid[i].every(td => td.classList.contains("marked"))) {
           highlightBingo(grid[i]);
@@ -350,10 +302,8 @@
           bingoFound = true;
         }
       }
-    
-      // Check diagonals.
-      const diag1 = [0,1,2,3,4].map(i => grid[i][i]);
-      const diag2 = [0,1,2,3,4].map(i => grid[i][4-i]);
+      const diag1 = [0, 1, 2, 3, 4].map(i => grid[i][i]);
+      const diag2 = [0, 1, 2, 3, 4].map(i => grid[i][4 - i]);
       if (diag1.every(td => td.classList.contains("marked"))) {
         highlightBingo(diag1);
         bingoFound = true;
@@ -362,18 +312,15 @@
         highlightBingo(diag2);
         bingoFound = true;
       }
-    
       if (bingoFound) {
         triggerBingoCelebration();
       }
     }
     
-    // Highlight winning squares with the "bingo" class.
     function highlightBingo(cells) {
       cells.forEach(td => td.classList.add("bingo"));
     }
     
-    // Trigger the Bingo celebration: play sound, show modal, launch confetti.
     function triggerBingoCelebration() {
       document.getElementById("bingoSound").play();
       const modal = document.getElementById("bingoModal");
@@ -386,30 +333,24 @@
       });
     }
     
-    // Generate a 5x5 bingo card (center cell shows 🍿).
-    function generateBingoCard() {
+    // Generate a 5x5 bingo card (center cell is free, 🍿).
+    async function generateBingoCard() {
       const tbody = document.querySelector("#bingo-table tbody");
       tbody.innerHTML = "";
       const totalCells = 25;
-      const numItems = totalCells - 1; // Reserve center for free space.
-      const items = weightedSelect(numItems);
+      const numItems = totalCells - 1;
+      const items = await weightedSelect(numItems);
       let itemIndex = 0;
-    
       for (let row = 0; row < 5; row++) {
         const tr = document.createElement("tr");
         for (let col = 0; col < 5; col++) {
           const td = document.createElement("td");
           td.onclick = () => {
-            // Play click sound.
             const clickAudio = document.getElementById("clickSound");
             clickAudio.currentTime = 0;
             clickAudio.play();
-    
-            // Toggle marking.
             td.classList.toggle("marked");
-            if (!td.classList.contains("marked")) {
-              td.classList.remove("bingo");
-            }
+            if (!td.classList.contains("marked")) td.classList.remove("bingo");
             checkBingo();
           };
           if (row === 2 && col === 2) {
@@ -425,7 +366,6 @@
       }
     }
     
-    // Change the theme based on the selector.
     function changeTheme(theme) {
       document.body.classList.remove("theme-classic", "theme-modern", "theme-silent");
       document.getElementById("bingoModal").classList.remove("theme-classic", "theme-modern", "theme-silent");
@@ -441,7 +381,6 @@
       }
     }
     
-    // Use html2canvas to capture the bingo card and prompt download.
     function saveAndShare() {
       html2canvas(document.getElementById("bingo-table")).then(canvas => {
         const dataURL = canvas.toDataURL();
@@ -452,7 +391,6 @@
       });
     }
     
-    // Initialize on load.
     document.addEventListener("DOMContentLoaded", () => {
       generateBingoCard();
       changeTheme(document.getElementById("themeSelector").value);
