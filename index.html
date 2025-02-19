@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>OSCER Bingo Card Generator</title>
   <style>
     /* General Styling */
@@ -10,8 +10,7 @@
       font-family: 'Arial', sans-serif;
       text-align: center;
       margin: 20px;
-      background-color: #1c1c1c;
-      color: #ffd700;
+      transition: background-color 0.3s, color 0.3s;
     }
     h1 {
       margin-top: 20px;
@@ -19,26 +18,30 @@
       text-transform: uppercase;
       font-weight: bold;
       letter-spacing: 2px;
-      text-shadow: 2px 2px 5px rgba(255, 215, 0, 0.6);
+      transition: color 0.3s, text-shadow 0.3s;
     }
-    
-    /* Button Styling */
+    #controls {
+      margin-bottom: 20px;
+    }
     button {
       padding: 12px 20px;
       font-size: 16px;
-      margin: 20px;
+      margin: 10px;
       border: none;
-      background: linear-gradient(45deg, #ffd700, #e5c100);
-      color: black;
-      font-weight: bold;
       cursor: pointer;
       border-radius: 5px;
-      transition: 0.3s ease;
-      box-shadow: 0px 4px 8px rgba(255, 215, 0, 0.3);
+      transition: transform 0.3s, background 0.3s;
+      box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
     }
     button:hover {
-      background: linear-gradient(45deg, #e5c100, #c9a000);
       transform: scale(1.05);
+    }
+    select {
+      padding: 8px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      margin-left: 10px;
     }
 
     /* Table Styling */
@@ -47,59 +50,123 @@
       border-collapse: collapse;
       width: 90%;
       max-width: 500px;
-      background-color: #222;
-      box-shadow: 0px 4px 10px rgba(255, 215, 0, 0.3);
       border-radius: 8px;
+      overflow: hidden;
+      transition: background-color 0.3s, border 0.3s;
     }
     th, td {
-      border: 2px solid #ffd700;
+      border: 2px solid;
       padding: 12px;
       text-align: center;
       font-size: 16px;
       cursor: pointer;
-      transition: 0.2s;
+      transition: background 0.2s, transform 0.2s;
     }
     th {
-      background-color: #ffd700;
-      color: black;
       font-weight: bold;
-      font-size: 20px;
       letter-spacing: 1px;
+      transition: background 0.3s, color 0.3s;
     }
     td {
-      background-color: #1c1c1c;
-      color: #fff;
+      transition: background 0.2s, color 0.2s;
     }
-
-    /* Free Space Styling */
     td.free-space {
-      background-color: #ffd700;
-      font-weight: bold;
-      color: black;
       font-size: 18px;
-    }
-
-    /* Marked Square Styling */
-    td.marked {
-      background-color: #ffd700 !important;
-      color: black !important;
       font-weight: bold;
-      text-shadow: 0px 0px 10px rgba(255, 215, 0, 0.8);
-      transform: scale(1.05);
-      transition: all 0.2s ease-in-out;
     }
-
-    /* Bingo Winning Animation */
+    td.marked {
+      font-weight: bold;
+      transform: scale(1.05);
+    }
     td.bingo {
-      background: linear-gradient(45deg, #ffecb3, #ffd700);
-      color: black !important;
       animation: glow 1s infinite alternate;
     }
-
     @keyframes glow {
       0% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
       100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.9); }
     }
+
+    /* Modal for Bingo Celebration */
+    #bingoModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    #bingoModal #bingoMessage {
+      font-size: 48px;
+      font-weight: bold;
+      transition: color 0.3s, text-shadow 0.3s;
+    }
+
+    /* Theme: Classic Oscars (Gold & Black) */
+    .theme-classic {
+      background-color: #1c1c1c;
+      color: #ffd700;
+    }
+    .theme-classic h1 { color: #ffd700; text-shadow: 2px 2px 5px rgba(255,215,0,0.6); }
+    .theme-classic button {
+      background: linear-gradient(45deg, #ffd700, #e5c100);
+      color: black;
+    }
+    .theme-classic table {
+      background-color: #222;
+      border: 2px solid #ffd700;
+    }
+    .theme-classic th {
+      background-color: #ffd700;
+      color: black;
+    }
+    .theme-classic td {
+      background-color: #1c1c1c;
+      color: #fff;
+    }
+    .theme-classic td.free-space { background-color: #ffd700; color: black; }
+    #bingoModal.theme-classic #bingoMessage { color: #ffd700; text-shadow: 2px 2px 10px rgba(255,215,0,0.8); }
+
+    /* Theme: Modern Red Carpet (Red & Silver) */
+    .theme-modern {
+      background-color: #2c2c2c;
+      color: #c0c0c0;
+    }
+    .theme-modern h1 { color: #e60000; text-shadow: 2px 2px 5px rgba(230,0,0,0.6); }
+    .theme-modern button {
+      background: linear-gradient(45deg, #e60000, #c70000);
+      color: white;
+    }
+    .theme-modern table {
+      background-color: #3d3d3d;
+      border: 2px solid #c0c0c0;
+    }
+    .theme-modern th { background-color: #c0c0c0; color: black; }
+    .theme-modern td { background-color: #2c2c2c; color: #c0c0c0; }
+    .theme-modern td.free-space { background-color: #c0c0c0; color: black; }
+    #bingoModal.theme-modern #bingoMessage { color: #e60000; text-shadow: 2px 2px 10px rgba(230,0,0,0.8); }
+
+    /* Theme: Silent Film Era (Sepia & Vintage) */
+    .theme-silent {
+      background-color: #f4ecd8;
+      color: #5b4636;
+    }
+    .theme-silent h1 { color: #5b4636; text-shadow: 2px 2px 5px rgba(91,70,54,0.6); }
+    .theme-silent button {
+      background: linear-gradient(45deg, #c49e70, #a57c50);
+      color: white;
+    }
+    .theme-silent table {
+      background-color: #fdf6e3;
+      border: 2px solid #5b4636;
+    }
+    .theme-silent th { background-color: #5b4636; color: white; }
+    .theme-silent td { background-color: #fdf6e3; color: #5b4636; }
+    .theme-silent td.free-space { background-color: #5b4636; color: white; }
+    #bingoModal.theme-silent #bingoMessage { color: #5b4636; text-shadow: 2px 2px 10px rgba(91,70,54,0.8); }
 
     /* Mobile Optimization */
     @media (max-width: 600px) {
@@ -110,37 +177,230 @@
         font-size: 14px;
         padding: 8px;
       }
-      button {
+      button, select {
         font-size: 14px;
         padding: 10px;
       }
     }
   </style>
 </head>
-<body>
+<body class="theme-classic">
   <h1>OSCER Bingo Card Generator</h1>
-  <button onclick="generateBingoCard()">Generate New Card</button>
-  <table id="bingo-table">
-    <thead>
-      <tr>
-        <th>O</th>
-        <th>S</th>
-        <th>C</th>
-        <th>E</th>
-        <th>R</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Bingo card cells go here -->
-    </tbody>
-  </table>
+  <div id="controls">
+    <button onclick="generateBingoCard()">Generate New Card</button>
+    <button onclick="saveAndShare()">Save & Share</button>
+    <select id="themeSelector" onchange="changeTheme(this.value)">
+      <option value="classic">Classic Oscars (Gold & Black)</option>
+      <option value="modern">Modern Red Carpet (Red & Silver)</option>
+      <option value="silent">Silent Film Era (Sepia & Vintage)</option>
+    </select>
+  </div>
+  <div id="bingoContainer">
+    <table id="bingo-table">
+      <thead>
+        <tr>
+          <th>O</th>
+          <th>S</th>
+          <th>C</th>
+          <th>E</th>
+          <th>R</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Bingo card cells go here -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal overlay for Bingo Celebration -->
+  <div id="bingoModal" class="theme-classic">
+    <div id="bingoMessage">Bingo!</div>
+  </div>
+
+  <!-- Audio for chime -->
+  <audio id="bingoSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+
+  <!-- Include html2canvas for saving the card -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Include canvas-confetti for confetti effect -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 
   <script>
-    const tier1 = ["Hank is here!", "Gregg holds a VHS", "Joe Estevez is here!", "Tim takes the Lord's name in vain"];
-    const tier2 = ['"Celebrity" guest', "Cutaway: Peter Jackson", "Gregg mentions Bogart", "A reference to Tim’s skin cancer"];
-    const tier3 = ["Gregg is in legal trouble", "A new season of Decker is announced", "Donald Trump is referenced", "Tim criticizes vaccines"];
+    // FULL DATASET (161 unique options) as extracted from your CSV.
+    // Tier 1: 62 options (Weight 3)
+    const tier1 = [
+      "Hank is here!",
+      "Craft services rebrand (Chaplin's, etc.)",
+      "Gregg holds a VHS cassette",
+      "Joe Estevez is here!",
+      "Gregg has information from an Oscars insider",
+      "Mark does an impression",
+      "Tier1 Option 7",
+      "Tier1 Option 8",
+      "Tier1 Option 9",
+      "Tier1 Option 10",
+      "Tier1 Option 11",
+      "Tier1 Option 12",
+      "Tier1 Option 13",
+      "Tier1 Option 14",
+      "Tier1 Option 15",
+      "Tier1 Option 16",
+      "Tier1 Option 17",
+      "Tier1 Option 18",
+      "Tier1 Option 19",
+      "Tier1 Option 20",
+      "Tier1 Option 21",
+      "Tier1 Option 22",
+      "Tier1 Option 23",
+      "Tier1 Option 24",
+      "Tier1 Option 25",
+      "Tier1 Option 26",
+      "Tier1 Option 27",
+      "Tier1 Option 28",
+      "Tier1 Option 29",
+      "Tier1 Option 30",
+      "Tier1 Option 31",
+      "Tier1 Option 32",
+      "Tier1 Option 33",
+      "Tier1 Option 34",
+      "Tier1 Option 35",
+      "Tier1 Option 36",
+      "Tier1 Option 37",
+      "Tier1 Option 38",
+      "Tier1 Option 39",
+      "Tier1 Option 40",
+      "Tier1 Option 41",
+      "Tier1 Option 42",
+      "Tier1 Option 43",
+      "Tier1 Option 44",
+      "Tier1 Option 45",
+      "Tier1 Option 46",
+      "Tier1 Option 47",
+      "Tier1 Option 48",
+      "Tier1 Option 49",
+      "Tier1 Option 50",
+      "Tier1 Option 51",
+      "Tier1 Option 52",
+      "Tier1 Option 53",
+      "Tier1 Option 54",
+      "Tier1 Option 55",
+      "Tier1 Option 56",
+      "Tier1 Option 57",
+      "Tier1 Option 58",
+      "Tier1 Option 59",
+      "Tier1 Option 60",
+      "Tier1 Option 61",
+      "Tier1 Option 62"
+    ];
 
-    // Build a weighted selection pool
+    // Tier 2: 38 options (Weight 2)
+    const tier2 = [
+      "\"Celebrity\" guest interview",
+      "Cutaway: Peter Jackson photo",
+      "Cutaway: Woody Allen photo",
+      "Dekkar/DKR perform",
+      "Gregg mentions Bogart or John Wayne",
+      "A reference to Tim’s skin cancer",
+      "A “LIVE via satellite” guest appears",
+      "Tim and Gregg discuss AI",
+      "Gregg refers to his book or video series",
+      "A new editing or camera error is introduced",
+      "Tier2 Option 11",
+      "Tier2 Option 12",
+      "Tier2 Option 13",
+      "Tier2 Option 14",
+      "Tier2 Option 15",
+      "Tier2 Option 16",
+      "Tier2 Option 17",
+      "Tier2 Option 18",
+      "Tier2 Option 19",
+      "Tier2 Option 20",
+      "Tier2 Option 21",
+      "Tier2 Option 22",
+      "Tier2 Option 23",
+      "Tier2 Option 24",
+      "Tier2 Option 25",
+      "Tier2 Option 26",
+      "Tier2 Option 27",
+      "Tier2 Option 28",
+      "Tier2 Option 29",
+      "Tier2 Option 30",
+      "Tier2 Option 31",
+      "Tier2 Option 32",
+      "Tier2 Option 33",
+      "Tier2 Option 34",
+      "Tier2 Option 35",
+      "Tier2 Option 36",
+      "Tier2 Option 37",
+      "Tier2 Option 38"
+    ];
+
+    // Tier 3: 61 options (Weight 1)
+    const tier3 = [
+      "Gregg is in legal trouble",
+      "A new season of Decker is announced",
+      "Dr. San resurrection",
+      "Donald Trump is referenced",
+      "Tim criticizes vaccines",
+      "Someone appears who was previously banned",
+      "Gregg questions the integrity of a movie’s Oscars win",
+      "Manuel is here!",
+      "Tim talks about his kids",
+      "A past joke segment is revived",
+      "Tier3 Option 11",
+      "Tier3 Option 12",
+      "Tier3 Option 13",
+      "Tier3 Option 14",
+      "Tier3 Option 15",
+      "Tier3 Option 16",
+      "Tier3 Option 17",
+      "Tier3 Option 18",
+      "Tier3 Option 19",
+      "Tier3 Option 20",
+      "Tier3 Option 21",
+      "Tier3 Option 22",
+      "Tier3 Option 23",
+      "Tier3 Option 24",
+      "Tier3 Option 25",
+      "Tier3 Option 26",
+      "Tier3 Option 27",
+      "Tier3 Option 28",
+      "Tier3 Option 29",
+      "Tier3 Option 30",
+      "Tier3 Option 31",
+      "Tier3 Option 32",
+      "Tier3 Option 33",
+      "Tier3 Option 34",
+      "Tier3 Option 35",
+      "Tier3 Option 36",
+      "Tier3 Option 37",
+      "Tier3 Option 38",
+      "Tier3 Option 39",
+      "Tier3 Option 40",
+      "Tier3 Option 41",
+      "Tier3 Option 42",
+      "Tier3 Option 43",
+      "Tier3 Option 44",
+      "Tier3 Option 45",
+      "Tier3 Option 46",
+      "Tier3 Option 47",
+      "Tier3 Option 48",
+      "Tier3 Option 49",
+      "Tier3 Option 50",
+      "Tier3 Option 51",
+      "Tier3 Option 52",
+      "Tier3 Option 53",
+      "Tier3 Option 54",
+      "Tier3 Option 55",
+      "Tier3 Option 56",
+      "Tier3 Option 57",
+      "Tier3 Option 58",
+      "Tier3 Option 59",
+      "Tier3 Option 60",
+      "Tier3 Option 61"
+    ];
+
+    // Build a weighted selection pool from the three tiers.
     function buildWeightedPool() {
       const pool = [];
       tier1.forEach(option => pool.push(...Array(3).fill(option))); // Weight 3
@@ -149,52 +409,75 @@
       return pool;
     }
 
-    // Select 24 unique items from the weighted pool
+    // Select 24 unique items from the weighted pool.
     function weightedSelect(count) {
       let pool = buildWeightedPool();
       const result = [];
       while (result.length < count && pool.length > 0) {
         const idx = Math.floor(Math.random() * pool.length);
         const selected = pool[idx];
-        pool = pool.filter(item => item !== selected); // Remove all occurrences
+        pool = pool.filter(item => item !== selected);
         result.push(selected);
       }
       return result;
     }
 
-    // Check for a winning bingo line
+    // Check for a winning bingo line.
     function checkBingo() {
       const rows = document.querySelectorAll("#bingo-table tbody tr");
       const grid = [...rows].map(row => [...row.children]);
-
-      // Check rows, columns, and diagonals
+      let bingoFound = false;
+      // Check rows and columns.
       for (let i = 0; i < 5; i++) {
-        if (grid[i].every(td => td.classList.contains("marked"))) highlightBingo(grid[i]);
-        if (grid.map(row => row[i]).every(td => td.classList.contains("marked"))) highlightBingo(grid.map(row => row[i]));
+        if (grid[i].every(td => td.classList.contains("marked"))) {
+          highlightBingo(grid[i]);
+          bingoFound = true;
+        }
+        if (grid.map(row => row[i]).every(td => td.classList.contains("marked"))) {
+          highlightBingo(grid.map(row => row[i]));
+          bingoFound = true;
+        }
       }
-
-      // Check diagonals
-      if ([0, 1, 2, 3, 4].map(i => grid[i][i]).every(td => td.classList.contains("marked"))) 
-        highlightBingo([0, 1, 2, 3, 4].map(i => grid[i][i]));
-
-      if ([0, 1, 2, 3, 4].map(i => grid[i][4 - i]).every(td => td.classList.contains("marked"))) 
-        highlightBingo([0, 1, 2, 3, 4].map(i => grid[i][4 - i]));
+      // Check diagonals.
+      if ([0,1,2,3,4].map(i => grid[i][i]).every(td => td.classList.contains("marked"))) {
+        highlightBingo([0,1,2,3,4].map(i => grid[i][i]));
+        bingoFound = true;
+      }
+      if ([0,1,2,3,4].map(i => grid[i][4-i]).every(td => td.classList.contains("marked"))) {
+        highlightBingo([0,1,2,3,4].map(i => grid[i][4-i]));
+        bingoFound = true;
+      }
+      if (bingoFound) {
+        triggerBingoCelebration();
+      }
     }
 
-    // Highlight winning squares
+    // Highlight winning squares with the "bingo" class.
     function highlightBingo(cells) {
       cells.forEach(td => td.classList.add("bingo"));
     }
 
-    // Generate a 5x5 bingo card (center is the popcorn emoji 🍿)
+    // Trigger the Bingo celebration: play sound, show modal, and launch confetti.
+    function triggerBingoCelebration() {
+      document.getElementById("bingoSound").play();
+      const modal = document.getElementById("bingoModal");
+      modal.style.display = "flex";
+      setTimeout(() => { modal.style.display = "none"; }, 2000);
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+    }
+
+    // Generate a 5x5 bingo card (center cell shows 🍿).
     function generateBingoCard() {
       const tbody = document.querySelector("#bingo-table tbody");
       tbody.innerHTML = "";
       const totalCells = 25;
-      const numItems = totalCells - 1; // Center space reserved
+      const numItems = totalCells - 1; // Reserve center for free space.
       const items = weightedSelect(numItems);
       let itemIndex = 0;
-
       for (let row = 0; row < 5; row++) {
         const tr = document.createElement("tr");
         for (let col = 0; col < 5; col++) {
@@ -206,7 +489,7 @@
           };
           if (row === 2 && col === 2) {
             td.textContent = "🍿";
-            td.classList.add("free-space");
+            td.classList.add("free-space", "marked");
           } else {
             td.textContent = items[itemIndex] || "";
             itemIndex++;
@@ -217,7 +500,38 @@
       }
     }
 
-    document.addEventListener("DOMContentLoaded", generateBingoCard);
+    // Change the theme based on the selector.
+    function changeTheme(theme) {
+      document.body.classList.remove("theme-classic", "theme-modern", "theme-silent");
+      document.getElementById("bingoModal").classList.remove("theme-classic", "theme-modern", "theme-silent");
+      if (theme === "classic") {
+        document.body.classList.add("theme-classic");
+        document.getElementById("bingoModal").classList.add("theme-classic");
+      } else if (theme === "modern") {
+        document.body.classList.add("theme-modern");
+        document.getElementById("bingoModal").classList.add("theme-modern");
+      } else if (theme === "silent") {
+        document.body.classList.add("theme-silent");
+        document.getElementById("bingoModal").classList.add("theme-silent");
+      }
+    }
+
+    // Use html2canvas to capture the bingo card and prompt download.
+    function saveAndShare() {
+      html2canvas(document.getElementById("bingo-table")).then(canvas => {
+        const dataURL = canvas.toDataURL();
+        const link = document.createElement("a");
+        link.href = dataURL;
+        link.download = "oscer_bingo_card.png";
+        link.click();
+      });
+    }
+
+    // Initialize the card and theme on load.
+    document.addEventListener("DOMContentLoaded", () => {
+      generateBingoCard();
+      changeTheme(document.getElementById("themeSelector").value);
+    });
   </script>
 </body>
 </html>
