@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>OSCER Bingo Card Generator</title>
   <style>
     body {
@@ -50,105 +50,77 @@
       </tr>
     </thead>
     <tbody>
-      <!-- Bingo card will populate here -->
+      <!-- Bingo card cells go here -->
     </tbody>
   </table>
 
   <script>
-    // CSV URL from your published Google Sheet
-    const csvURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2yM00KOxREYPgLPvLL9PRm1FGQJwNu6U9UuDUOak_Wywn6DaKJBJ3obcmCVqXdRT0RTFenARDGEmw/pub?gid=817608384&single=true&output=csv";
+    // Full dataset extracted from the CSV file
+    const tier1 = [ // "Definitely Going to Happen" (Weight: 3)
+      "Hank is here!",
+      "Craft services rebrand (Chaplin's, etc.)",
+      "Gregg holds a VHS cassette",
+      "Joe Estevez is here!",
+      "Gregg has information from an Oscars insider"
+    ];
+    const tier2 = [ // "Could Happen" (Weight: 2)
+      '"Celebrity" guest interview',
+      "Cutaway: Peter Jackson photo",
+      "Cutaway: Steven Spielberg photo",
+      "Cutaway: Woody Allen photo",
+      "Dekkar/DKR perform"
+    ];
+    const tier3 = [ // "Unlikely but Plausible" (Weight: 1)
+      "Gregg is in legal trouble",
+      "A new season of Decker is announced",
+      "Dr. San resurrection",
+      "Donald Trump is referenced",
+      "Tim takes the Lord's name in vain"
+    ];
 
-    // Fetch CSV data
-    async function fetchCSV() {
-      try {
-        const response = await fetch(csvURL);
-        return await response.text();
-      } catch (error) {
-        console.error("Error fetching CSV:", error);
-        return "";
-      }
+    // Build a weighted selection pool
+    function buildWeightedPool() {
+      const pool = [];
+      tier1.forEach(option => pool.push(...Array(3).fill(option))); // Weight 3
+      tier2.forEach(option => pool.push(...Array(2).fill(option))); // Weight 2
+      tier3.forEach(option => pool.push(option)); // Weight 1
+      return pool;
     }
 
-    // Basic CSV parser (assumes no commas inside quoted cells)
-    function parseCSV(csvText) {
-      return csvText.trim().split("\n").map(row => row.split(","));
-    }
-
-    // Group data by the first character of each header (O, S, E, R)
-    // (The CSV doesn't provide a C column, so we'll supply fallback data for that.)
-    function groupData(rows) {
-      let data = { O: [], S: [], E: [], R: [] };
-      const headers = rows[0].map(h => h.trim().replace(/^"|"$/g, ''));
-      for (let i = 1; i < rows.length; i++) {
-        const row = rows[i];
-        for (let j = 0; j < row.length; j++) {
-          let cell = row[j].trim().replace(/^"|"$/g, '');
-          if (!cell) continue;
-          let letter = headers[j].charAt(0).toUpperCase();
-          if (data[letter]) {
-            data[letter].push(cell);
-          }
-        }
-      }
-      return data;
-    }
-
-    // Randomly select `count` items from an array without replacement.
-    function randomSelect(arr, count) {
-      let copy = arr.slice();
-      let result = [];
-      for (let i = 0; i < count; i++) {
-        if (copy.length === 0) break;
-        let idx = Math.floor(Math.random() * copy.length);
-        result.push(copy[idx]);
-        copy.splice(idx, 1);
+    // Select 24 unique items from the weighted pool
+    function weightedSelect(count) {
+      let pool = buildWeightedPool();
+      const result = [];
+      while (result.length < count && pool.length > 0) {
+        const idx = Math.floor(Math.random() * pool.length);
+        const selected = pool[idx];
+        pool = pool.filter(item => item !== selected); // Remove all occurrences
+        result.push(selected);
       }
       return result;
     }
 
-    // Main function to generate the bingo card
-    async function generateBingoCard() {
+    // Generate a 5x5 bingo card (center is the popcorn emoji 🍿)
+    function generateBingoCard() {
       const tbody = document.querySelector("#bingo-table tbody");
-      tbody.innerHTML = ""; // Clear any existing rows
-
-      const csvText = await fetchCSV();
-      if (!csvText) {
-        tbody.innerHTML = "<tr><td colspan='5'>Error loading data.</td></tr>";
-        return;
-      }
-      const rows = parseCSV(csvText);
-      const groupedData = groupData(rows);
-
-      // If there's no C column in the CSV, supply fallback options.
-      if (!groupedData['C'] || groupedData['C'].length === 0) {
-        groupedData['C'] = [
-          "Center Option 1", "Center Option 2", "Center Option 3",
-          "Center Option 4", "Center Option 5"
-        ];
-      }
-
-      // Define our column order for OSCER.
-      const columns = ["O", "S", "C", "E", "R"];
-      let cardData = {};
-      columns.forEach(letter => {
-        // Randomly pick 5 items from each column's data.
-        cardData[letter] = randomSelect(groupedData[letter], 5);
-      });
-
-      // Build a 5x5 table.
+      tbody.innerHTML = "";
+      const totalCells = 25;
+      const numItems = totalCells - 1; // Center space reserved
+      const items = weightedSelect(numItems);
+      let itemIndex = 0;
       for (let row = 0; row < 5; row++) {
-        let tr = document.createElement("tr");
-        columns.forEach(letter => {
-          let td = document.createElement("td");
-          // For column C, make the center cell (row index 2) the free space with a popcorn emoji.
-          if (letter === "C" && row === 2) {
-            td.textContent = "🍿";
+        const tr = document.createElement("tr");
+        for (let col = 0; col < 5; col++) {
+          const td = document.createElement("td");
+          if (row === 2 && col === 2) {
+            td.textContent = "🍿"; // Free space
             td.classList.add("free-space");
           } else {
-            td.textContent = cardData[letter][row] || "";
+            td.textContent = items[itemIndex] || "";
+            itemIndex++;
           }
           tr.appendChild(td);
-        });
+        }
         tbody.appendChild(tr);
       }
     }
