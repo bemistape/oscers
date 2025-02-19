@@ -136,4 +136,88 @@
   <script>
     const tier1 = ["Hank is here!", "Gregg holds a VHS", "Joe Estevez is here!", "Tim takes the Lord's name in vain"];
     const tier2 = ['"Celebrity" guest', "Cutaway: Peter Jackson", "Gregg mentions Bogart", "A reference to Tim’s skin cancer"];
-    const tier3 = ["Gregg is in legal trouble", "A new season of
+    const tier3 = ["Gregg is in legal trouble", "A new season of Decker is announced", "Donald Trump is referenced", "Tim criticizes vaccines"];
+
+    // Build a weighted selection pool
+    function buildWeightedPool() {
+      const pool = [];
+      tier1.forEach(option => pool.push(...Array(3).fill(option))); // Weight 3
+      tier2.forEach(option => pool.push(...Array(2).fill(option))); // Weight 2
+      tier3.forEach(option => pool.push(option)); // Weight 1
+      return pool;
+    }
+
+    // Select 24 unique items from the weighted pool
+    function weightedSelect(count) {
+      let pool = buildWeightedPool();
+      const result = [];
+      while (result.length < count && pool.length > 0) {
+        const idx = Math.floor(Math.random() * pool.length);
+        const selected = pool[idx];
+        pool = pool.filter(item => item !== selected); // Remove all occurrences
+        result.push(selected);
+      }
+      return result;
+    }
+
+    // Check for a winning bingo line
+    function checkBingo() {
+      const rows = document.querySelectorAll("#bingo-table tbody tr");
+      const grid = [...rows].map(row => [...row.children]);
+
+      // Check rows, columns, and diagonals
+      for (let i = 0; i < 5; i++) {
+        if (grid[i].every(td => td.classList.contains("marked"))) highlightBingo(grid[i]);
+        if (grid.map(row => row[i]).every(td => td.classList.contains("marked"))) highlightBingo(grid.map(row => row[i]));
+      }
+
+      // Check diagonals
+      if ([0, 1, 2, 3, 4].map(i => grid[i][i]).every(td => td.classList.contains("marked"))) 
+        highlightBingo([0, 1, 2, 3, 4].map(i => grid[i][i]));
+
+      if ([0, 1, 2, 3, 4].map(i => grid[i][4 - i]).every(td => td.classList.contains("marked"))) 
+        highlightBingo([0, 1, 2, 3, 4].map(i => grid[i][4 - i]));
+    }
+
+    // Highlight winning squares
+    function highlightBingo(cells) {
+      cells.forEach(td => td.classList.add("bingo"));
+    }
+
+    // Generate a 5x5 bingo card (center is the popcorn emoji 🍿)
+    function generateBingoCard() {
+      const tbody = document.querySelector("#bingo-table tbody");
+      tbody.innerHTML = "";
+      const totalCells = 25;
+      const numItems = totalCells - 1; // Center space reserved
+      const items = weightedSelect(numItems);
+      let itemIndex = 0;
+
+      for (let row = 0; row < 5; row++) {
+        const tr = document.createElement("tr");
+        for (let col = 0; col < 5; col++) {
+          const td = document.createElement("td");
+          td.onclick = () => {
+            td.classList.toggle("marked");
+            checkBingo();
+          };
+          if (row === 2 && col === 2) {
+            td.textContent = "🍿"; // Free space
+            td.classList.add("free-space");
+          } else {
+            td.textContent = items[itemIndex] || "";
+            itemIndex++;
+          }
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", generateBingoCard);
+  </script>
+</body>
+</html>
+    
+    
+    
