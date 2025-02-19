@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Bingo Card Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        h1 {
+            margin-bottom: 10px;
+        }
+        table {
+            margin: 20px auto;
+            border-collapse: collapse;
+            width: 300px;
+        }
+        th, td {
+            border: 2px solid black;
+            padding: 10px;
+            text-align: center;
+            font-size: 18px;
+            width: 60px;
+            height: 60px;
+        }
+        th {
+            background-color: #ddd;
+        }
+        .free-space {
+            background-color: #ffeb3b;
+            font-weight: bold;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bingo Card Generator</h1>
+    <button onclick="generateBingoCard()">Generate New Card</button>
+    <table id="bingo-table">
+        <thead>
+            <tr>
+                <th>B</th><th>I</th><th>N</th><th>G</th><th>O</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Bingo grid will be inserted here -->
+        </tbody>
+    </table>
+
+    <script>
+        const bingoData = {
+            B: Array.from({length: 15}, (_, i) => i + 1),
+            I: Array.from({length: 15}, (_, i) => i + 16),
+            N: Array.from({length: 15}, (_, i) => i + 31),
+            G: Array.from({length: 15}, (_, i) => i + 46),
+            O: Array.from({length: 15}, (_, i) => i + 61),
+        };
+
+        function getRandomNumbers(column, count) {
+            let numbers = [...bingoData[column]];
+            numbers.sort(() => Math.random() - 0.5); // Shuffle
+            return numbers.slice(0, count);
+        }
+
+        function generateBingoCard() {
+            const tbody = document.querySelector("#bingo-table tbody");
+            tbody.innerHTML = ""; // Clear existing table
+
+            let cardNumbers = {
+                B: getRandomNumbers("B", 5),
+                I: getRandomNumbers("I", 5),
+                N: getRandomNumbers("N", 4), // One less because of free space
+                G: getRandomNumbers("G", 5),
+                O: getRandomNumbers("O", 5),
+            };
+
+            for (let row = 0; row < 5; row++) {
+                let tr = document.createElement("tr");
+                ["B", "I", "N", "G", "O"].forEach((col, colIndex) => {
+                    let td = document.createElement("td");
+
+                    // Middle free space
+                    if (row === 2 && col === "N") {
+                        td.textContent = "FREE";
+                        td.classList.add("free-space");
+                    } else {
+                        td.textContent = cardNumbers[col].shift();
+                    }
+
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            }
+        }
+
+        // Generate a bingo card when the page loads
+        generateBingoCard();
+    </script>
+</body>
+</html>
