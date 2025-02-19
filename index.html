@@ -42,110 +42,110 @@
   <table id="bingo-table">
     <thead>
       <tr>
-         <th>O</th>
-         <th>S</th>
-         <th>C</th>
-         <th>E</th>
-         <th>R</th>
+        <th>O</th>
+        <th>S</th>
+        <th>C</th>
+        <th>E</th>
+        <th>R</th>
       </tr>
     </thead>
     <tbody>
-      <!-- The bingo card will be inserted here -->
+      <!-- Bingo card will populate here -->
     </tbody>
   </table>
 
   <script>
-    const googleSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2yM00KOxREYPgLPvLL9PRm1FGQJwNu6U9UuDUOak_Wywn6DaKJBJ3obcmCVqXdRT0RTFenARDGEmw/pub?gid=817608384&single=true&output=csv";
+    // CSV URL from your published Google Sheet
+    const csvURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2yM00KOxREYPgLPvLL9PRm1FGQJwNu6U9UuDUOak_Wywn6DaKJBJ3obcmCVqXdRT0RTFenARDGEmw/pub?gid=817608384&single=true&output=csv";
 
-    async function fetchBingoData() {
+    // Fetch CSV data
+    async function fetchCSV() {
       try {
-        const response = await fetch(googleSheetURL);
-        if (!response.ok) {
-          throw new Error(`Network response was not ok: ${response.statusText}`);
-        }
-        const data = await response.text();
-        return parseCSV(data);
+        const response = await fetch(csvURL);
+        return await response.text();
       } catch (error) {
         console.error("Error fetching CSV:", error);
-        return { O: [], S: [], C: [], E: [], R: [] };
+        return "";
       }
     }
 
+    // Basic CSV parser (assumes no commas inside quoted cells)
     function parseCSV(csvText) {
-      // Split into rows and then cells
-      const rows = csvText.trim().split("\n").map(row => row.split(","));
-        console.log("Raw header row:", rows[0]); // <--- Add this
-      if (rows.length < 2) {
-        console.error("CSV data is empty or not formatted correctly.");
-        return { O: [], S: [], C: [], E: [], R: [] };
-      }
-      // Initialize our data object
-      let bingoData = { O: [], S: [], C: [], E: [], R: [] };
-      const headers = rows[0].map(header => header.trim());
-      // Process each row (skip header)
+      return csvText.trim().split("\n").map(row => row.split(","));
+    }
+
+    // Group data by the first character of each header (O, S, E, R)
+    // (The CSV doesn't provide a C column, so we'll supply fallback data for that.)
+    function groupData(rows) {
+      let data = { O: [], S: [], E: [], R: [] };
+      const headers = rows[0].map(h => h.trim().replace(/^"|"$/g, ''));
       for (let i = 1; i < rows.length; i++) {
         const row = rows[i];
         for (let j = 0; j < row.length; j++) {
-          const cell = row[j].trim();
+          let cell = row[j].trim().replace(/^"|"$/g, '');
           if (!cell) continue;
-          // Use the first character of the header to decide the column
-          const colLetter = headers[j][0];
-          if (bingoData[colLetter]) {
-            bingoData[colLetter].push(cell);
+          let letter = headers[j].charAt(0).toUpperCase();
+          if (data[letter]) {
+            data[letter].push(cell);
           }
         }
       }
-      return bingoData;
-      
-    
-  
-}
-      
+      return data;
     }
 
-    // Fisher-Yates shuffle
-    function shuffleArray(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
+    // Randomly select `count` items from an array without replacement.
+    function randomSelect(arr, count) {
+      let copy = arr.slice();
+      let result = [];
+      for (let i = 0; i < count; i++) {
+        if (copy.length === 0) break;
+        let idx = Math.floor(Math.random() * copy.length);
+        result.push(copy[idx]);
+        copy.splice(idx, 1);
       }
-      return arr;
+      return result;
     }
 
+    // Main function to generate the bingo card
     async function generateBingoCard() {
       const tbody = document.querySelector("#bingo-table tbody");
-      tbody.innerHTML = ""; // Clear any existing content
+      tbody.innerHTML = ""; // Clear any existing rows
 
-      const bingoData = await fetchBingoData();
-      console.log("Fetched bingoData:", bingoData);
+      const csvText = await fetchCSV();
+      if (!csvText) {
+        tbody.innerHTML = "<tr><td colspan='5'>Error loading data.</td></tr>";
+        return;
+      }
+      const rows = parseCSV(csvText);
+      const groupedData = groupData(rows);
 
-      // Warn if any column has no data
-      ["O", "S", "C", "E", "R"].forEach(letter => {
-        if (bingoData[letter].length === 0) {
-          console.warn(`No data found for column ${letter}`);
-        }
+      // If there's no C column in the CSV, supply fallback options.
+      if (!groupedData['C'] || groupedData['C'].length === 0) {
+        groupedData['C'] = [
+          "Center Option 1", "Center Option 2", "Center Option 3",
+          "Center Option 4", "Center Option 5"
+        ];
+      }
+
+      // Define our column order for OSCER.
+      const columns = ["O", "S", "C", "E", "R"];
+      let cardData = {};
+      columns.forEach(letter => {
+        // Randomly pick 5 items from each column's data.
+        cardData[letter] = randomSelect(groupedData[letter], 5);
       });
 
-      // Prepare the numbers for each column, accounting for the FREE space in column C
-      const cardNumbers = {
-        O: shuffleArray(bingoData["O"]).slice(0, 5),
-        S: shuffleArray(bingoData["S"]).slice(0, 5),
-        C: shuffleArray(bingoData["C"]).slice(0, 4), // Reserve center cell for FREE
-        E: shuffleArray(bingoData["E"]).slice(0, 5),
-        R: shuffleArray(bingoData["R"]).slice(0, 5),
-      };
-
-      // Build the 5x5 grid
+      // Build a 5x5 table.
       for (let row = 0; row < 5; row++) {
-        const tr = document.createElement("tr");
-        ["O", "S", "C", "E", "R"].forEach(letter => {
-          const td = document.createElement("td");
-          // Place FREE in the center cell (row 3, column C)
+        let tr = document.createElement("tr");
+        columns.forEach(letter => {
+          let td = document.createElement("td");
+          // For column C, make the center cell (row index 2) the free space with a popcorn emoji.
           if (letter === "C" && row === 2) {
-            td.textContent = "FREE";
+            td.textContent = "🍿";
             td.classList.add("free-space");
           } else {
-            td.textContent = cardNumbers[letter].shift() || "";
+            td.textContent = cardData[letter][row] || "";
           }
           tr.appendChild(td);
         });
