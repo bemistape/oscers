@@ -6,7 +6,6 @@
   <title>OSCER Bingo Card Generator</title>
   <style>
     body {
-      /* Default font: Rockwell, fallback to Arial */
       font-family: 'Rockwell', 'Arial', sans-serif;
       text-align: center;
       margin: 20px;
@@ -50,12 +49,12 @@
       border-collapse: collapse;
       width: 90%;
       max-width: 500px;
-      border-radius: 16px; /* More rounded corners */
+      border-radius: 16px;
       overflow: hidden;
-      border: 6px solid; /* Thicker outer edge */
+      border: 6px solid;
     }
     th, td {
-      border: 2px solid; /* Inner lines are thinner */
+      border: 2px solid;
       text-align: center;
       font-size: 16px;
       cursor: pointer;
@@ -106,9 +105,13 @@
       font-size: 48px;
       font-weight: bold;
       transition: color 0.3s, text-shadow 0.3s;
-      animation: strobe 0.1s infinite; /* Rapid strobe effect */
+      animation: strobe 0.1s infinite;
+      /* Rotate and stretch for silliness */
+      display: inline-block;
+      transform: rotate(40deg) scale(1.8);
+      transform-origin: center center;
+      margin-bottom: 20px;
     }
-    /* Rapid strobe blink */
     @keyframes strobe {
       0% { opacity: 1; }
       50% { opacity: 0; }
@@ -117,7 +120,7 @@
     #winnerImg {
       display: block;
       max-width: 200px;
-      margin: 20px auto 0;
+      margin: 0 auto;
     }
 
     /* Popcorn Rain Overlay */
@@ -141,14 +144,13 @@
       100% { top: 100%; opacity: 0; }
     }
 
-    /* THEMES (Classic, Modern, Silent, Silver) - same logic, new outer border is 6px, cells 2px. */
-
+    /* THEMES (Classic, Modern, Silent, Silver) */
     .theme-classic {
       background-color: #1c1c1c;
       color: #ffd700;
     }
-    .theme-classic h1 { 
-      color: #ffd700; 
+    .theme-classic h1 {
+      color: #ffd700;
       text-shadow: 2px 2px 5px rgba(255,215,0,0.6);
     }
     .theme-classic button {
@@ -261,9 +263,9 @@
       background-color: #fff;
       color: #333;
     }
-    .theme-silver h1 { 
-      color: #333; 
-      text-shadow: none; 
+    .theme-silver h1 {
+      color: #333;
+      text-shadow: none;
     }
     .theme-silver button {
       background: linear-gradient(45deg, #ccc, #aaa);
@@ -312,16 +314,41 @@
     #bottomBanner {
       margin: 30px auto;
       text-align: center;
+      width: 100%;
+      max-width: 1200px;
+      overflow: hidden; /* hides sides if we enlarge the image */
     }
     #bottomBanner img {
-      max-width: 100%;
-      height: auto;
+      width: 150%;        /* enlarge to crop sides */
+      margin-left: -25%;  /* shift left to center the crop */
+      max-height: 500px;
+      object-fit: cover;
+      display: block;
       border-radius: 8px;
+    }
+
+    /* Hash UI at the bottom */
+    #hashSection {
+      margin: 20px auto;
+      color: white; /* small white text */
+      font-size: 14px;
+      width: 80%;
+      max-width: 500px;
+      text-align: left;
+    }
+    #hashSection input[type="text"] {
+      width: 60%;
+      padding: 4px;
+      margin-left: 8px;
+    }
+    #hashSection button {
+      margin-left: 8px;
     }
   </style>
 </head>
 <body class="theme-classic">
   <h1>OSCER Bingo Card Generator</h1>
+
   <div id="controls">
     <button onclick="generateBingoCard()">Generate New Card</button>
     <button onclick="saveAndShare()">Save & Share</button>
@@ -332,6 +359,7 @@
       <option value="silver">Silver Screen (Greyscale)</option>
     </select>
   </div>
+
   <div id="bingoContainer">
     <table id="bingo-table">
       <thead>
@@ -343,9 +371,7 @@
           <th>R</th>
         </tr>
       </thead>
-      <tbody>
-        <!-- Bingo card cells will be generated here -->
-      </tbody>
+      <tbody></tbody>
     </table>
   </div>
   
@@ -363,15 +389,28 @@
   <audio id="clickSound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
   <audio id="bingoMp3" src="that_s_a_bingo.mp3" preload="auto"></audio>
 
+  <!-- Hash Section at the bottom -->
+  <div id="hashSection">
+    <div id="cardHashDisplay">Current Card Hash: <span id="cardHashValue"></span></div>
+    <div style="margin-top: 8px;">To look up a specific card, enter the hash:</div>
+    <input type="text" id="hashInput" />
+    <button onclick="loadHashCard()">Load Hash</button>
+  </div>
+
+  <!-- Banner at the bottom -->
+  <div id="bottomBanner">
+    <a href="https://www.heinetwork.tv/tickets/" target="_blank">
+      <img src="Oscar-Special-12-2025-Promo-website22SQUARE-2048x878.png" alt="Oscar Special Banner" />
+    </a>
+  </div>
+
   <!-- Include html2canvas for saving the card -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <!-- Include canvas-confetti for fallback confetti effect -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 
   <script>
-    /**************************************************************
-     * 1) CSV Logic with Weighted Selection
-     **************************************************************/
+    /* CSV Data & Weighted Selection */
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2yM00KOxREYPgLPvLL9PRm1FGQJwNu6U9UuDUOak_Wywn6DaKJBJ3obcmCVqXdRT0RTFenARDGEmw/pub?gid=0&single=true&output=csv";
 
     async function fetchBingoData() {
@@ -432,11 +471,8 @@
       return result;
     }
 
-    /**************************************************************
-     * 2) Hash System for Recalling a Specific Card (Optional)
-     **************************************************************/
+    /* Hash logic */
     function encodeCard(items) {
-      // Convert array to JSON, then Base64
       return btoa(JSON.stringify(items));
     }
     function decodeCard(hash) {
@@ -447,16 +483,13 @@
       }
     }
 
-    /**************************************************************
-     * 3) Bingo Generation
-     **************************************************************/
+    let currentItems = []; // store the current 24 items
+
     async function generateBingoCard() {
       const urlParams = new URLSearchParams(window.location.search);
       const existingHash = urlParams.get("cardHash");
       let items;
-
       if (existingHash) {
-        // Attempt to decode a pre-generated card
         const decoded = decodeCard(existingHash);
         if (decoded && decoded.length === 24) {
           items = decoded;
@@ -464,16 +497,18 @@
         }
       }
       if (!items) {
-        // Generate a new card
         items = await weightedSelect(24);
         const newHash = encodeCard(items);
         console.log("New card hash:", newHash);
-        // Optionally, we could update the URL with ?cardHash=...
-        // urlParams.set("cardHash", newHash);
-        // window.history.replaceState({}, "", "?"+urlParams.toString());
+        document.getElementById("cardHashValue").textContent = newHash;
+      } else {
+        document.getElementById("cardHashValue").textContent = existingHash;
       }
+      currentItems = items;
+      buildCard(items);
+    }
 
-      // Build the 5x5 grid
+    function buildCard(items) {
       const tbody = document.querySelector("#bingo-table tbody");
       tbody.innerHTML = "";
       let itemIndex = 0;
@@ -490,7 +525,6 @@
             checkBingo();
           };
           if (row === 2 && col === 2) {
-            // Center cell
             td.textContent = "🍿";
             td.classList.add("free-space", "marked");
           } else {
@@ -503,11 +537,25 @@
       }
     }
 
+    function loadHashCard() {
+      const hashInput = document.getElementById("hashInput").value.trim();
+      if (!hashInput) return;
+      const decoded = decodeCard(hashInput);
+      if (decoded && decoded.length === 24) {
+        console.log("Loading card from user-supplied hash:", hashInput);
+        document.getElementById("cardHashValue").textContent = hashInput;
+        currentItems = decoded;
+        buildCard(decoded);
+      } else {
+        alert("Invalid or incomplete hash.");
+      }
+    }
+
     function checkBingo() {
       const rows = document.querySelectorAll("#bingo-table tbody tr");
       const grid = Array.from(rows, row => Array.from(row.children));
-
       let bingoFound = false;
+
       // Check rows & columns
       for (let i = 0; i < 5; i++) {
         if (grid[i].every(td => td.classList.contains("marked"))) {
@@ -523,8 +571,6 @@
       // Diagonals
       const diag1 = [0,1,2,3,4].map(i => grid[i][i]);
       const diag2 = [0,1,2,3,4].map(i => grid[i][4 - i]);
-      console.log("diag1 check:", diag1.map(td => td.textContent));
-      console.log("diag2 check:", diag2.map(td => td.textContent));
       if (diag1.every(td => td.classList.contains("marked"))) {
         highlightBingo(diag1);
         bingoFound = true;
@@ -544,31 +590,24 @@
     }
 
     function triggerBingoCelebration() {
-      // Play custom MP3
       const bingoMp3 = document.getElementById("bingoMp3");
       bingoMp3.currentTime = 0;
       bingoMp3.play();
 
-      // Also fallback sound
       const fallback = document.getElementById("bingoSound");
       fallback.currentTime = 0;
       fallback.play();
 
-      // Show modal
       const modal = document.getElementById("bingoModal");
       modal.style.display = "flex";
-
-      // Popcorn overlay
       triggerPopcornRain();
-
-      // Hide modal after 2s
       setTimeout(() => { modal.style.display = "none"; }, 2000);
     }
 
     function triggerPopcornRain() {
       const overlay = document.getElementById("popcornOverlay");
       overlay.innerHTML = "";
-      const count = 80; // More popcorn
+      const count = 80; 
       for (let i = 0; i < count; i++) {
         const span = document.createElement("span");
         span.classList.add("popcorn");
@@ -613,12 +652,5 @@
       changeTheme(document.getElementById("themeSelector").value);
     });
   </script>
-
-  <!-- Banner at the bottom -->
-  <div id="bottomBanner">
-    <a href="https://www.heinetwork.tv/tickets/" target="_blank">
-      <img src="Oscar-Special-12-2025-Promo-website22SQUARE-2048x878.png" alt="Oscar Special Banner" />
-    </a>
-  </div>
 </body>
 </html>
