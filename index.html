@@ -51,10 +51,10 @@
       max-width: 500px;
       border-radius: 16px;
       overflow: hidden;
-      border: 6px solid;
+      border: 6px solid; /* Outer border */
     }
     th, td {
-      border: 2px solid;
+      border: 2px solid; /* Inner lines are thinner */
       text-align: center;
       font-size: 16px;
       cursor: pointer;
@@ -145,6 +145,7 @@
     }
 
     /* THEMES (Classic, Modern, Silent, Silver) */
+
     .theme-classic {
       background-color: #1c1c1c;
       color: #ffd700;
@@ -296,57 +297,62 @@
       color: #333;
     }
 
-    /* Mobile Optimization */
-    @media (max-width: 600px) {
-      th, td {
-        font-size: 14px;
-        padding: 6px;
-        min-width: 60px;
-        min-height: 50px;
-      }
-      button, select {
-        font-size: 14px;
-        padding: 10px;
-      }
+    /* "Not affiliated" link above the banner */
+    #notAffiliated {
+      margin: 20px 0;
+      text-align: center;
+    }
+    #notAffiliated a {
+      color: #ccc;
+      font-size: 14px;
+      text-decoration: underline;
     }
 
-    /* Banner at the bottom */
+    /* Banner at the bottom, cropped from left/right equally */
     #bottomBanner {
-      margin: 30px auto;
+      margin: 20px auto;
       text-align: center;
       width: 100%;
       max-width: 1200px;
-      overflow: hidden; /* hides sides if we enlarge the image */
+      overflow: hidden;
+      position: relative;
     }
     #bottomBanner img {
-      width: 150%;        /* enlarge to crop sides */
-      margin-left: -25%;  /* shift left to center the crop */
-      max-height: 500px;
-      object-fit: cover;
       display: block;
+      width: 120%;        /* enlarge to crop sides */
+      margin-left: -10%;  /* shift left to center the crop */
+      max-height: 600px;
+      object-fit: cover;
       border-radius: 8px;
     }
 
-    /* Hash UI at the bottom */
+    /* Hash UI at the bottom, but below the banner now */
     #hashSection {
       margin: 20px auto;
       color: white; /* small white text */
       font-size: 14px;
       width: 80%;
       max-width: 500px;
-      text-align: left;
+      text-align: center;
+      word-wrap: break-word;
+    }
+    #cardHashValue {
+      display: block;
+      margin-top: 8px;
+      white-space: pre-wrap; /* allow wrapping */
     }
     #hashSection input[type="text"] {
-      width: 60%;
+      width: 70%;
       padding: 4px;
-      margin-left: 8px;
+      margin-top: 8px;
     }
     #hashSection button {
-      margin-left: 8px;
+      margin-top: 8px;
     }
   </style>
 </head>
 <body class="theme-classic">
+
   <h1>OSCER Bingo Card Generator</h1>
 
   <div id="controls">
@@ -375,43 +381,52 @@
     </table>
   </div>
   
-  <!-- Modal overlay for Bingo Celebration -->
+  <!-- Bingo Modal -->
   <div id="bingoModal" class="theme-classic">
     <div id="bingoMessage">That's a bingo!</div>
     <img id="winnerImg" src="winner.png" alt="Winner Image" />
   </div>
   
-  <!-- Popcorn Rain Overlay -->
+  <!-- Popcorn Overlay -->
   <div id="popcornOverlay"></div>
-  
-  <!-- Audio for bingo chime, click, and custom MP3 -->
-  <audio id="bingoSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
-  <audio id="clickSound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
-  <audio id="bingoMp3" src="that_s_a_bingo.mp3" preload="auto"></audio>
 
-  <!-- Hash Section at the bottom -->
-  <div id="hashSection">
-    <div id="cardHashDisplay">Current Card Hash: <span id="cardHashValue"></span></div>
-    <div style="margin-top: 8px;">To look up a specific card, enter the hash:</div>
-    <input type="text" id="hashInput" />
-    <button onclick="loadHashCard()">Load Hash</button>
+  <!-- Not Affiliated Link -->
+  <div id="notAffiliated">
+    <a href="#">Not affiliated with HEI Network, just a fan.</a>
   </div>
 
-  <!-- Banner at the bottom -->
+  <!-- Banner -->
   <div id="bottomBanner">
     <a href="https://www.heinetwork.tv/tickets/" target="_blank">
       <img src="Oscar-Special-12-2025-Promo-website22SQUARE-2048x878.png" alt="Oscar Special Banner" />
     </a>
   </div>
 
-  <!-- Include html2canvas for saving the card -->
+  <!-- Hash Section (Below Banner) -->
+  <div id="hashSection">
+    <div>Current Card Hash:</div>
+    <span id="cardHashValue"></span>
+    <div>To look up a specific card, enter the hash:</div>
+    <input type="text" id="hashInput" />
+    <br />
+    <button onclick="loadHashCard()">Load Hash</button>
+  </div>
+
+  <!-- Audio -->
+  <audio id="bingoSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+  <audio id="clickSound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
+  <audio id="bingoMp3" src="that_s_a_bingo.mp3" preload="auto"></audio>
+
+  <!-- html2canvas + confetti -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <!-- Include canvas-confetti for fallback confetti effect -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 
   <script>
-    /* CSV Data & Weighted Selection */
+    /**************************************************************
+     * CSV Data & Weighted Selection
+     **************************************************************/
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2yM00KOxREYPgLPvLL9PRm1FGQJwNu6U9UuDUOak_Wywn6DaKJBJ3obcmCVqXdRT0RTFenARDGEmw/pub?gid=0&single=true&output=csv";
+    let currentItems = [];
 
     async function fetchBingoData() {
       try {
@@ -423,12 +438,10 @@
         return null;
       }
     }
-
     function parseCSV(csvText) {
       const rows = csvText.trim().split("\n").map(row => row.split(","));
       return rows;
     }
-
     async function getTierData() {
       const data = await fetchBingoData();
       if (!data) return { tier1: [], tier2: [], tier3: [] };
@@ -449,7 +462,6 @@
       }
       return { tier1, tier2, tier3 };
     }
-
     async function buildWeightedPool() {
       const { tier1, tier2, tier3 } = await getTierData();
       const pool = [];
@@ -458,7 +470,6 @@
       tier3.forEach(option => pool.push(option));                  // Weight 1
       return pool;
     }
-
     async function weightedSelect(count) {
       let pool = await buildWeightedPool();
       const result = [];
@@ -471,7 +482,9 @@
       return result;
     }
 
-    /* Hash logic */
+    /**************************************************************
+     * Hash Encode/Decode
+     **************************************************************/
     function encodeCard(items) {
       return btoa(JSON.stringify(items));
     }
@@ -483,8 +496,9 @@
       }
     }
 
-    let currentItems = []; // store the current 24 items
-
+    /**************************************************************
+     * Bingo Generation
+     **************************************************************/
     async function generateBingoCard() {
       const urlParams = new URLSearchParams(window.location.search);
       const existingHash = urlParams.get("cardHash");
@@ -499,7 +513,6 @@
       if (!items) {
         items = await weightedSelect(24);
         const newHash = encodeCard(items);
-        console.log("New card hash:", newHash);
         document.getElementById("cardHashValue").textContent = newHash;
       } else {
         document.getElementById("cardHashValue").textContent = existingHash;
@@ -542,7 +555,6 @@
       if (!hashInput) return;
       const decoded = decodeCard(hashInput);
       if (decoded && decoded.length === 24) {
-        console.log("Loading card from user-supplied hash:", hashInput);
         document.getElementById("cardHashValue").textContent = hashInput;
         currentItems = decoded;
         buildCard(decoded);
@@ -556,7 +568,7 @@
       const grid = Array.from(rows, row => Array.from(row.children));
       let bingoFound = false;
 
-      // Check rows & columns
+      // Rows & columns
       for (let i = 0; i < 5; i++) {
         if (grid[i].every(td => td.classList.contains("marked"))) {
           highlightBingo(grid[i]);
@@ -607,7 +619,7 @@
     function triggerPopcornRain() {
       const overlay = document.getElementById("popcornOverlay");
       overlay.innerHTML = "";
-      const count = 80; 
+      const count = 80;
       for (let i = 0; i < count; i++) {
         const span = document.createElement("span");
         span.classList.add("popcorn");
