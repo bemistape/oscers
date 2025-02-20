@@ -5,32 +5,60 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>OSCER Bingo Card Generator</title>
   <style>
+    /* Distinct top bar for the page header */
+    #pageHeader {
+      background-color: #2e2e2e; /* This bar remains dark gray */
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    /* Container for both PNG and MP4 logos */
+    #logoWrapper {
+      display: block;
+      max-width: 80%; /* scale down if needed */
+      margin: 0 auto;
+    }
+    /* Show both the PNG and MP4, stacked vertically */
+    #logoWrapper img {
+      width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto 20px auto; /* space below the PNG */
+    }
+    #logoWrapper video {
+      width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    /* Distinct styling for the page header text (the rest is in the body below) */
+    #pageHeader h1 {
+      font-family: 'Helvetica', Arial, sans-serif;
+      font-size: 48px;
+      text-transform: uppercase;
+      font-weight: bold;
+      letter-spacing: 2px;
+      margin: 0;
+      color: #fff; /* White text on dark gray background */
+    }
+
+    /* Overall body styling */
     body {
       font-family: 'Rockwell', 'Arial', sans-serif;
       text-align: center;
       margin: 20px;
-      /* By default, let the theme's color apply to everything. */
-      color: inherit;
       transition: background-color 0.3s, color 0.3s;
+      color: inherit; /* Let the theme override text color */
     }
-    /* All main containers inherit body color for text. */
+
+    /* The controls, hash section, etc. also inherit the theme color */
     #controls, #notAffiliated, #hashSection {
       color: inherit;
     }
 
-    h1 {
-      margin-top: 20px;
-      font-size: 32px;
-      text-transform: uppercase;
-      font-weight: bold;
-      letter-spacing: 2px;
-      transition: color 0.3s, text-shadow 0.3s;
-      color: inherit; /* so it also responds to theme color */
-    }
-
-    #controls {
-      margin-bottom: 20px;
-    }
+    /* Buttons & select elements */
     button {
       padding: 12px 20px;
       font-size: 16px;
@@ -55,27 +83,30 @@
       background-color: inherit;
     }
 
-    /* Table with thicker outer border, smaller inner cell borders */
+    /* Larger, more uniform Bingo table */
     #bingo-table {
-      margin: 20px auto;
+      margin: 0 auto; 
       border-collapse: collapse;
       width: 90%;
-      max-width: 500px;
+      max-width: 800px; 
       border-radius: 16px;
       overflow: hidden;
-      border: 6px solid; /* Outer border */
-      color: inherit;
+      border: 6px solid; 
+      table-layout: fixed; 
+    }
+    #bingo-table thead th {
+      width: 20%;
     }
     th, td {
-      border: 2px solid; /* Inner lines are thinner */
+      border: 2px solid; 
       text-align: center;
       font-size: 16px;
       cursor: pointer;
       transition: background 0.2s, transform 0.2s, border-color 0.2s, color 0.2s;
       padding: 8px;
       vertical-align: middle;
-      min-width: 80px;
-      min-height: 60px;
+      min-width: 100px;
+      min-height: 80px;
       word-wrap: break-word;
       color: inherit;
     }
@@ -89,7 +120,6 @@
       font-size: 18px;
       font-weight: bold;
     }
-
     td.marked {
       transform: scale(1.05);
       font-weight: bold;
@@ -102,7 +132,7 @@
       100% { box-shadow: 0 0 20px rgba(255,215,0,0.9); }
     }
 
-    /* Modal for Bingo Celebration */
+    /* Bingo Modal */
     #bingoModal {
       position: fixed;
       top: 0;
@@ -159,14 +189,13 @@
       100% { top: 100%; opacity: 0; }
     }
 
-    /* Not Affiliated Link */
+    /* "Not Affiliated" line */
     #notAffiliated {
       margin: 20px 0;
-      text-align: center;
       font-size: 14px;
     }
 
-    /* Banner at the bottom, cropped from left/right equally */
+    /* Banner at the bottom */
     #bottomBanner {
       margin: 20px auto;
       text-align: center;
@@ -177,8 +206,8 @@
     }
     #bottomBanner img {
       display: block;
-      width: 120%;        /* enlarge to crop sides */
-      margin-left: -10%;  /* shift left to center the crop */
+      width: 120%;
+      margin-left: -10%;
       max-height: 600px;
       object-fit: cover;
       border-radius: 8px;
@@ -197,7 +226,7 @@
     #cardHashValue {
       display: block;
       margin-top: 8px;
-      white-space: pre-wrap; /* allow wrapping */
+      white-space: pre-wrap;
     }
     #hashSection input[type="text"] {
       width: 70%;
@@ -217,15 +246,10 @@
       padding: 4px 8px;
     }
 
-    /* THEMES: Classic, Modern, Silent, Silver */
-
+    /* Themes: Classic, Modern, Silent, Silver */
     .theme-classic {
       background-color: #1c1c1c;
       color: #ffd700;
-    }
-    .theme-classic h1 {
-      color: #ffd700;
-      text-shadow: 2px 2px 5px rgba(255,215,0,0.6);
     }
     .theme-classic button {
       background: linear-gradient(45deg, #ffd700, #e5c100);
@@ -264,14 +288,6 @@
       background-color: #2c2c2c;
       color: #c0c0c0;
     }
-    .theme-modern h1 {
-      color: #e60000;
-      text-shadow: 2px 2px 5px rgba(230,0,0,0.6);
-    }
-    .theme-modern button {
-      background: linear-gradient(45deg, #e60000, #c70000);
-      color: white;
-    }
     .theme-modern #bingo-table {
       background-color: #3d3d3d;
       border-color: #c0c0c0;
@@ -305,14 +321,6 @@
       background-color: #f4ecd8;
       color: #5b4636;
     }
-    .theme-silent h1 {
-      color: #5b4636;
-      text-shadow: 2px 2px 5px rgba(91,70,54,0.6);
-    }
-    .theme-silent button {
-      background: linear-gradient(45deg, #c49e70, #a57c50);
-      color: white;
-    }
     .theme-silent #bingo-table {
       background-color: #fdf6e3;
       border-color: #5b4636;
@@ -322,7 +330,7 @@
     }
     .theme-silent th {
       background-color: #5b4636;
-      color: white;
+      color: #fff;
     }
     .theme-silent td {
       background-color: #fdf6e3;
@@ -330,7 +338,7 @@
     }
     .theme-silent td.free-space {
       background-color: #5b4636;
-      color: white;
+      color: #fff;
     }
     .theme-silent td.marked {
       background-color: #5b4636 !important;
@@ -344,14 +352,6 @@
 
     .theme-silver {
       background-color: #fff;
-      color: #333;
-    }
-    .theme-silver h1 {
-      color: #333;
-      text-shadow: none;
-    }
-    .theme-silver button {
-      background: linear-gradient(45deg, #ccc, #aaa);
       color: #333;
     }
     .theme-silver #bingo-table {
@@ -381,25 +381,24 @@
     #bingoModal.theme-silver #bingoMessage {
       color: #333;
     }
-
-    /* Mobile Optimization */
-    @media (max-width: 600px) {
-      th, td {
-        font-size: 14px;
-        padding: 6px;
-        min-width: 60px;
-        min-height: 50px;
-      }
-      button, select {
-        font-size: 14px;
-        padding: 10px;
-      }
-    }
   </style>
 </head>
 <body class="theme-classic">
-  <h1>OSCER Bingo Card Generator</h1>
 
+  <!-- PAGE HEADER with BOTH PNG and MP4 LOGO -->
+  <div id="pageHeader">
+    <div id="logoWrapper">
+      <!-- PNG Logo -->
+      <img src="oscar_bingo.png" alt="Oscar Bingo Logo" />
+
+      <!-- MP4 Logo -->
+      <video src="oscar_bingo.mp4" autoplay loop muted playsinline>
+        Your browser does not support the video tag.
+      </video>
+    </div>
+  </div>
+
+  <!-- Bingo Controls -->
   <div id="controls">
     <button onclick="generateBingoCard()">Generate New Card</button>
     <button onclick="saveAndShare()">Save & Share</button>
@@ -411,6 +410,7 @@
     </select>
   </div>
 
+  <!-- Bingo Table -->
   <div id="bingoContainer">
     <table id="bingo-table">
       <thead>
@@ -456,23 +456,19 @@
     <button onclick="loadHashCard()">Load Hash</button>
   </div>
 
-  <!-- Audio -->
+  <!-- Audio for Bingo -->
   <audio id="bingoSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
   <audio id="clickSound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
   <audio id="bingoMp3" src="that_s_a_bingo.mp3" preload="auto"></audio>
 
-  <!-- html2canvas + confetti -->
+  <!-- html2canvas + confetti for "Save & Share" -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 
   <script>
-    /* 
-      1) CSV + Weighted Selection
-      2) Hash logic
-      3) Bingo generation
-      4) Theming
-    */
-
+    /**************************************************************
+     * 1) CSV + Weighted Selection
+     **************************************************************/
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2yM00KOxREYPgLPvLL9PRm1FGQJwNu6U9UuDUOak_Wywn6DaKJBJ3obcmCVqXdRT0RTFenARDGEmw/pub?gid=0&single=true&output=csv";
     let currentItems = [];
 
@@ -513,9 +509,9 @@
     async function buildWeightedPool() {
       const { tier1, tier2, tier3 } = await getTierData();
       const pool = [];
-      tier1.forEach(option => pool.push(...Array(3).fill(option))); // Weight 3
-      tier2.forEach(option => pool.push(...Array(2).fill(option))); // Weight 2
-      tier3.forEach(option => pool.push(option));                  // Weight 1
+      tier1.forEach(option => pool.push(...Array(3).fill(option))); // weight 3
+      tier2.forEach(option => pool.push(...Array(2).fill(option))); // weight 2
+      tier3.forEach(option => pool.push(option));                  // weight 1
       return pool;
     }
     async function weightedSelect(count) {
@@ -530,6 +526,9 @@
       return result;
     }
 
+    /**************************************************************
+     * 2) Hash Logic
+     **************************************************************/
     function encodeCard(items) {
       return btoa(JSON.stringify(items));
     }
@@ -541,6 +540,9 @@
       }
     }
 
+    /**************************************************************
+     * 3) Bingo Generation
+     **************************************************************/
     async function generateBingoCard() {
       const urlParams = new URLSearchParams(window.location.search);
       const existingHash = urlParams.get("cardHash");
@@ -576,7 +578,9 @@
             clickAudio.currentTime = 0;
             clickAudio.play();
             td.classList.toggle("marked");
-            if (!td.classList.contains("marked")) td.classList.remove("bingo");
+            if (!td.classList.contains("marked")) {
+              td.classList.remove("bingo");
+            }
             checkBingo();
           };
           if (row === 2 && col === 2) {
@@ -610,7 +614,7 @@
       const grid = Array.from(rows, row => Array.from(row.children));
       let bingoFound = false;
 
-      // Rows & columns
+      // Check rows & columns
       for (let i = 0; i < 5; i++) {
         if (grid[i].every(td => td.classList.contains("marked"))) {
           highlightBingo(grid[i]);
@@ -622,7 +626,7 @@
           bingoFound = true;
         }
       }
-      // Diagonals
+      // Check diagonals
       const diag1 = [0,1,2,3,4].map(i => grid[i][i]);
       const diag2 = [0,1,2,3,4].map(i => grid[i][4 - i]);
       if (diag1.every(td => td.classList.contains("marked"))) {
@@ -655,7 +659,9 @@
       const modal = document.getElementById("bingoModal");
       modal.style.display = "flex";
       triggerPopcornRain();
-      setTimeout(() => { modal.style.display = "none"; }, 2000);
+      setTimeout(() => {
+        modal.style.display = "none";
+      }, 2000);
     }
 
     function triggerPopcornRain() {
@@ -670,12 +676,15 @@
         span.style.animationDelay = Math.random() * 1 + "s";
         overlay.appendChild(span);
       }
-      setTimeout(() => { overlay.innerHTML = ""; }, 2500);
+      setTimeout(() => {
+        overlay.innerHTML = "";
+      }, 2500);
     }
 
     function changeTheme(theme) {
       document.body.classList.remove("theme-classic", "theme-modern", "theme-silent", "theme-silver");
       document.getElementById("bingoModal").classList.remove("theme-classic", "theme-modern", "theme-silent", "theme-silver");
+
       if (theme === "classic") {
         document.body.classList.add("theme-classic");
         document.getElementById("bingoModal").classList.add("theme-classic");
