@@ -9,8 +9,15 @@
       font-family: 'Rockwell', 'Arial', sans-serif;
       text-align: center;
       margin: 20px;
+      /* By default, let the theme's color apply to everything. */
+      color: inherit;
       transition: background-color 0.3s, color 0.3s;
     }
+    /* All main containers inherit body color for text. */
+    #controls, #notAffiliated, #hashSection {
+      color: inherit;
+    }
+
     h1 {
       margin-top: 20px;
       font-size: 32px;
@@ -18,7 +25,9 @@
       font-weight: bold;
       letter-spacing: 2px;
       transition: color 0.3s, text-shadow 0.3s;
+      color: inherit; /* so it also responds to theme color */
     }
+
     #controls {
       margin-bottom: 20px;
     }
@@ -31,6 +40,7 @@
       border-radius: 5px;
       transition: transform 0.3s, background 0.3s;
       box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
+      color: inherit;
     }
     button:hover {
       transform: scale(1.05);
@@ -41,6 +51,8 @@
       border-radius: 5px;
       border: 1px solid #ccc;
       margin-left: 10px;
+      color: inherit;
+      background-color: inherit;
     }
 
     /* Table with thicker outer border, smaller inner cell borders */
@@ -52,6 +64,7 @@
       border-radius: 16px;
       overflow: hidden;
       border: 6px solid; /* Outer border */
+      color: inherit;
     }
     th, td {
       border: 2px solid; /* Inner lines are thinner */
@@ -64,11 +77,13 @@
       min-width: 80px;
       min-height: 60px;
       word-wrap: break-word;
+      color: inherit;
     }
     th {
       font-weight: bold;
       letter-spacing: 1px;
       transition: background 0.3s, color 0.3s;
+      color: inherit;
     }
     td.free-space {
       font-size: 18px;
@@ -106,11 +121,11 @@
       font-weight: bold;
       transition: color 0.3s, text-shadow 0.3s;
       animation: strobe 0.1s infinite;
-      /* Rotate and stretch for silliness */
       display: inline-block;
       transform: rotate(40deg) scale(1.8);
       transform-origin: center center;
       margin-bottom: 20px;
+      color: inherit;
     }
     @keyframes strobe {
       0% { opacity: 1; }
@@ -144,7 +159,65 @@
       100% { top: 100%; opacity: 0; }
     }
 
-    /* THEMES (Classic, Modern, Silent, Silver) */
+    /* Not Affiliated Link */
+    #notAffiliated {
+      margin: 20px 0;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    /* Banner at the bottom, cropped from left/right equally */
+    #bottomBanner {
+      margin: 20px auto;
+      text-align: center;
+      width: 100%;
+      max-width: 1200px;
+      overflow: hidden;
+      position: relative;
+    }
+    #bottomBanner img {
+      display: block;
+      width: 120%;        /* enlarge to crop sides */
+      margin-left: -10%;  /* shift left to center the crop */
+      max-height: 600px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    /* Hash UI below the banner */
+    #hashSection {
+      margin: 20px auto;
+      font-size: 14px;
+      width: 80%;
+      max-width: 500px;
+      text-align: center;
+      word-wrap: break-word;
+      color: inherit;
+    }
+    #cardHashValue {
+      display: block;
+      margin-top: 8px;
+      white-space: pre-wrap; /* allow wrapping */
+    }
+    #hashSection input[type="text"] {
+      width: 70%;
+      padding: 4px;
+      margin-top: 8px;
+      color: inherit;
+      background-color: inherit;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    #hashSection button {
+      margin-top: 8px;
+      color: inherit;
+      background-color: inherit;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 4px 8px;
+    }
+
+    /* THEMES: Classic, Modern, Silent, Silver */
 
     .theme-classic {
       background-color: #1c1c1c;
@@ -156,7 +229,7 @@
     }
     .theme-classic button {
       background: linear-gradient(45deg, #ffd700, #e5c100);
-      color: black;
+      color: #000;
     }
     .theme-classic #bingo-table {
       background-color: #222;
@@ -167,13 +240,16 @@
     }
     .theme-classic th {
       background-color: #ffd700;
-      color: black;
+      color: #000;
     }
     .theme-classic td {
       background-color: #1c1c1c;
       color: #fff;
     }
-    .theme-classic td.free-space { background-color: #ffd700; color: black; }
+    .theme-classic td.free-space {
+      background-color: #ffd700;
+      color: #000;
+    }
     .theme-classic td.marked {
       background-color: #ffd700 !important;
       color: #000 !important;
@@ -205,13 +281,16 @@
     }
     .theme-modern th {
       background-color: #c0c0c0;
-      color: black;
+      color: #000;
     }
     .theme-modern td {
       background-color: #2c2c2c;
       color: #c0c0c0;
     }
-    .theme-modern td.free-space { background-color: #c0c0c0; color: black; }
+    .theme-modern td.free-space {
+      background-color: #c0c0c0;
+      color: #000;
+    }
     .theme-modern td.marked {
       background-color: #1a1a1a !important;
       color: #e60000 !important;
@@ -249,7 +328,10 @@
       background-color: #fdf6e3;
       color: #5b4636;
     }
-    .theme-silent td.free-space { background-color: #5b4636; color: white; }
+    .theme-silent td.free-space {
+      background-color: #5b4636;
+      color: white;
+    }
     .theme-silent td.marked {
       background-color: #5b4636 !important;
       color: #fdf6e3 !important;
@@ -287,7 +369,10 @@
       background-color: #fff;
       color: #333;
     }
-    .theme-silver td.free-space { background-color: #ccc; color: #333; }
+    .theme-silver td.free-space {
+      background-color: #ccc;
+      color: #333;
+    }
     .theme-silver td.marked {
       background-color: #666 !important;
       color: #ccc !important;
@@ -297,62 +382,22 @@
       color: #333;
     }
 
-    /* "Not affiliated" link above the banner */
-    #notAffiliated {
-      margin: 20px 0;
-      text-align: center;
-    }
-    #notAffiliated a {
-      color: #ccc;
-      font-size: 14px;
-      text-decoration: underline;
-    }
-
-    /* Banner at the bottom, cropped from left/right equally */
-    #bottomBanner {
-      margin: 20px auto;
-      text-align: center;
-      width: 100%;
-      max-width: 1200px;
-      overflow: hidden;
-      position: relative;
-    }
-    #bottomBanner img {
-      display: block;
-      width: 120%;        /* enlarge to crop sides */
-      margin-left: -10%;  /* shift left to center the crop */
-      max-height: 600px;
-      object-fit: cover;
-      border-radius: 8px;
-    }
-
-    /* Hash UI at the bottom, but below the banner now */
-    #hashSection {
-      margin: 20px auto;
-      color: white; /* small white text */
-      font-size: 14px;
-      width: 80%;
-      max-width: 500px;
-      text-align: center;
-      word-wrap: break-word;
-    }
-    #cardHashValue {
-      display: block;
-      margin-top: 8px;
-      white-space: pre-wrap; /* allow wrapping */
-    }
-    #hashSection input[type="text"] {
-      width: 70%;
-      padding: 4px;
-      margin-top: 8px;
-    }
-    #hashSection button {
-      margin-top: 8px;
+    /* Mobile Optimization */
+    @media (max-width: 600px) {
+      th, td {
+        font-size: 14px;
+        padding: 6px;
+        min-width: 60px;
+        min-height: 50px;
+      }
+      button, select {
+        font-size: 14px;
+        padding: 10px;
+      }
     }
   </style>
 </head>
 <body class="theme-classic">
-
   <h1>OSCER Bingo Card Generator</h1>
 
   <div id="controls">
@@ -380,32 +425,31 @@
       <tbody></tbody>
     </table>
   </div>
-  
+
   <!-- Bingo Modal -->
   <div id="bingoModal" class="theme-classic">
     <div id="bingoMessage">That's a bingo!</div>
     <img id="winnerImg" src="winner.png" alt="Winner Image" />
   </div>
-  
+
   <!-- Popcorn Overlay -->
   <div id="popcornOverlay"></div>
 
-  <!-- Not Affiliated Link -->
-  <div id="notAffiliated">
-    <a href="#">Not affiliated with HEI Network, just a fan.</a>
-  </div>
+  <!-- "Not affiliated..." line -->
+  <div id="notAffiliated">Not affiliated with HEI Network, just a fan.</div>
 
-  <!-- Banner -->
+  <!-- Banner at the bottom -->
   <div id="bottomBanner">
     <a href="https://www.heinetwork.tv/tickets/" target="_blank">
       <img src="Oscar-Special-12-2025-Promo-website22SQUARE-2048x878.png" alt="Oscar Special Banner" />
     </a>
   </div>
 
-  <!-- Hash Section (Below Banner) -->
+  <!-- Hash Section -->
   <div id="hashSection">
     <div>Current Card Hash:</div>
     <span id="cardHashValue"></span>
+    <br />
     <div>To look up a specific card, enter the hash:</div>
     <input type="text" id="hashInput" />
     <br />
@@ -422,9 +466,13 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 
   <script>
-    /**************************************************************
-     * CSV Data & Weighted Selection
-     **************************************************************/
+    /* 
+      1) CSV + Weighted Selection
+      2) Hash logic
+      3) Bingo generation
+      4) Theming
+    */
+
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2yM00KOxREYPgLPvLL9PRm1FGQJwNu6U9UuDUOak_Wywn6DaKJBJ3obcmCVqXdRT0RTFenARDGEmw/pub?gid=0&single=true&output=csv";
     let currentItems = [];
 
@@ -482,9 +530,6 @@
       return result;
     }
 
-    /**************************************************************
-     * Hash Encode/Decode
-     **************************************************************/
     function encodeCard(items) {
       return btoa(JSON.stringify(items));
     }
@@ -496,9 +541,6 @@
       }
     }
 
-    /**************************************************************
-     * Bingo Generation
-     **************************************************************/
     async function generateBingoCard() {
       const urlParams = new URLSearchParams(window.location.search);
       const existingHash = urlParams.get("cardHash");
