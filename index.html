@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>OSCER Bingo Card Generator</title>
   <style>
-    /* General Styling */
     body {
-      font-family: 'Arial', sans-serif;
+      /* Default font: Rockwell, fallback to Arial */
+      font-family: 'Rockwell', 'Arial', sans-serif;
       text-align: center;
       margin: 20px;
       transition: background-color 0.3s, color 0.3s;
@@ -44,17 +44,18 @@
       margin-left: 10px;
     }
 
-    /* Table Styling */
+    /* Table with thicker outer border, smaller inner cell borders */
     #bingo-table {
       margin: 20px auto;
       border-collapse: collapse;
       width: 90%;
       max-width: 500px;
-      border-radius: 8px;
+      border-radius: 16px; /* More rounded corners */
       overflow: hidden;
+      border: 6px solid; /* Thicker outer edge */
     }
     th, td {
-      border: 2px solid;
+      border: 2px solid; /* Inner lines are thinner */
       text-align: center;
       font-size: 16px;
       cursor: pointer;
@@ -75,13 +76,10 @@
       font-weight: bold;
     }
 
-    /* Default "marked" style (transform, etc.) */
     td.marked {
       transform: scale(1.05);
       font-weight: bold;
     }
-
-    /* Bingo glow animation */
     td.bingo {
       animation: glow 1s infinite alternate;
     }
@@ -102,14 +100,27 @@
       justify-content: center;
       align-items: center;
       z-index: 1000;
+      text-align: center;
     }
-    #bingoModal #bingoMessage {
+    #bingoMessage {
       font-size: 48px;
       font-weight: bold;
       transition: color 0.3s, text-shadow 0.3s;
+      animation: strobe 0.1s infinite; /* Rapid strobe effect */
+    }
+    /* Rapid strobe blink */
+    @keyframes strobe {
+      0% { opacity: 1; }
+      50% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    #winnerImg {
+      display: block;
+      max-width: 200px;
+      margin: 20px auto 0;
     }
 
-    /* Popcorn Rain Overlay (for the Bingo reaction) */
+    /* Popcorn Rain Overlay */
     #popcornOverlay {
       position: fixed;
       top: 0;
@@ -130,9 +141,8 @@
       100% { top: 100%; opacity: 0; }
     }
 
-    /* THEME-SPECIFIC STYLES */
+    /* THEMES (Classic, Modern, Silent, Silver) - same logic, new outer border is 6px, cells 2px. */
 
-    /* 1) Classic Oscars (Gold & Black) */
     .theme-classic {
       background-color: #1c1c1c;
       color: #ffd700;
@@ -147,7 +157,10 @@
     }
     .theme-classic #bingo-table {
       background-color: #222;
-      border: 2px solid #ffd700;
+      border-color: #ffd700;
+    }
+    .theme-classic th, .theme-classic td {
+      border-color: #ffd700;
     }
     .theme-classic th {
       background-color: #ffd700;
@@ -156,13 +169,8 @@
     .theme-classic td {
       background-color: #1c1c1c;
       color: #fff;
-      border-color: #ffd700;
     }
-    .theme-classic td.free-space {
-      background-color: #ffd700; 
-      color: black;
-    }
-    /* Marked cell for Classic theme */
+    .theme-classic td.free-space { background-color: #ffd700; color: black; }
     .theme-classic td.marked {
       background-color: #ffd700 !important;
       color: #000 !important;
@@ -173,7 +181,6 @@
       text-shadow: 2px 2px 10px rgba(255,215,0,0.8);
     }
 
-    /* 2) Modern Red Carpet (Red & Silver) */
     .theme-modern {
       background-color: #2c2c2c;
       color: #c0c0c0;
@@ -188,7 +195,10 @@
     }
     .theme-modern #bingo-table {
       background-color: #3d3d3d;
-      border: 2px solid #c0c0c0;
+      border-color: #c0c0c0;
+    }
+    .theme-modern th, .theme-modern td {
+      border-color: #c0c0c0;
     }
     .theme-modern th {
       background-color: #c0c0c0;
@@ -197,13 +207,8 @@
     .theme-modern td {
       background-color: #2c2c2c;
       color: #c0c0c0;
-      border-color: #c0c0c0;
     }
-    .theme-modern td.free-space {
-      background-color: #c0c0c0; 
-      color: black;
-    }
-    /* Marked cell for Modern theme */
+    .theme-modern td.free-space { background-color: #c0c0c0; color: black; }
     .theme-modern td.marked {
       background-color: #1a1a1a !important;
       color: #e60000 !important;
@@ -214,7 +219,6 @@
       text-shadow: 2px 2px 10px rgba(230,0,0,0.8);
     }
 
-    /* 3) Silent Film Era (Sepia & Vintage) */
     .theme-silent {
       background-color: #f4ecd8;
       color: #5b4636;
@@ -229,7 +233,10 @@
     }
     .theme-silent #bingo-table {
       background-color: #fdf6e3;
-      border: 2px solid #5b4636;
+      border-color: #5b4636;
+    }
+    .theme-silent th, .theme-silent td {
+      border-color: #5b4636;
     }
     .theme-silent th {
       background-color: #5b4636;
@@ -238,13 +245,8 @@
     .theme-silent td {
       background-color: #fdf6e3;
       color: #5b4636;
-      border-color: #5b4636;
     }
-    .theme-silent td.free-space {
-      background-color: #5b4636; 
-      color: white;
-    }
-    /* Marked cell for Silent theme */
+    .theme-silent td.free-space { background-color: #5b4636; color: white; }
     .theme-silent td.marked {
       background-color: #5b4636 !important;
       color: #fdf6e3 !important;
@@ -255,7 +257,6 @@
       text-shadow: 2px 2px 10px rgba(91,70,54,0.8);
     }
 
-    /* 4) Silver Screen (Greyscale) */
     .theme-silver {
       background-color: #fff;
       color: #333;
@@ -270,7 +271,10 @@
     }
     .theme-silver #bingo-table {
       background-color: #f7f7f7;
-      border: 2px solid #aaa;
+      border-color: #aaa;
+    }
+    .theme-silver th, .theme-silver td {
+      border-color: #aaa;
     }
     .theme-silver th {
       background-color: #aaa;
@@ -279,13 +283,8 @@
     .theme-silver td {
       background-color: #fff;
       color: #333;
-      border-color: #aaa;
     }
-    .theme-silver td.free-space {
-      background-color: #ccc; 
-      color: #333;
-    }
-    /* Marked cell for Silver theme */
+    .theme-silver td.free-space { background-color: #ccc; color: #333; }
     .theme-silver td.marked {
       background-color: #666 !important;
       color: #ccc !important;
@@ -307,6 +306,17 @@
         font-size: 14px;
         padding: 10px;
       }
+    }
+
+    /* Banner at the bottom */
+    #bottomBanner {
+      margin: 30px auto;
+      text-align: center;
+    }
+    #bottomBanner img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
     }
   </style>
 </head>
@@ -341,25 +351,27 @@
   
   <!-- Modal overlay for Bingo Celebration -->
   <div id="bingoModal" class="theme-classic">
-    <div id="bingoMessage">Bingo!</div>
+    <div id="bingoMessage">That's a bingo!</div>
+    <img id="winnerImg" src="winner.jpg" alt="Winner Image" />
   </div>
   
-  <!-- Popcorn Rain Overlay (for the Bingo reaction) -->
+  <!-- Popcorn Rain Overlay -->
   <div id="popcornOverlay"></div>
   
-  <!-- Audio for bingo chime and click -->
+  <!-- Audio for bingo chime, click, and custom MP3 -->
   <audio id="bingoSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
   <audio id="clickSound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
-  <!-- Audio for bingo reaction from uploaded file -->
   <audio id="bingoMp3" src="that_s_a_bingo.mp3" preload="auto"></audio>
-  
+
   <!-- Include html2canvas for saving the card -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <!-- Include canvas-confetti for fallback confetti effect -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-  
+
   <script>
-    // CSV from your Google Sheet
+    /**************************************************************
+     * 1) CSV Logic with Weighted Selection
+     **************************************************************/
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2yM00KOxREYPgLPvLL9PRm1FGQJwNu6U9UuDUOak_Wywn6DaKJBJ3obcmCVqXdRT0RTFenARDGEmw/pub?gid=0&single=true&output=csv";
 
     async function fetchBingoData() {
@@ -378,12 +390,10 @@
       return rows;
     }
 
-    // Extract tier data from the first three columns
     async function getTierData() {
       const data = await fetchBingoData();
       if (!data) return { tier1: [], tier2: [], tier3: [] };
       let startIndex = 0;
-      // Check if the first row is a header
       if (data[0][0].toLowerCase().includes("definitely") ||
           data[0][0].toLowerCase().includes("tier") ||
           data[0][0].toLowerCase().includes("option")) {
@@ -401,17 +411,15 @@
       return { tier1, tier2, tier3 };
     }
 
-    // Build a weighted pool from the tiers
     async function buildWeightedPool() {
       const { tier1, tier2, tier3 } = await getTierData();
       const pool = [];
-      tier1.forEach(option => pool.push(...Array(3).fill(option))); // weight 3
-      tier2.forEach(option => pool.push(...Array(2).fill(option))); // weight 2
-      tier3.forEach(option => pool.push(option));                  // weight 1
+      tier1.forEach(option => pool.push(...Array(3).fill(option))); // Weight 3
+      tier2.forEach(option => pool.push(...Array(2).fill(option))); // Weight 2
+      tier3.forEach(option => pool.push(option));                  // Weight 1
       return pool;
     }
 
-    // Select 24 unique items from the weighted pool
     async function weightedSelect(count) {
       let pool = await buildWeightedPool();
       const result = [];
@@ -424,86 +432,50 @@
       return result;
     }
 
-    // Check for Bingo
-    function checkBingo() {
-      const rows = document.querySelectorAll("#bingo-table tbody tr");
-      const grid = Array.from(rows, row => Array.from(row.children));
-      let bingoFound = false;
-      // rows & columns
-      for (let i = 0; i < 5; i++) {
-        if (grid[i].every(td => td.classList.contains("marked"))) {
-          highlightBingo(grid[i]);
-          bingoFound = true;
-        }
-        const colCells = grid.map(row => row[i]);
-        if (colCells.every(td => td.classList.contains("marked"))) {
-          highlightBingo(colCells);
-          bingoFound = true;
-        }
-      }
-      // diagonals
-      const diag1 = [0,1,2,3,4].map(i => grid[i][i]);
-      const diag2 = [0,1,2,3,4].map(i => grid[i][4-i]);
-      if (diag1.every(td => td.classList.contains("marked"))) {
-        highlightBingo(diag1);
-        bingoFound = true;
-      }
-      if (diag2.every(td => td.classList.contains("marked"))) {
-        highlightBingo(diag2);
-        bingoFound = true;
-      }
-      if (bingoFound) {
-        triggerBingoCelebration();
+    /**************************************************************
+     * 2) Hash System for Recalling a Specific Card (Optional)
+     **************************************************************/
+    function encodeCard(items) {
+      // Convert array to JSON, then Base64
+      return btoa(JSON.stringify(items));
+    }
+    function decodeCard(hash) {
+      try {
+        return JSON.parse(atob(hash));
+      } catch {
+        return null;
       }
     }
 
-    function highlightBingo(cells) {
-      cells.forEach(td => td.classList.add("bingo"));
-    }
-
-    // Bingo reaction
-    function triggerBingoCelebration() {
-      // Play the custom MP3
-      const bingoMp3 = document.getElementById("bingoMp3");
-      bingoMp3.currentTime = 0;
-      bingoMp3.play();
-      // Also play fallback sound
-      const fallback = document.getElementById("bingoSound");
-      fallback.currentTime = 0;
-      fallback.play();
-
-      // Show modal briefly
-      const modal = document.getElementById("bingoModal");
-      modal.style.display = "flex";
-      setTimeout(() => { modal.style.display = "none"; }, 2000);
-
-      // Trigger popcorn rain
-      triggerPopcornRain();
-    }
-
-    // Popcorn rain effect
-    function triggerPopcornRain() {
-      const overlay = document.getElementById("popcornOverlay");
-      overlay.innerHTML = "";
-      const count = 50;
-      for (let i = 0; i < count; i++) {
-        const span = document.createElement("span");
-        span.classList.add("popcorn");
-        span.textContent = "🍿";
-        span.style.left = Math.random() * 100 + "%";
-        span.style.animationDelay = Math.random() * 1 + "s";
-        overlay.appendChild(span);
-      }
-      setTimeout(() => { overlay.innerHTML = ""; }, 2500);
-    }
-
-    // Generate a 5x5 bingo card
+    /**************************************************************
+     * 3) Bingo Generation
+     **************************************************************/
     async function generateBingoCard() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const existingHash = urlParams.get("cardHash");
+      let items;
+
+      if (existingHash) {
+        // Attempt to decode a pre-generated card
+        const decoded = decodeCard(existingHash);
+        if (decoded && decoded.length === 24) {
+          items = decoded;
+          console.log("Loaded card from hash:", existingHash);
+        }
+      }
+      if (!items) {
+        // Generate a new card
+        items = await weightedSelect(24);
+        const newHash = encodeCard(items);
+        console.log("New card hash:", newHash);
+        // Optionally, we could update the URL with ?cardHash=...
+        // urlParams.set("cardHash", newHash);
+        // window.history.replaceState({}, "", "?"+urlParams.toString());
+      }
+
+      // Build the 5x5 grid
       const tbody = document.querySelector("#bingo-table tbody");
       tbody.innerHTML = "";
-      const totalCells = 25;
-      const numItems = totalCells - 1; // center is FREE
-      const items = await weightedSelect(numItems);
       let itemIndex = 0;
       for (let row = 0; row < 5; row++) {
         const tr = document.createElement("tr");
@@ -518,6 +490,7 @@
             checkBingo();
           };
           if (row === 2 && col === 2) {
+            // Center cell
             td.textContent = "🍿";
             td.classList.add("free-space", "marked");
           } else {
@@ -528,6 +501,83 @@
         }
         tbody.appendChild(tr);
       }
+    }
+
+    function checkBingo() {
+      const rows = document.querySelectorAll("#bingo-table tbody tr");
+      const grid = Array.from(rows, row => Array.from(row.children));
+
+      let bingoFound = false;
+      // Check rows & columns
+      for (let i = 0; i < 5; i++) {
+        if (grid[i].every(td => td.classList.contains("marked"))) {
+          highlightBingo(grid[i]);
+          bingoFound = true;
+        }
+        const colCells = grid.map(row => row[i]);
+        if (colCells.every(td => td.classList.contains("marked"))) {
+          highlightBingo(colCells);
+          bingoFound = true;
+        }
+      }
+      // Diagonals
+      const diag1 = [0,1,2,3,4].map(i => grid[i][i]);
+      const diag2 = [0,1,2,3,4].map(i => grid[i][4 - i]);
+      console.log("diag1 check:", diag1.map(td => td.textContent));
+      console.log("diag2 check:", diag2.map(td => td.textContent));
+      if (diag1.every(td => td.classList.contains("marked"))) {
+        highlightBingo(diag1);
+        bingoFound = true;
+      }
+      if (diag2.every(td => td.classList.contains("marked"))) {
+        highlightBingo(diag2);
+        bingoFound = true;
+      }
+
+      if (bingoFound) {
+        triggerBingoCelebration();
+      }
+    }
+
+    function highlightBingo(cells) {
+      cells.forEach(td => td.classList.add("bingo"));
+    }
+
+    function triggerBingoCelebration() {
+      // Play custom MP3
+      const bingoMp3 = document.getElementById("bingoMp3");
+      bingoMp3.currentTime = 0;
+      bingoMp3.play();
+
+      // Also fallback sound
+      const fallback = document.getElementById("bingoSound");
+      fallback.currentTime = 0;
+      fallback.play();
+
+      // Show modal
+      const modal = document.getElementById("bingoModal");
+      modal.style.display = "flex";
+
+      // Popcorn overlay
+      triggerPopcornRain();
+
+      // Hide modal after 2s
+      setTimeout(() => { modal.style.display = "none"; }, 2000);
+    }
+
+    function triggerPopcornRain() {
+      const overlay = document.getElementById("popcornOverlay");
+      overlay.innerHTML = "";
+      const count = 80; // More popcorn
+      for (let i = 0; i < count; i++) {
+        const span = document.createElement("span");
+        span.classList.add("popcorn");
+        span.textContent = "🍿";
+        span.style.left = Math.random() * 100 + "%";
+        span.style.animationDelay = Math.random() * 1 + "s";
+        overlay.appendChild(span);
+      }
+      setTimeout(() => { overlay.innerHTML = ""; }, 2500);
     }
 
     function changeTheme(theme) {
@@ -563,5 +613,12 @@
       changeTheme(document.getElementById("themeSelector").value);
     });
   </script>
+
+  <!-- Banner at the bottom -->
+  <div id="bottomBanner">
+    <a href="https://www.heinetwork.tv/tickets/" target="_blank">
+      <img src="banner.jpg" alt="Oscar Special Banner" />
+    </a>
+  </div>
 </body>
 </html>
