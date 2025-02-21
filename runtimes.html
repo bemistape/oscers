@@ -584,4 +584,90 @@
 
       const finalScoresEl = document.getElementById("final-scores");
       finalScoresEl.innerText =
-        `Final Accuracy: ${accuracy.toFixed(1)}% ($
+        `Final Accuracy: ${accuracy.toFixed(1)}% (${totalCorrect}/25) | ` +
+        `Skill: ${skill !== null ? skill.toFixed(1) : "N/A"} avg difference`;
+
+      // Build final 25 cards, color-coded
+      const finalCardsContainer = document.getElementById("final-cards-container");
+      finalCardsContainer.innerHTML = "";
+
+      // Flatten all 5 rounds
+      const allRoundMovies = rounds.flat();
+      allRoundMovies.forEach(movie => {
+        const actual = movie.runtime_minutes;
+        const assigned = (movie._assignedRuntime !== null) ? movie._assignedRuntime : "-";
+        const isCorrect = (assigned === actual);
+
+        const card = document.createElement("div");
+        card.classList.add("final-card");
+        if (assigned !== "-") {
+          card.classList.add(isCorrect ? "correct" : "incorrect");
+        }
+        card.innerHTML = `
+          <div style="font-weight:bold; margin-bottom:5px;">${movie["Movie Name"]}</div>
+          <div>Actual: ${movie.Runtime}</div>
+          <div>Your Pick: ${assigned === "-" ? "-" : assigned + " min"}</div>
+        `;
+        finalCardsContainer.appendChild(card);
+      });
+    }
+
+    /*******************
+     * SCOREBOARD UTILS *
+     *******************/
+    // By default, updates the main scoreboard (#score-accuracy, #score-skill, #popcorn-rating).
+    // If targetId is given (e.g. "midround-scoreboard"), it updates that area with text + popcorn emojis.
+    function updateScoreboard(targetId) {
+      const accuracyVal = totalCorrect / 25 * 100;
+      const skillVal = totalAnswered ? (totalDifference / totalAnswered) : null;
+
+      if (!targetId) {
+        // Update main scoreboard
+        document.getElementById("score-accuracy").innerText = accuracyVal.toFixed(1) + "%";
+        document.getElementById("score-skill").innerText = skillVal !== null ? skillVal.toFixed(1) : "N/A";
+        renderPopcornRating(accuracyVal, document.getElementById("popcorn-rating"));
+      } else {
+        // Mid-round scoreboard
+        const container = document.getElementById(targetId);
+        container.innerHTML = `
+          Accuracy: ${accuracyVal.toFixed(1)}% (${totalCorrect}/25)
+          &nbsp;|&nbsp;
+          Skill: ${skillVal !== null ? skillVal.toFixed(1) : "N/A"}
+        `;
+        // We can also add popcorn emojis for mid-round
+        const emojiSpan = document.createElement("span");
+        renderPopcornRating(accuracyVal, emojiSpan);
+        container.appendChild(emojiSpan);
+      }
+    }
+
+    // Render partial popcorn emojis based on accuracy out of 5
+    function renderPopcornRating(accuracyPercent, container) {
+      container.innerHTML = "";
+      const ratingOutOf5 = (accuracyPercent / 100) * 5; // e.g. 80% => 4.0
+      const fullPopcorns = Math.floor(ratingOutOf5);
+      const fraction = ratingOutOf5 - fullPopcorns;
+
+      // Full popcorns
+      for (let i = 0; i < fullPopcorns; i++) {
+        const span = document.createElement("span");
+        span.textContent = "🍿";
+        span.classList.add("popcorn-emoji");
+        container.appendChild(span);
+      }
+
+      // Partial
+      if (fraction > 0) {
+        const partial = document.createElement("span");
+        partial.classList.add("popcorn-emoji");
+        partial.style.display = "inline-block";
+        partial.style.overflow = "hidden";
+        // Approximate partial coverage
+        partial.style.width = (fraction * 1.0) + "em";
+        partial.textContent = "🍿";
+        container.appendChild(partial);
+      }
+    }
+  </script>
+</body>
+</html>
