@@ -11,21 +11,24 @@
       margin: 0;
       padding: 20px;
     }
-    h1 {
+    h1, h2, p {
       text-align: center;
     }
-    #game-container {
+    #intro-container, #game-container {
       max-width: 900px;
-      margin: auto;
+      margin: 0 auto;
+    }
+    #game-container {
+      display: none;
+    }
+    #round-info {
+      text-align: center;
+      margin-bottom: 10px;
     }
     #timer {
       text-align: center;
       font-size: 24px;
       margin-bottom: 20px;
-    }
-    #round-info {
-      text-align: center;
-      margin-bottom: 10px;
     }
     .cards-container {
       display: flex;
@@ -58,7 +61,7 @@
       width: 100px;
       cursor: grab;
     }
-    #submit-btn, #play-again-btn {
+    #action-btn {
       display: block;
       margin: 0 auto 20px;
       padding: 10px 20px;
@@ -72,32 +75,133 @@
   </style>
 </head>
 <body>
-  <div id="game-container">
+  <!-- Intro Screen -->
+  <div id="intro-container">
     <h1>Stump the Buff</h1>
-    <div id="round-info"></div>
-    <div id="timer">20</div>
+    <p>
+      Welcome to Stump the Buff! You'll be shown 5 movie titles and 5 runtimes each round. 
+      Your task is to drag each runtime onto the correct movie. You'll have 20 seconds per round.
+    </p>
+    <p>
+      After 5 rounds, you'll see two scores:
+      <br><strong>Accuracy</strong>: How many correct matches out of 25.
+      <br><strong>Skill</strong>: The average difference between your chosen runtimes and the actual ones.
+    </p>
+    <button id="action-btn">Begin</button>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="game-container">
+    <h2 id="round-info"></h2>
+    <div id="timer"></div>
     <div id="movies-container" class="cards-container"></div>
     <div id="runtimes-container" class="cards-container"></div>
-    <button id="submit-btn">Submit</button>
     <div id="results"></div>
   </div>
 
   <script>
-    // Global game state variables
+    // Game states: "intro", "inRound", "end"
+    let gameState = "intro";
+
+    // Global game data
     let allMovies = [];
-    let rounds = []; // Array of rounds, each is an array of 5 movie objects
+    let rounds = [];        // array of 5-element arrays
     let currentRound = 0;
     let totalCorrect = 0;
     let totalDifference = 0;
     let totalAnswered = 0;
     let roundTimer;
-    let roundTimeLimit = 20; // seconds
+    const roundTimeLimit = 20; // seconds
     let timeLeft = roundTimeLimit;
 
     // CSV URL from Google Sheets
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vToIbm5XR9mtqOXHYzpF0jIXhGY9WI9m-QQak2KsZFB6CGVnRVRCPL3V6zFVbT6e_jLyGQM1e5XPjcX/pub?gid=131639577&single=true&output=csv";
 
-    // Utility: Shuffle an array
+    // On page load, fetch data and parse
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchCSV();
+      document.getElementById("action-btn").addEventListener("click", handleActionButton);
+    });
+
+    // Handle the single button's actions based on gameState
+    function handleActionButton() {
+      if (gameState === "intro") {
+        // If data isn't loaded yet, prevent starting
+        if (!allMovies.length) {
+          alert("Loading movie data, please wait a moment...");
+          return;
+        }
+        beginGame();
+      } else if (gameState === "inRound") {
+        // Submit the current round
+        clearInterval(roundTimer);
+        submitRound();
+      } else if (gameState === "end") {
+        // Play again
+        resetGame();
+      }
+    }
+
+    // Begin game: hide intro, show game container, start round
+    function beginGame() {
+      document.getElementById("intro-container").style.display = "none";
+      document.getElementById("game-container").style.display = "block";
+      gameState = "inRound";
+      document.getElementById("action-btn").innerText = "Submit";
+
+      // Start the first round
+      startRound();
+    }
+
+    // Reset the entire game after finishing
+    function resetGame() {
+      // Clear existing data
+      rounds = [];
+      currentRound = 0;
+      totalCorrect = 0;
+      totalDifference = 0;
+      totalAnswered = 0;
+
+      // Re-setup rounds from the existing allMovies array
+      setupRounds();
+
+      // Start Round 1
+      gameState = "inRound";
+      document.getElementById("action-btn").innerText = "Submit";
+      document.getElementById("results").innerText = "";
+      startRound();
+    }
+
+    // Fetch the CSV
+    function fetchCSV() {
+      fetch(csvUrl)
+        .then(response => response.text())
+        .then(data => {
+          parseCSV(data);
+          setupRounds();
+        })
+        .catch(error => {
+          console.error("Error fetching CSV:", error);
+        });
+    }
+
+    // Simple CSV parser (assumes no commas in fields)
+    function parseCSV(data) {
+      const lines = data.trim().split("\n");
+      const headers = lines[0].split(",");
+      for (let i = 1; i < lines.length; i++) {
+        const row = lines[i].split(",");
+        let movie = {};
+        headers.forEach((header, index) => {
+          movie[header.trim()] = row[index] ? row[index].trim() : "";
+        });
+        // Convert runtime_minutes to number
+        movie.runtime_minutes = parseInt(movie.runtime_minutes, 10);
+        allMovies.push(movie);
+      }
+    }
+
+    // Utility: shuffle an array in place
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -106,37 +210,7 @@
       return array;
     }
 
-    // Fetch CSV and initialize game
-    function fetchCSV() {
-      fetch(csvUrl)
-        .then(response => response.text())
-        .then(data => {
-          parseCSV(data);
-          setupRounds();
-          startRound();
-        })
-        .catch(error => {
-          console.error("Error fetching CSV:", error);
-        });
-    }
-
-    // Simple CSV parser assuming no commas in fields
-    function parseCSV(data) {
-      const lines = data.trim().split("\n");
-      const headers = lines[0].split(",");
-      for (let i = 1; i < lines.length; i++) {
-        const row = lines[i].split(",");
-        let movie = {};
-        headers.forEach((header, index) => {
-          movie[header.trim()] = row[index].trim();
-        });
-        // Convert runtime_minutes to number
-        movie.runtime_minutes = parseInt(movie.runtime_minutes, 10);
-        allMovies.push(movie);
-      }
-    }
-
-    // Prepare 5 rounds (each round with 5 random movies)
+    // Choose 25 random movies, split into 5 rounds of 5
     function setupRounds() {
       const shuffled = shuffle(allMovies.slice());
       const selected = shuffled.slice(0, 25);
@@ -145,17 +219,19 @@
       }
     }
 
-    // Start the round
+    // Start a round
     function startRound() {
       if (currentRound >= rounds.length) {
         endGame();
         return;
       }
+      // Clear previous results text
       document.getElementById("results").innerText = "";
       document.getElementById("round-info").innerText = "Round " + (currentRound + 1) + " of 5";
+
+      // Reset and display timer
       timeLeft = roundTimeLimit;
       updateTimerDisplay();
-      renderRound();
       roundTimer = setInterval(() => {
         timeLeft--;
         updateTimerDisplay();
@@ -164,14 +240,16 @@
           submitRound();
         }
       }, 1000);
+
+      renderRound();
     }
 
-    // Update timer display
+    // Update the timer on screen
     function updateTimerDisplay() {
       document.getElementById("timer").innerText = timeLeft;
     }
 
-    // Render the current round's movies and runtimes
+    // Render movie cards and runtime cards
     function renderRound() {
       const moviesContainer = document.getElementById("movies-container");
       const runtimesContainer = document.getElementById("runtimes-container");
@@ -184,21 +262,19 @@
       roundMovies.forEach((movie, idx) => {
         const movieCard = document.createElement("div");
         movieCard.classList.add("movie-card");
-        // Store correct runtime as a data attribute
         movieCard.setAttribute("data-correct", movie.runtime_minutes);
-        movieCard.setAttribute("data-movie", movie["Movie Name"]);
         movieCard.id = "movie-" + idx;
         movieCard.innerHTML = `<div>${movie["Movie Name"]}</div>`;
-        // Allow drop events
+        // Allow dropping
         movieCard.addEventListener("dragover", e => { e.preventDefault(); });
         movieCard.addEventListener("drop", e => dropHandler(e, movieCard));
         moviesContainer.appendChild(movieCard);
       });
 
-      // Create runtime cards – shuffle the runtimes from the round movies
-      const runtimeValues = roundMovies.map(m => ({ 
-        runtime: m.Runtime, 
-        runtime_minutes: m.runtime_minutes 
+      // Create shuffled runtime cards
+      const runtimeValues = roundMovies.map(m => ({
+        runtime: m.Runtime,
+        runtime_minutes: m.runtime_minutes
       }));
       shuffle(runtimeValues);
       runtimeValues.forEach((rt, idx) => {
@@ -206,8 +282,94 @@
         runtimeCard.classList.add("runtime-card");
         runtimeCard.setAttribute("draggable", "true");
         runtimeCard.id = "runtime-" + idx;
-        // Store the numeric value for checking
         runtimeCard.setAttribute("data-runtime", rt.runtime_minutes);
         runtimeCard.innerText = rt.runtime;
         runtimeCard.addEventListener("dragstart", dragStartHandler);
-        runtimesContainer.appendChild(
+        runtimesContainer.appendChild(runtimeCard);
+      });
+    }
+
+    // Drag start
+    function dragStartHandler(e) {
+      e.dataTransfer.setData("text/plain", e.target.id);
+    }
+
+    // Drop
+    function dropHandler(e, movieCard) {
+      e.preventDefault();
+      const runtimeCardId = e.dataTransfer.getData("text/plain");
+      const runtimeCard = document.getElementById(runtimeCardId);
+
+      // If this runtime is already assigned, remove it from old parent
+      const oldParent = runtimeCard.parentElement;
+      if (oldParent && oldParent.classList.contains("movie-card")) {
+        oldParent.removeChild(runtimeCard);
+      }
+
+      // If the movie card already has a runtime assigned, move that runtime back
+      const existing = movieCard.querySelector(".runtime-card");
+      if (existing) {
+        document.getElementById("runtimes-container").appendChild(existing);
+      }
+
+      movieCard.appendChild(runtimeCard);
+    }
+
+    // Submit round
+    function submitRound() {
+      const roundMovies = rounds[currentRound];
+      const moviesContainer = document.getElementById("movies-container");
+      let roundCorrect = 0;
+      let roundDiff = 0;
+      let answeredCount = 0;
+
+      Array.from(moviesContainer.children).forEach(movieCard => {
+        const correctRuntime = parseInt(movieCard.getAttribute("data-correct"), 10);
+        const assignedCard = movieCard.querySelector(".runtime-card");
+        if (assignedCard) {
+          const userRuntime = parseInt(assignedCard.getAttribute("data-runtime"), 10);
+          answeredCount++;
+          if (userRuntime === correctRuntime) {
+            roundCorrect++;
+          }
+          roundDiff += Math.abs(userRuntime - correctRuntime);
+        }
+      });
+
+      totalCorrect += roundCorrect;
+      totalDifference += roundDiff;
+      totalAnswered += answeredCount;
+
+      document.getElementById("results").innerText = 
+        `Round ${currentRound + 1} result: ${roundCorrect}/5 correct. ` +
+        `Skill diff: ${answeredCount ? (roundDiff / answeredCount).toFixed(1) : "N/A"}`;
+
+      currentRound++;
+      setTimeout(() => {
+        if (currentRound < 5) {
+          startRound();
+        } else {
+          endGame();
+        }
+      }, 2000);
+    }
+
+    // End of all rounds
+    function endGame() {
+      clearInterval(roundTimer);
+      gameState = "end";
+      document.getElementById("round-info").innerText = "Game Over";
+      document.getElementById("timer").innerText = "";
+      const accuracy = (totalCorrect / 25 * 100).toFixed(1);
+      const skill = totalAnswered ? (totalDifference / totalAnswered).toFixed(1) : "N/A";
+
+      document.getElementById("results").innerText = 
+        `Final Accuracy: ${accuracy}% (${totalCorrect}/25 correct)\n` +
+        `Final Skill: Average difference of ${skill} minute(s).`;
+
+      // Change button to "Play Again"
+      document.getElementById("action-btn").innerText = "Play Again";
+    }
+  </script>
+</body>
+</html>
