@@ -13,9 +13,30 @@
     }
     h1, h2, p {
       text-align: center;
+      margin: 0 0 10px 0;
+    }
+    .underlined {
+      text-decoration: underline;
+      font-weight: bold;
+      margin: 0;
+      text-align: center;
+    }
+    .rounded-button {
+      border-radius: 20px;
+      padding: 5px 10px;
+      display: inline-block;
+      color: #000;
+      margin-left: 8px;
+    }
+    .midround-box {
+      margin: 15px auto;
+      text-align: center;
+    }
+    h3.underlined {
+      margin-bottom: 5px;
     }
 
-    /* Intro */
+    /* Intro Container */
     #intro-container, #game-container, #final-container {
       max-width: 900px;
       margin: 0 auto;
@@ -23,12 +44,15 @@
     #game-container, #final-container {
       display: none; /* hidden until needed */
     }
-    #intro-container button {
+    #begin-btn {
       display: block;
       margin: 20px auto;
       padding: 10px 20px;
       font-size: 16px;
       cursor: pointer;
+      border: 1px solid #444; /* changed dynamically later */
+      background: #222;
+      color: white;
     }
 
     /* Game container */
@@ -68,16 +92,13 @@
       background-color: #000; /* default black */
       position: relative;
       border-radius: 6px;
+      min-height: 160px;
     }
-    .movie-card .movie-title {
+    .movie-title {
       font-weight: bold;
       margin-bottom: 5px;
     }
-    .movie-card .movie-stars {
-      font-size: 12px;
-      opacity: 0.8;
-    }
-    .movie-card .movie-plot {
+    .movie-plot {
       font-size: 12px;
       margin-top: 5px;
       max-height: 80px;
@@ -110,41 +131,11 @@
       cursor: pointer;
     }
 
-    /* Scoreboard (always visible in game) */
-    #scoreboard {
-      text-align: center;
-      margin-bottom: 20px;
-      font-size: 18px;
-    }
-    #scoreboard .popcorn-emoji {
-      font-size: 24px;
-      display: inline-block;
-      margin: 0 2px;
-    }
-
-    /* Mid-round overlay/panel (still in game container) */
+    /* Mid-Round Panel */
     #midround-panel {
-      text-align: center;
-      margin-top: 20px;
       display: none; /* shown after submit */
     }
-    #midround-result {
-      margin-bottom: 10px;
-      font-size: 18px;
-    }
-    #continue-btn {
-      display: inline-block;
-      margin: 10px auto;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    #midround-scoreboard .popcorn-emoji {
-      font-size: 24px;
-      margin: 0 2px;
-    }
 
-    /* Color-coded correctness */
     .correct {
       background-color: #003300; /* dark green */
       border-color: #00FF00;     /* bright green */
@@ -203,7 +194,7 @@
       <br><strong>Accuracy</strong>: How many correct matches (out of 25),
       <br><strong>Skill</strong>: The average difference between your chosen runtimes and the actual ones.
     </p>
-    <button id="begin-btn">Begin</button>
+    <button id="begin-btn" disabled>Loading...</button>
   </div>
 
   <!-- Main Game Screen -->
@@ -218,19 +209,16 @@
 
     <button id="submit-btn">Submit</button>
 
-    <!-- Scoreboard at bottom -->
-    <div id="scoreboard">
-      Accuracy: <span id="score-accuracy">0%</span>
-      <span id="popcorn-rating"></span>
-      &nbsp;|&nbsp;
-      Skill: <span id="score-skill">N/A</span>
-    </div>
-
-    <!-- Mid-Round Phase (cards remain on screen, just show result + "Continue") -->
+    <!-- Mid-Round Panel (shown after submission) -->
     <div id="midround-panel">
-      <div id="midround-result"></div>
-      <button id="continue-btn">Continue</button>
-      <div id="midround-scoreboard" style="margin-top:10px; font-size:18px;"></div>
+      <!-- "This Round" stats at the top -->
+      <div id="midround-top-stats" class="midround-box"></div>
+      <!-- "This Game" stats at the bottom -->
+      <div id="midround-bottom-stats" class="midround-box"></div>
+      <!-- Continue button -->
+      <div style="text-align:center;">
+        <button id="continue-btn">Continue</button>
+      </div>
     </div>
   </div>
 
@@ -256,21 +244,35 @@
 
     // Stats
     let totalCorrect = 0;
-    let totalDifference = 0;
-    let totalAnswered = 0;
+    let totalDifference = 0; // sum of absolute diffs
+    let totalAnswered = 0;   // how many total runtime assignments made
 
     // Timers & Flow
     let timeLeft = roundTimeLimit;
     let roundTimer = null;
     let canDrag = false; // toggles whether dragging is allowed
 
+    // We'll store round-specific data on each movie: movie._assignedRuntime
+
     /**************************
      * PAGE LOAD & EVENT HOOKS *
      **************************/
     document.addEventListener("DOMContentLoaded", () => {
-      fetchCSV();
+      const beginBtn = document.getElementById("begin-btn");
+      beginBtn.disabled = true;
+      beginBtn.innerText = "Loading...";
+      beginBtn.style.border = "1px solid #444";
 
-      document.getElementById("begin-btn").addEventListener("click", onBegin);
+      fetchCSV()
+        .then(() => {
+          // After loading, enable the Begin button
+          beginBtn.innerText = "Begin";
+          beginBtn.disabled = false;
+          beginBtn.style.border = "2px solid #FFD700";
+        })
+        .catch(err => console.error("Error in fetchCSV:", err));
+
+      beginBtn.addEventListener("click", onBegin);
       document.getElementById("submit-btn").addEventListener("click", onSubmitRound);
       document.getElementById("continue-btn").addEventListener("click", onContinue);
       document.getElementById("play-again-btn").addEventListener("click", resetGame);
@@ -279,13 +281,10 @@
     /****************
      * INTRO & SETUP *
      ****************/
-    function fetchCSV() {
-      fetch(csvUrl)
-        .then(resp => resp.text())
-        .then(data => {
-          parseCSV(data);
-        })
-        .catch(err => console.error("Error fetching CSV:", err));
+    async function fetchCSV() {
+      const resp = await fetch(csvUrl);
+      const data = await resp.text();
+      parseCSV(data);
     }
 
     // Parse CSV, store relevant fields
@@ -303,25 +302,14 @@
         // Convert runtime_minutes to number
         movie.runtime_minutes = parseInt(movie.runtime_minutes, 10);
 
-        // Clean up the plot, removing quotes
+        // Clean up the plot (remove quotes)
         if (movie.Plot) {
           movie._plot = movie.Plot.replace(/['"]/g, "");
         } else {
           movie._plot = "";
         }
 
-        // Attempt to parse "Stars" if it looks like JSON
-        if (movie["Stars"].startsWith("[") && movie["Stars"].endsWith("]")) {
-          try {
-            const starArr = JSON.parse(movie["Stars"]);
-            movie._starsList = starArr.join(", ");
-          } catch (e) {
-            movie._starsList = movie["Stars"];
-          }
-        } else {
-          movie._starsList = movie["Stars"];
-        }
-        // We'll store an assigned runtime placeholder
+        // Initialize assigned runtime
         movie._assignedRuntime = null;
 
         allMovies.push(movie);
@@ -362,13 +350,14 @@
     /****************
      * GAME ROUNDS   *
      ****************/
-    // skipUI = true means we just want to jump straight to the game from intro
+    // skipUI = true means we jump straight to the game from intro
     function resetGame(skipUI = false) {
       // Reset all stats
       currentRound = 0;
       totalCorrect = 0;
       totalDifference = 0;
       totalAnswered = 0;
+
       setupRounds();
 
       // Hide final container
@@ -380,7 +369,6 @@
       }
 
       startRound();
-      updateScoreboard();
     }
 
     function startRound() {
@@ -399,6 +387,8 @@
       // Timer
       timeLeft = roundTimeLimit;
       document.getElementById("timer-value").innerText = timeLeft;
+      document.getElementById("timer-box").style.color = "white";
+
       if (roundTimer) clearInterval(roundTimer);
       roundTimer = setInterval(() => {
         timeLeft--;
@@ -407,10 +397,7 @@
         // Turn timer orange if under 5
         if (timeLeft <= 5) {
           document.getElementById("timer-box").style.color = "orange";
-        } else {
-          document.getElementById("timer-box").style.color = "white";
         }
-
         if (timeLeft <= 0) {
           clearInterval(roundTimer);
           onSubmitRound();
@@ -438,7 +425,6 @@
 
         movieCard.innerHTML = `
           <div class="movie-title">${movie["Movie Name"]}</div>
-          <div class="movie-stars">${movie._starsList}</div>
           <div class="movie-plot">${movie._plot}</div>
         `;
 
@@ -492,7 +478,6 @@
           break;
         }
       }
-
       if (!draggedCard) return;
 
       // If the movie card already has a runtime, move that runtime back to runtimes container
@@ -546,18 +531,14 @@
         }
       }
 
+      // Update global stats
       totalCorrect += roundCorrect;
       totalDifference += roundDiff;
       totalAnswered += answeredCount;
 
-      // Show mid-round panel
+      // Show mid-round panel with "This Round" + "This Game" stats
       document.getElementById("midround-panel").style.display = "block";
-      const roundResultMsg = `Round ${currentRound + 1} Results: ${roundCorrect}/5 correct, ` +
-        `Skill diff: ${answeredCount ? (roundDiff / answeredCount).toFixed(1) : "N/A"}`;
-      document.getElementById("midround-result").innerText = roundResultMsg;
-
-      // Update mid-round scoreboard
-      updateScoreboard("midround-scoreboard");
+      showMidRoundStats(roundCorrect, answeredCount, roundDiff);
     }
 
     function onContinue() {
@@ -569,13 +550,72 @@
       }
     }
 
+    /***********************
+     * MID-ROUND STAT BOXES *
+     ***********************/
+    function showMidRoundStats(roundCorrect, answeredCount, roundDiff) {
+      // Round-level stats
+      const roundAccuracyCount = roundCorrect;
+      const roundMaxPossible = 5; // always 5 per round
+      const roundAccuracyPercent = roundAccuracyCount / roundMaxPossible * 100;
+      let roundSkill = null;
+      if (answeredCount > 0) {
+        roundSkill = roundDiff / answeredCount;
+      }
+
+      // Overall game stats so far
+      const completedRounds = currentRound + 1; // how many we've fully submitted
+      const gameMaxPossible = completedRounds * 5; // total possible so far
+      const gameAccuracyPercent = (totalCorrect / gameMaxPossible) * 100;
+      let gameSkill = null;
+      if (totalAnswered > 0) {
+        gameSkill = totalDifference / totalAnswered;
+      }
+
+      // Build "This Round" box
+      const topStats = document.getElementById("midround-top-stats");
+      topStats.innerHTML = `
+        <h2 class="underlined">This Round</h2>
+        <div class="midround-box">
+          <h3 class="underlined">Accuracy</h3>
+          <div>
+            ${renderPopcornString(roundAccuracyPercent)}
+            ${roundAccuracyPercent.toFixed(1)}% (${roundAccuracyCount}/${roundMaxPossible})
+          </div>
+          <h3 class="underlined">Skill Accuracy</h3>
+          <div>
+            ${roundSkill !== null ? roundSkill.toFixed(1) : "N/A"} minutes
+            ${createSkillButton(roundSkill !== null ? roundSkill : 0, 120).outerHTML}
+          </div>
+        </div>
+      `;
+
+      // Build "This Game" box
+      const bottomStats = document.getElementById("midround-bottom-stats");
+      bottomStats.innerHTML = `
+        <h2 class="underlined">This Game</h2>
+        <div class="midround-box">
+          <h3 class="underlined">Accuracy</h3>
+          <div>
+            ${renderPopcornString(gameAccuracyPercent)}
+            ${gameAccuracyPercent.toFixed(1)}% (${totalCorrect}/${gameMaxPossible})
+            ${createAccuracyButton(gameAccuracyPercent, 0, 100).outerHTML}
+          </div>
+          <h3 class="underlined">Skill Accuracy</h3>
+          <div>
+            ${gameSkill !== null ? gameSkill.toFixed(1) : "N/A"} minutes
+            ${createSkillButton(gameSkill !== null ? gameSkill : 0, 120).outerHTML}
+          </div>
+        </div>
+      `;
+    }
+
     /*******************
      * END OF THE GAME *
      *******************/
     function endGame() {
       // Hide game container
       document.getElementById("game-container").style.display = "none";
-
       // Show final results
       document.getElementById("final-container").style.display = "block";
 
@@ -587,11 +627,10 @@
         `Final Accuracy: ${accuracy.toFixed(1)}% (${totalCorrect}/25) | ` +
         `Skill: ${skill !== null ? skill.toFixed(1) : "N/A"} avg difference`;
 
-      // Build final 25 cards, color-coded
+      // Build final 25 cards
       const finalCardsContainer = document.getElementById("final-cards-container");
       finalCardsContainer.innerHTML = "";
 
-      // Flatten all 5 rounds
       const allRoundMovies = rounds.flat();
       allRoundMovies.forEach(movie => {
         const actual = movie.runtime_minutes;
@@ -613,60 +652,88 @@
     }
 
     /*******************
-     * SCOREBOARD UTILS *
+     * UTILITY FUNCTIONS
      *******************/
-    // By default, updates the main scoreboard (#score-accuracy, #score-skill, #popcorn-rating).
-    // If targetId is given (e.g. "midround-scoreboard"), it updates that area with text + popcorn emojis.
-    function updateScoreboard(targetId) {
-      const accuracyVal = totalCorrect / 25 * 100;
-      const skillVal = totalAnswered ? (totalDifference / totalAnswered) : null;
 
-      if (!targetId) {
-        // Update main scoreboard
-        document.getElementById("score-accuracy").innerText = accuracyVal.toFixed(1) + "%";
-        document.getElementById("score-skill").innerText = skillVal !== null ? skillVal.toFixed(1) : "N/A";
-        renderPopcornRating(accuracyVal, document.getElementById("popcorn-rating"));
-      } else {
-        // Mid-round scoreboard
-        const container = document.getElementById(targetId);
-        container.innerHTML = `
-          Accuracy: ${accuracyVal.toFixed(1)}% (${totalCorrect}/25)
-          &nbsp;|&nbsp;
-          Skill: ${skillVal !== null ? skillVal.toFixed(1) : "N/A"}
-        `;
-        // We can also add popcorn emojis for mid-round
-        const emojiSpan = document.createElement("span");
-        renderPopcornRating(accuracyVal, emojiSpan);
-        container.appendChild(emojiSpan);
-      }
-    }
-
-    // Render partial popcorn emojis based on accuracy out of 5
-    function renderPopcornRating(accuracyPercent, container) {
-      container.innerHTML = "";
-      const ratingOutOf5 = (accuracyPercent / 100) * 5; // e.g. 80% => 4.0
+    /**
+     * Renders popcorn emojis (partial possible) based on percent out of 5.
+     * Returns an HTML string.
+     */
+    function renderPopcornString(accuracyPercent) {
+      const ratingOutOf5 = (accuracyPercent / 100) * 5;
       const fullPopcorns = Math.floor(ratingOutOf5);
       const fraction = ratingOutOf5 - fullPopcorns;
-
-      // Full popcorns
+      let html = "";
       for (let i = 0; i < fullPopcorns; i++) {
-        const span = document.createElement("span");
-        span.textContent = "🍿";
-        span.classList.add("popcorn-emoji");
-        container.appendChild(span);
+        html += "🍿";
       }
-
-      // Partial
       if (fraction > 0) {
-        const partial = document.createElement("span");
-        partial.classList.add("popcorn-emoji");
-        partial.style.display = "inline-block";
-        partial.style.overflow = "hidden";
-        // Approximate partial coverage
-        partial.style.width = (fraction * 1.0) + "em";
-        partial.textContent = "🍿";
-        container.appendChild(partial);
+        // partial
+        // We'll approximate partial coverage by clipping width, but in plain text we'll just add a partial indicator
+        html += "🍿"; // or "🍿" partially displayed. In plain text, we can't clip easily, but you get the idea.
       }
+      return html + " ";
+    }
+
+    /**
+     * Creates a rounded button element for skill difference.
+     *  - 0 => green, 120 => red
+     */
+    function createSkillButton(value, max) {
+      // clamp value to [0, max]
+      const val = Math.max(0, Math.min(value, max));
+      // t in [0..1]
+      const t = val / max; 
+      const color = lerpColor("#00ff00", "#ff0000", t); // 0=green, 1=red
+      const btn = document.createElement("span");
+      btn.classList.add("rounded-button");
+      btn.style.backgroundColor = color;
+      btn.innerText = val.toFixed(1);
+      return btn;
+    }
+
+    /**
+     * Creates a rounded button element for accuracy.
+     *  - 0% => red, 100% => green
+     * minVal = 0, maxVal = 100 for normal usage
+     */
+    function createAccuracyButton(value, minVal, maxVal) {
+      // clamp
+      let val = Math.max(minVal, Math.min(value, maxVal));
+      // t in [0..1]
+      const t = (val - minVal) / (maxVal - minVal);
+      const color = lerpColor("#ff0000", "#00ff00", t); // 0=red, 1=green
+      const btn = document.createElement("span");
+      btn.classList.add("rounded-button");
+      btn.style.backgroundColor = color;
+      btn.innerText = val.toFixed(1) + "%";
+      return btn;
+    }
+
+    /**
+     * Linear interpolation between two hex colors c1, c2 by factor t in [0..1].
+     */
+    function lerpColor(c1, c2, t) {
+      const [r1, g1, b1] = hexToRgb(c1);
+      const [r2, g2, b2] = hexToRgb(c2);
+      const r = Math.round(r1 + (r2 - r1) * t);
+      const g = Math.round(g1 + (g2 - g1) * t);
+      const b = Math.round(b1 + (b2 - b1) * t);
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    /**
+     * Converts a hex color (#rrggbb) to [r,g,b].
+     */
+    function hexToRgb(hex) {
+      let c = hex.replace("#", "");
+      if (c.length === 3) {
+        c = c[0]+c[0] + c[1]+c[1] + c[2]+c[2];
+      }
+      const r = parseInt(c.substring(0,2),16);
+      const g = parseInt(c.substring(2,4),16);
+      const b = parseInt(c.substring(4,6),16);
+      return [r,g,b];
     }
   </script>
 </body>
