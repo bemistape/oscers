@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Stump the Buff</title>
+  <style>
+    body {
+      background: black;
+      color: white;
+      font-family: Rockwell, serif;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    #game-container {
+      max-width: 900px;
+      margin: auto;
+    }
+    #timer {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    #round-info {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .cards-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .movie-card, .runtime-card {
+      border: 1px solid white;
+      padding: 10px;
+      margin: 5px;
+      text-align: center;
+    }
+    .movie-card {
+      width: 170px;
+      height: 100px;
+      vertical-align: top;
+      position: relative;
+    }
+    .movie-card .assigned {
+      position: absolute;
+      bottom: 5px;
+      left: 5px;
+      right: 5px;
+      background: #333;
+      padding: 5px;
+      font-size: 16px;
+    }
+    .runtime-card {
+      width: 100px;
+      cursor: grab;
+    }
+    #submit-btn, #play-again-btn {
+      display: block;
+      margin: 0 auto 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #results {
+      text-align: center;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <h1>Stump the Buff</h1>
+    <div id="round-info"></div>
+    <div id="timer">20</div>
+    <div id="movies-container" class="cards-container"></div>
+    <div id="runtimes-container" class="cards-container"></div>
+    <button id="submit-btn">Submit</button>
+    <div id="results"></div>
+  </div>
+
+  <script>
+    // Global game state variables
+    let allMovies = [];
+    let rounds = []; // Array of rounds, each is an array of 5 movie objects
+    let currentRound = 0;
+    let totalCorrect = 0;
+    let totalDifference = 0;
+    let totalAnswered = 0;
+    let roundTimer;
+    let roundTimeLimit = 20; // seconds
+    let timeLeft = roundTimeLimit;
+
+    // CSV URL from Google Sheets
+    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vToIbm5XR9mtqOXHYzpF0jIXhGY9WI9m-QQak2KsZFB6CGVnRVRCPL3V6zFVbT6e_jLyGQM1e5XPjcX/pub?gid=131639577&single=true&output=csv";
+
+    // Utility: Shuffle an array
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    // Fetch CSV and initialize game
+    function fetchCSV() {
+      fetch(csvUrl)
+        .then(response => response.text())
+        .then(data => {
+          parseCSV(data);
+          setupRounds();
+          startRound();
+        })
+        .catch(error => {
+          console.error("Error fetching CSV:", error);
+        });
+    }
+
+    // Simple CSV parser assuming no commas in fields
+    function parseCSV(data) {
+      const lines = data.trim().split("\n");
+      const headers = lines[0].split(",");
+      for (let i = 1; i < lines.length; i++) {
+        const row = lines[i].split(",");
+        let movie = {};
+        headers.forEach((header, index) => {
+          movie[header.trim()] = row[index].trim();
+        });
+        // Convert runtime_minutes to number
+        movie.runtime_minutes = parseInt(movie.runtime_minutes, 10);
+        allMovies.push(movie);
+      }
+    }
+
+    // Prepare 5 rounds (each round with 5 random movies)
+    function setupRounds() {
+      const shuffled = shuffle(allMovies.slice());
+      const selected = shuffled.slice(0, 25);
+      for (let i = 0; i < 5; i++) {
+        rounds.push(selected.slice(i * 5, (i + 1) * 5));
+      }
+    }
+
+    // Start the round
+    function startRound() {
+      if (currentRound >= rounds.length) {
+        endGame();
+        return;
+      }
+      document.getElementById("results").innerText = "";
+      document.getElementById("round-info").innerText = "Round " + (currentRound + 1) + " of 5";
+      timeLeft = roundTimeLimit;
+      updateTimerDisplay();
+      renderRound();
+      roundTimer = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        if (timeLeft <= 0) {
+          clearInterval(roundTimer);
+          submitRound();
+        }
+      }, 1000);
+    }
+
+    // Update timer display
+    function updateTimerDisplay() {
+      document.getElementById("timer").innerText = timeLeft;
+    }
+
+    // Render the current round's movies and runtimes
+    function renderRound() {
+      const moviesContainer = document.getElementById("movies-container");
+      const runtimesContainer = document.getElementById("runtimes-container");
+      moviesContainer.innerHTML = "";
+      runtimesContainer.innerHTML = "";
+
+      const roundMovies = rounds[currentRound];
+
+      // Create movie cards
+      roundMovies.forEach((movie, idx) => {
+        const movieCard = document.createElement("div");
+        movieCard.classList.add("movie-card");
+        // Store correct runtime as a data attribute
+        movieCard.setAttribute("data-correct", movie.runtime_minutes);
+        movieCard.setAttribute("data-movie", movie["Movie Name"]);
+        movieCard.id = "movie-" + idx;
+        movieCard.innerHTML = `<div>${movie["Movie Name"]}</div>`;
+        // Allow drop events
+        movieCard.addEventListener("dragover", e => { e.preventDefault(); });
+        movieCard.addEventListener("drop", e => dropHandler(e, movieCard));
+        moviesContainer.appendChild(movieCard);
+      });
+
+      // Create runtime cards – shuffle the runtimes from the round movies
+      const runtimeValues = roundMovies.map(m => ({ 
+        runtime: m.Runtime, 
+        runtime_minutes: m.runtime_minutes 
+      }));
+      shuffle(runtimeValues);
+      runtimeValues.forEach((rt, idx) => {
+        const runtimeCard = document.createElement("div");
+        runtimeCard.classList.add("runtime-card");
+        runtimeCard.setAttribute("draggable", "true");
+        runtimeCard.id = "runtime-" + idx;
+        // Store the numeric value for checking
+        runtimeCard.setAttribute("data-runtime", rt.runtime_minutes);
+        runtimeCard.innerText = rt.runtime;
+        runtimeCard.addEventListener("dragstart", dragStartHandler);
+        runtimesContainer.appendChild(
