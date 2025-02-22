@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Stump the Buff - v2.6</title>
+  <title>Stump the Buff - v2.6a</title>
   <style>
     /* ---------- GLOBAL / LAYOUT ---------- */
     html, body {
@@ -35,7 +35,7 @@
       opacity: 0.7;
       margin-top: 20px;
     }
-
+    
     /* ---------- BUTTON STYLES ---------- */
     .diff-btn {
       background: #222;
@@ -66,7 +66,7 @@
       opacity: 0.5;
       cursor: not-allowed;
     }
-
+    
     /* ---------- MAIN CONTAINERS ---------- */
     #intro-container {
       display: flex;
@@ -82,7 +82,7 @@
       max-width: 900px;
       margin: 0 auto;
     }
-
+    
     /* ---------- INTRO PAGE ---------- */
     #intro-container .intro-rules {
       max-width: 600px;
@@ -92,7 +92,7 @@
       text-align: center;
     }
     .difficulty-box { margin-bottom: 20px; }
-
+    
     /* ---------- GAME PAGE ---------- */
     #timer-box {
       margin: 10px auto;
@@ -117,7 +117,6 @@
       margin-bottom: 20px;
       width: 100%;
     }
-    /* Runtimes still in flex */
     #runtimes-container {
       display: flex;
       justify-content: center;
@@ -131,7 +130,7 @@
       margin: 5px auto;
       padding: 10px;
       background-color: #000;
-      border-radius: 25px; /* more rounded */
+      border-radius: 25px;
       text-align: center;
       min-height: 100px;
       display: flex;
@@ -143,9 +142,8 @@
     .movie-title {
       font-weight: bold;
       margin-bottom: 5px;
-      font-size: 32px; /* doubled */
+      font-size: 32px;
     }
-    /* highlight when a runtime is placed */
     .placed {
       border-color: #FFD700 !important;
       background-color: #111;
@@ -196,7 +194,7 @@
       min-width: 200px;
     }
     .stats-box.empty { display: none; }
-
+    
     #joker-btn {
       display: inline-block;
       width: 80px;
@@ -218,7 +216,7 @@
       0% { box-shadow: 0 0 5px #FFD700; }
       100% { box-shadow: 0 0 20px #FFD700; }
     }
-
+    
     /* ---------- BONUS ROUND (GRID) ---------- */
     #bonus-container {
       text-align: center;
@@ -239,7 +237,7 @@
       transition: all 0.2s ease;
       margin-bottom: 20px;
     }
-    /* Use grid to ensure bonus cards don't overlap */
+    /* Use grid so bonus cards don’t overlap */
     #bonus-floating-container {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
@@ -249,7 +247,6 @@
       margin: 0 auto 20px auto;
     }
     .floating-card {
-      /* No absolute positioning now */
       width: 120px;
       height: 120px;
       border: 2px solid white;
@@ -261,7 +258,7 @@
       font-weight: bold;
       padding: 5px;
     }
-
+    
     /* ---------- FINAL PAGE ---------- */
     #final-container {
       text-align: center;
@@ -319,7 +316,7 @@
       background-color: #330000;
       border-color: #f00;
     }
-
+    
     /* ---------- LARGER SUBMIT BUTTON ---------- */
     #submit-btn {
       font-size: 22px;
@@ -332,7 +329,7 @@
     #submit-btn:hover {
       background: #FFC700;
     }
-
+    
     #share-twitter-btn, #copy-recap-btn, #play-again-btn {
       display: inline-block;
       margin: 10px 8px;
@@ -350,7 +347,7 @@
   <audio id="joker-sound" preload="auto">
     <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=" type="audio/wav">
   </audio>
-
+  
   <!-- INTRO SCREEN -->
   <div id="intro-container" class="page-container">
     <h1>Stump the Buff</h1>
@@ -369,34 +366,37 @@
     <button id="begin-btn" disabled>Begin</button>
     <div class="version-number">v2.6</div>
   </div>
-
+  
   <!-- GAME SCREEN -->
   <div id="game-container" class="page-container">
     <div id="timer-box">
       <span id="timer-value">20</span>
     </div>
-    <!-- Movie cards arranged in grid (3/2) -->
+    
+    <!-- Movie cards arranged in a grid (3 columns, then 2) -->
     <div id="movies-container" class="cards-container"></div>
-    <!-- Runtimes appear above, then Joker underneath the movie cards -->
+    
+    <!-- Runtimes appear above; Joker under the movie cards -->
     <div id="runtimes-container" class="cards-container"></div>
     <div class="center">
       <button id="joker-btn" class="glow-anim" title="Use Joker (once)">🤡</button>
     </div>
+    
     <div id="this-game-stats" class="stats-box empty"></div>
     <button id="submit-btn">Submit</button>
   </div>
-
+  
   <!-- BONUS ROUND (Grid Layout) -->
   <div id="bonus-container" class="page-container">
     <div id="bonus-timer-box">
       <span id="bonus-timer-value">10</span>
     </div>
     <h3 id="bonus-message"></h3>
-    <div id="bonus-floating-container" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; width:100%; max-width:800px; margin:0 auto 20px auto;"></div>
+    <div id="bonus-floating-container" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; width: 100%; max-width: 800px; margin: 0 auto 20px auto;"></div>
     <div id="bonus-result"></div>
     <button id="bonus-continue-btn">Continue</button>
   </div>
-
+  
   <!-- FINAL SCREEN -->
   <div id="final-container" class="page-container">
     <div id="final-scores"></div>
@@ -411,7 +411,7 @@
       <button id="play-again-btn">Play Again?</button>
     </div>
   </div>
-
+  
   <script>
     /*******************************************************
      * GLOBAL STATE & CONFIG
@@ -428,34 +428,37 @@
     let roundTimers = [];
     let rounds = [];
     let currentRoundIndex = 0;
-
+    
     let totalCorrect = 0;
     let totalDifference = 0;
     let totalAnswered = 0;
     let totalScore = 0;
     let roundScores = [];
-
+    
     let jokerUsed = false;
-    // We no longer disable Joker on drag start
+    // Joker remains selectable until round submission
     let timeLeft = 20;
     let roundTimer = null;
     let canDrag = false;
-
+    
     // Bonus
     let bonusMovies = [];
     let bonusUsed = false;
     let bonusTimer = null;
     let bonusTimeLeft = 10;
-
+    
     /*******************************************************
      * PAGE LOAD & CSV FETCH/INIT
      *******************************************************/
     document.addEventListener("DOMContentLoaded", async () => {
-      // Difficulty button highlighting
+      // Set up difficulty buttons and default to Easy
       document.getElementById("easy-btn").addEventListener("click", () => setDifficulty("easy"));
       document.getElementById("medium-btn").addEventListener("click", () => setDifficulty("medium"));
       document.getElementById("hard-btn").addEventListener("click", () => setDifficulty("hard"));
-
+      
+      // Auto-default to Easy
+      setDifficulty("easy");
+      
       const beginBtn = document.getElementById("begin-btn");
       beginBtn.disabled = true;
       beginBtn.innerText = "Loading...";
@@ -467,21 +470,20 @@
         console.error("Error fetching CSV:", e);
         beginBtn.innerText = "Error loading data";
       }
-
+      
       beginBtn.addEventListener("click", onBeginGame);
-
+      
       // Joker
       document.getElementById("joker-btn").addEventListener("click", () => {
-        // Only allow Joker if it hasn't been used
         if (!jokerUsed) useJoker();
       });
-
+      
       // Submit
       document.getElementById("submit-btn").addEventListener("click", onSubmitRound);
-
+      
       // Bonus
       document.getElementById("bonus-continue-btn").addEventListener("click", onFinishBonus);
-
+      
       // Final
       document.getElementById("share-twitter-btn").addEventListener("click", shareOnTwitter);
       document.getElementById("copy-recap-btn").addEventListener("click", copyRecap);
@@ -489,14 +491,14 @@
         document.getElementById("final-container").style.display = "none";
         document.getElementById("intro-container").style.display = "flex";
       });
-
+      
       // Toggle final details
       document.getElementById("details-toggle").addEventListener("click", () => {
         const det = document.getElementById("details-container");
         det.style.display = (det.style.display === "none" ? "block" : "none");
       });
     });
-
+    
     /*******************************************************
      * DIFFICULTY UI
      *******************************************************/
@@ -508,7 +510,7 @@
       });
       document.getElementById(`${diff}-btn`).classList.add("active");
     }
-
+    
     /*******************************************************
      * FETCH CSV
      *******************************************************/
@@ -524,26 +526,25 @@
       const colRuntimeMin = headers.indexOf("runtime_minutes");
       const colRuntime = headers.indexOf("Runtime");
       const colVotesRank = headers.indexOf("Votes Percent Rank");
-
       for (let i = 1; i < lines.length; i++) {
         const rowCells = lines[i].split(",");
         if (rowCells.length < 4) continue;
         let movie = {};
         movie["Movie Name"] = rowCells[colMovieName]?.trim() || "";
         movie.runtime_minutes = parseInt(rowCells[colRuntimeMin] || "0", 10);
-        movie.Runtime = rowCells[colRuntime] || "";
+        movie.Runtime = rowCells[colRuntime]?.trim() || "";
         movie._rank = parseFloat(rowCells[colVotesRank] || "0");
         movie._assignedRuntime = null;
         allMovies.push(movie);
       }
     }
-
+    
     /*******************************************************
      * BEGIN GAME
      *******************************************************/
     function onBeginGame() {
       if (!difficulty) {
-        difficulty = "easy"; // default
+        difficulty = "easy";
       }
       document.getElementById("intro-container").style.display = "none";
       document.getElementById("game-container").style.display = "flex";
@@ -558,9 +559,10 @@
       roundScores = [];
       jokerUsed = false;
       bonusUsed = false;
+      
       document.getElementById("bonus-container").style.display = "none";
       document.getElementById("final-container").style.display = "none";
-
+      
       filterByDifficulty();
       if (filteredMovies.length < 25) {
         filteredMovies = allMovies.slice();
@@ -593,7 +595,7 @@
         }
       }
     }
-
+    
     /*******************************************************
      * ROUND LOGIC
      *******************************************************/
@@ -610,19 +612,17 @@
       const roundMovies = rounds[currentRoundIndex];
       const moviesContainer = document.getElementById("movies-container");
       const runtimesContainer = document.getElementById("runtimes-container");
-
+      
       timeLeft = roundTimers[currentRoundIndex] || 20;
       setupTimer();
       updateGameStatsBox();
-
-      // Clear containers
+      
       moviesContainer.innerHTML = "";
       runtimesContainer.innerHTML = "";
-
-      // Joker remains available until round submission (we no longer disable it on drag)
+      
+      // Joker remains available until round submission.
       document.getElementById("joker-btn").style.display = jokerUsed ? "none" : "inline-block";
-
-      // Create movie cards
+      
       roundMovies.forEach(m => {
         const card = document.createElement("div");
         card.classList.add("movie-card");
@@ -632,8 +632,7 @@
         card.addEventListener("drop", e => dropHandler(e, m, card));
         moviesContainer.appendChild(card);
       });
-
-      // Create runtime cards
+      
       const roundRuntimes = roundMovies.map((m, i) => ({
         runtime: m.Runtime,
         runtime_minutes: m.runtime_minutes,
@@ -649,16 +648,15 @@
         rc.innerText = rt.runtime;
         rc.addEventListener("dragstart", e => {
           if (!canDrag) { e.preventDefault(); return; }
-          // We no longer disable Joker on drag start
           e.dataTransfer.setData("text/plain", rt.uniqueId);
         });
         runtimesContainer.appendChild(rc);
       });
-
+      
       fadeInCards();
       canDrag = true;
     }
-
+    
     function setupTimer() {
       clearInterval(roundTimer);
       const timerBox = document.getElementById("timer-box");
@@ -666,7 +664,7 @@
       timerVal.innerText = timeLeft;
       timerBox.style.color = "white";
       timerBox.style.borderColor = "#444";
-
+      
       roundTimer = setInterval(() => {
         timeLeft--;
         timerVal.innerText = timeLeft;
@@ -689,7 +687,7 @@
         }
       }, 1000);
     }
-
+    
     /*******************************************************
      * DRAG & DROP
      *******************************************************/
@@ -715,7 +713,7 @@
       movieCard.classList.add("placed");
       movieObj._assignedRuntime = parseInt(draggedCard.getAttribute("data-runtime"), 10);
     }
-
+    
     /*******************************************************
      * SUBMIT ROUND & SCORING
      *******************************************************/
@@ -723,13 +721,13 @@
       clearInterval(roundTimer);
       canDrag = false;
       document.getElementById("submit-btn").style.display = "none";
-
+      
       const roundMovies = rounds[currentRoundIndex];
       let roundCorrect = 0;
       let roundDiff = 0;
       let answeredCount = 0;
       let sumActual = 0;
-
+      
       const movieCards = document.getElementById("movies-container").children;
       for (let i = 0; i < movieCards.length; i++) {
         const card = movieCards[i];
@@ -751,6 +749,318 @@
             card.appendChild(correctLine);
           }
         } else {
-          // No runtime assigned
           card.classList.add("incorrect");
-          const correctLine 
+          const correctLine = document.createElement("div");
+          correctLine.style.fontSize = "12px";
+          correctLine.style.marginTop = "5px";
+          correctLine.innerText = `Correct: ${correctRuntime} min`;
+          card.appendChild(correctLine);
+        }
+      }
+      
+      // Only apply bonus multiplier if all 5 movies were answered
+      let bonusFactor = (answeredCount === 5) ? (1 - ((answeredCount ? (roundDiff / answeredCount) : 0) / (sumActual / 5))) ** 2 : 0;
+      const baseScore = roundCorrect * 1000;
+      const roundScore = baseScore * (1 + bonusFactor);
+      
+      roundMovies.forEach(m => {
+        if (m._assignedRuntime != null) {
+          roundDiff += Math.abs(m._assignedRuntime - m.runtime_minutes);
+        }
+      });
+      
+      totalCorrect += roundCorrect;
+      totalDifference += roundDiff;
+      totalAnswered += answeredCount;
+      totalScore += roundScore;
+      roundScores.push({
+        roundIndex: currentRoundIndex + 1,
+        correct: roundCorrect,
+        diff: roundDiff,
+        answered: answeredCount,
+        roundScore: roundScore
+      });
+      
+      setTimeout(() => {
+        currentRoundIndex++;
+        document.getElementById("submit-btn").style.display = "block";
+        startRound();
+      }, 5000);
+    }
+    
+    /*******************************************************
+     * GAME STATS
+     *******************************************************/
+    function updateGameStatsBox() {
+      const container = document.getElementById("this-game-stats");
+      const totalPossible = currentRoundIndex * 5;
+      if (totalPossible <= 0) {
+        container.classList.add("empty");
+        return;
+      }
+      container.classList.remove("empty");
+      const accuracy = (totalCorrect / totalPossible) * 100;
+      const skill = totalAnswered ? (totalDifference / totalAnswered) : 0;
+      const pop = renderPopcorn(accuracy);
+      container.innerHTML = `
+        <h4>The Game So Far</h4>
+        <div>Accuracy: ${pop}${accuracy.toFixed(1)}% (${totalCorrect}/${totalPossible})</div>
+        <div>Skill: ${skill.toFixed(1)} min</div>
+        <div>Score: ${Math.round(totalScore)}</div>
+      `;
+    }
+    
+    /*******************************************************
+     * JOKER
+     *******************************************************/
+    function useJoker() {
+      if (jokerUsed) return;
+      jokerUsed = true;
+      document.getElementById("joker-btn").style.display = "none";
+      const snd = document.getElementById("joker-sound");
+      snd.currentTime = 0;
+      snd.play().catch(() => {});
+      const roundMovies = rounds[currentRoundIndex];
+      const sorted = [...roundMovies].sort((a, b) => b.runtime_minutes - a.runtime_minutes);
+      const greenShades = ["#003300", "#006600", "#009900", "#00CC00", "#00FF00"];
+      const originals = [];
+      sorted.forEach((m, idx) => {
+        const card = findMovieCard(m["Movie Name"]);
+        if (!card) return;
+        originals.push({ card, bg: card.style.backgroundColor, bc: card.style.borderColor });
+        card.style.backgroundColor = greenShades[idx];
+        card.style.borderColor = greenShades[idx];
+      });
+      setTimeout(() => {
+        originals.forEach(o => {
+          o.card.style.backgroundColor = "#000";
+          o.card.style.borderColor = "white";
+        });
+      }, 5000);
+    }
+    
+    function findMovieCard(name) {
+      const cards = document.querySelectorAll("#movies-container .movie-card");
+      for (let c of cards) {
+        const t = c.querySelector(".movie-title");
+        if (t && t.innerText === name) return c;
+      }
+      return null;
+    }
+    
+    /*******************************************************
+     * BONUS ROUND (GRID)
+     *******************************************************/
+    function startBonusRound() {
+      bonusUsed = false;
+      bonusTimeLeft = 10;
+      let pool = shuffle(filteredMovies.slice());
+      if (pool.length < 5) {
+        pool = allMovies.slice();
+      }
+      bonusMovies = pool.slice(0, 5);
+      
+      const container = document.getElementById("bonus-floating-container");
+      container.innerHTML = "";
+      bonusMovies.forEach(m => {
+        const card = document.createElement("div");
+        card.classList.add("floating-card");
+        card.innerText = m["Movie Name"];
+        card.addEventListener("click", () => pickBonusMovie(m, card));
+        container.appendChild(card);
+      });
+      
+      setupBonusTimer();
+      document.getElementById("bonus-message").innerText = "";
+      document.getElementById("bonus-result").innerText = "";
+    }
+    
+    function setupBonusTimer() {
+      clearInterval(bonusTimer);
+      const box = document.getElementById("bonus-timer-box");
+      const val = document.getElementById("bonus-timer-value");
+      val.innerText = bonusTimeLeft;
+      box.style.color = "white";
+      box.style.borderColor = "#444";
+      
+      bonusTimer = setInterval(() => {
+        bonusTimeLeft--;
+        val.innerText = bonusTimeLeft;
+        if (bonusTimeLeft <= 3) {
+          box.style.color = "red";
+          box.style.borderColor = "red";
+        } else if (bonusTimeLeft <= 5) {
+          box.style.color = "orange";
+          box.style.borderColor = "orange";
+        }
+        if (bonusTimeLeft <= 0) {
+          clearInterval(bonusTimer);
+          if (!bonusUsed) {
+            document.getElementById("bonus-message").innerText = "Time's up! No pick made.";
+          }
+        }
+      }, 1000);
+    }
+    
+    function pickBonusMovie(chosenMovie, chosenCard) {
+      if (bonusUsed) return;
+      bonusUsed = true;
+      clearInterval(bonusTimer);
+      let maxRuntime = -1;
+      let maxMovie = null;
+      bonusMovies.forEach(m => {
+        if (m.runtime_minutes > maxRuntime) {
+          maxRuntime = m.runtime_minutes;
+          maxMovie = m;
+        }
+      });
+      const correct = (chosenMovie.runtime_minutes === maxRuntime);
+      chosenCard.classList.add(correct ? "correct" : "incorrect");
+      if (correct) {
+        totalScore += 1000;
+        document.getElementById("bonus-message").innerText = "Correct! +1000 points.";
+      } else {
+        document.getElementById("bonus-message").innerText = `Sorry, it was ${maxMovie["Movie Name"]} (${maxRuntime} min).`;
+      }
+    }
+    
+    function onFinishBonus() {
+      document.getElementById("bonus-container").style.display = "none";
+      showFinalScreen();
+    }
+    
+    /*******************************************************
+     * FINAL SCREEN
+     *******************************************************/
+    function showFinalScreen() {
+      document.getElementById("final-container").style.display = "flex";
+      const accuracy = (totalCorrect / 25) * 100;
+      const skill = totalAnswered ? (totalDifference / totalAnswered) : 0;
+      document.getElementById("final-scores").innerText = `Final Score: ${Math.round(totalScore)}`;
+      let breakdownHTML = "";
+      roundScores.forEach(r => {
+        breakdownHTML += `<div class="breakdown-row">
+          Round ${r.roundIndex}: ${r.correct}/5 correct → +${r.roundScore.toFixed(0)} pts
+        </div>`;
+      });
+      breakdownHTML += `<div class="breakdown-row">
+        Accuracy: ${accuracy.toFixed(1)}% | Skill: ${skill.toFixed(1)} min
+      </div>`;
+      document.getElementById("round-breakdown").innerHTML = breakdownHTML;
+      
+      const finalCardsContainer = document.getElementById("final-cards-container");
+      finalCardsContainer.innerHTML = "";
+      rounds.forEach((round, idx) => {
+        const rowDiv = document.createElement("div");
+        rowDiv.classList.add("final-round-row");
+        const heading = document.createElement("div");
+        heading.classList.add("final-round-heading");
+        heading.innerText = `Round ${idx + 1}`;
+        rowDiv.appendChild(heading);
+        round.forEach(movie => {
+          const actual = movie.runtime_minutes;
+          const assigned = (movie._assignedRuntime !== null) ? movie._assignedRuntime : "-";
+          const isCorrect = (assigned === actual);
+          const card = document.createElement("div");
+          card.classList.add("final-card");
+          if (assigned !== "-") {
+            card.classList.add(isCorrect ? "correct" : "incorrect");
+          }
+          card.innerHTML = `
+            <div style="font-weight:bold; margin-bottom:5px;">${movie["Movie Name"]}</div>
+            <div>Actual: ${movie.Runtime}</div>
+            <div>Your Pick: ${assigned === "-" ? "-" : assigned + " min"}</div>
+          `;
+          rowDiv.appendChild(card);
+        });
+        finalCardsContainer.appendChild(rowDiv);
+      });
+    }
+    
+    /*******************************************************
+     * SHARE & COPY
+     *******************************************************/
+    function shareOnTwitter() {
+      const accuracy = (totalCorrect / 25) * 100;
+      const skill = totalAnswered ? (totalDifference / totalAnswered) : 0;
+      const popcorn = getPopcornString(accuracy);
+      const text = `Stump the Buff Recap:
+Score: ${Math.round(totalScore)}
+Accuracy: ${popcorn} (${accuracy.toFixed(1)}%)
+Skill: ${skill.toFixed(1)}
+Think you can beat me? Head to oscers.com`;
+      const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+      window.open(url, "_blank");
+    }
+    function copyRecap() {
+      const accuracy = (totalCorrect / 25) * 100;
+      const skill = totalAnswered ? (totalDifference / totalAnswered) : 0;
+      const popcorn = getPopcornString(accuracy);
+      const text = `Stump the Buff Recap:
+Score: ${Math.round(totalScore)}
+Accuracy: ${popcorn} (${accuracy.toFixed(1)}%)
+Skill: ${skill.toFixed(1)}
+Think you can beat me? Head to oscers.com`;
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Recap copied to clipboard!");
+      }).catch(() => {
+        alert("Failed to copy recap. Your browser may not allow clipboard writes.");
+      });
+    }
+    
+    /*******************************************************
+     * TRANSITIONS & UTILS
+     *******************************************************/
+    function fadeOutCards(callback) {
+      const mc = document.getElementById("movies-container");
+      const rc = document.getElementById("runtimes-container");
+      mc.style.opacity = "1";
+      rc.style.opacity = "1";
+      mc.offsetHeight;
+      mc.style.opacity = "0";
+      rc.style.opacity = "0";
+      setTimeout(callback, 500);
+    }
+    function fadeInCards() {
+      const mc = document.getElementById("movies-container");
+      const rc = document.getElementById("runtimes-container");
+      mc.style.opacity = "0";
+      rc.style.opacity = "0";
+      mc.offsetHeight;
+      mc.style.opacity = "1";
+      rc.style.opacity = "1";
+    }
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+    function getPopcornString(accuracyPercent) {
+      return renderPopcorn(accuracyPercent).trim();
+    }
+    function renderPopcorn(accuracyPercent) {
+      const ratingOutOf5 = (accuracyPercent / 100) * 5;
+      const full = Math.floor(ratingOutOf5);
+      const frac = ratingOutOf5 - full;
+      let html = "";
+      for (let i = 0; i < full; i++) {
+        html += "🍿";
+      }
+      if (frac > 0) {
+        html += "🍿";
+      }
+      return html + " ";
+    }
+    function findMovieCard(name) {
+      const cards = document.querySelectorAll("#movies-container .movie-card");
+      for (let c of cards) {
+        const t = c.querySelector(".movie-title");
+        if (t && t.innerText === name) return c;
+      }
+      return null;
+    }
+  </script>
+</body>
+</html>
