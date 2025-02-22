@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Stump the Buff - v4.2</title>
+  <title>Stump the Buff - v4.3</title>
   <style>
     /* ---------- GLOBAL / LAYOUT ---------- */
     html, body {
@@ -37,7 +37,6 @@
     }
 
     /* ---------- BUTTON STYLES ---------- */
-    /* Unified style for all major buttons, including "Continue," "Share," "Copy," etc. */
     .game-btn {
       font-size: 22px;
       padding: 12px 30px;
@@ -67,10 +66,6 @@
       background: #FFD700;
       color: black;
       border-color: #FFD700;
-    }
-
-    #begin-btn {
-      /* we’ll reuse .game-btn styles for consistency */
     }
 
     /* ---------- MAIN CONTAINERS ---------- */
@@ -135,9 +130,12 @@
     #joker-btn:hover {
       background: #333;
     }
+
+    /* Submit button is now placed below #movies-container in the HTML */
     #submit-btn {
-      /* we’ll also reuse .game-btn for consistency */
+      margin-top: 20px;
     }
+
     #runtimes-container {
       display: flex;
       justify-content: center;
@@ -145,11 +143,6 @@
       gap: 10px;
       margin-bottom: 20px;
     }
-    /*
-      Force a 5-column grid so the 5 Movie Cards are always side by side
-      on typical desktop screens. If the screen is narrower than ~800px,
-      they may wrap, but that’s a smaller scenario.
-    */
     #movies-container {
       display: grid;
       grid-template-columns: repeat(5, 160px);
@@ -182,11 +175,6 @@
       margin-bottom: 5px;
       border-radius: 6px;
     }
-    /* 
-      We removed the movie title from the Round page
-      so there's no .movie-title in the Round card
-      (the final page still has text).
-    */
     .placed {
       border-color: #FFD700 !important;
       background-color: #111;
@@ -274,9 +262,6 @@
       transition: all 0.2s ease;
       margin-bottom: 20px;
     }
-    /*
-      We display posters in the bonus round, also in a 5-column grid.
-    */
     #bonus-floating-container {
       display: grid;
       grid-template-columns: repeat(5, 140px);
@@ -316,17 +301,8 @@
       font-size: 28px;
       font-weight: bold;
     }
-    #details-toggle {
-      margin-bottom: 10px;
-      padding: 8px 16px;
-      font-size: 14px;
-      background: #222;
-      color: white;
-      border: 2px solid #FFD700;
-      cursor: pointer;
-    }
+    /* We removed Show/Hide, so details are displayed by default. */
     #details-container {
-      display: none;
       margin: 10px 0;
     }
     .breakdown-row {
@@ -433,7 +409,7 @@
       <button class="diff-btn" data-difficulty="hard" id="hard-btn">Hard</button>
     </div>
     <button id="begin-btn" class="game-btn" disabled>Begin</button>
-    <div class="version-number">v4.2</div>
+    <div class="version-number">v4.3</div>
   </div>
 
   <!-- ROUND RECAP OVERLAY -->
@@ -449,19 +425,23 @@
       <span id="timer-value">20</span>
       <button id="joker-btn" class="glow-anim" title="Reveal relative runtimes briefly">🤡</button>
     </div>
-    <!-- Submit button is also a .game-btn for consistent styling -->
-    <button id="submit-btn" class="game-btn" title="Submit early to earn extra time bonus!">Submit</button>
     <div id="runtimes-container" class="cards-container"></div>
     <div id="movies-container" class="cards-container"></div>
+    <!-- Submit button is now below the movie cards -->
+    <button id="submit-btn" class="game-btn" title="Submit early to earn extra time bonus!">Submit</button>
     <div id="this-game-stats" class="stats-box empty"></div>
   </div>
 
   <!-- BONUS ROUND (Grid Layout) -->
   <div id="bonus-container" class="page-container">
+    <!-- Re-added short explanation for the bonus round -->
+    <p style="max-width: 600px; margin-bottom: 20px;">
+      Bonus Round! Pick which movie has the longest runtime for +1000 points.
+      You have a short time to choose, so move quickly!
+    </p>
     <div id="bonus-timer-box"><span id="bonus-timer-value">10</span></div>
     <h3 id="bonus-message"></h3>
     <div id="bonus-floating-container"></div>
-    <!-- "Continue" now matches the other game buttons -->
     <button id="bonus-continue-btn" class="game-btn">Continue</button>
     <div id="bonus-result"></div>
   </div>
@@ -469,18 +449,18 @@
   <!-- FINAL SCREEN -->
   <div id="final-container" class="page-container">
     <div id="final-scores"></div>
-    <button id="details-toggle" style="margin-bottom:20px;">Show/Hide Details</button>
-    <div id="details-container">
-      <!-- We'll keep #round-breakdown for overall stats. 
-           The per-round details are now under each row of cards. -->
-      <div id="round-breakdown"></div>
-      <div id="final-cards-container"></div>
-    </div>
+
+    <!-- Buttons are now above the round recaps, details are shown by default -->
     <div class="final-buttons">
-      <!-- All these buttons share .game-btn styling now -->
       <button id="share-twitter-btn" class="game-btn">Share on Twitter</button>
       <button id="copy-recap-btn" class="game-btn">Copy Recap</button>
       <button id="play-again-btn" class="game-btn">Play Again?</button>
+    </div>
+
+    <!-- We removed the Show/Hide toggle, details are displayed by default -->
+    <div id="details-container">
+      <div id="round-breakdown"></div>
+      <div id="final-cards-container"></div>
     </div>
   </div>
 
@@ -551,11 +531,8 @@
         document.getElementById("final-container").style.display = "none";
         document.getElementById("intro-container").style.display = "flex";
       });
-      document.getElementById("details-toggle").addEventListener("click", () => {
-        const det = document.getElementById("details-container");
-        det.style.display = (det.style.display === "none" ? "block" : "none");
-      });
 
+      // Removed the details toggle entirely (no show/hide)
       document.getElementById("round-recap-close-btn").addEventListener("click", () => {
         document.getElementById("round-recap-overlay").style.display = "none";
         nextRoundAfterRecap();
@@ -695,7 +672,6 @@
         card.classList.add("movie-card");
         card.setAttribute("data-correct",m.runtime);
 
-        // Only show the poster (no title text)
         let posterHTML=m.poster?`<img class="movie-poster" src="${m.poster}" alt="${m.movie_name} poster">`:"";
         card.innerHTML=posterHTML;
         
@@ -926,14 +902,14 @@
         const card=document.createElement("div");
         card.classList.add("floating-card");
         
-        // Show poster in bonus round too
+        // Show poster in bonus round
         if(m.poster){
           const img=document.createElement("img");
           img.src=m.poster;
           img.classList.add("bonus-poster");
           card.appendChild(img);
         }
-        // Then the small text with the movie name
+        // Then a small text with the movie name
         const textDiv=document.createElement("div");
         textDiv.innerText=m.movie_name;
         textDiv.style.fontSize="14px";
@@ -1007,10 +983,6 @@
       const skill=totalAnswered?(totalDifference/totalAnswered):0;
       document.getElementById("final-scores").innerText=`Final Score: ${Math.round(totalScore)}`;
 
-      /*
-        We'll keep the overall Accuracy & Skill in #round-breakdown at the top,
-        but we won't list per-round details here, because we want them under each round's cards.
-      */
       let overallHTML=`
         <div class="breakdown-row">
           Overall Accuracy: ${accuracy.toFixed(1)}% | Skill: ${skill.toFixed(1)} min
@@ -1021,7 +993,6 @@
       const finalCardsContainer=document.getElementById("final-cards-container");
       finalCardsContainer.innerHTML="";
 
-      // For each round, show the 5 final cards, then the round's detail.
       rounds.forEach((round,idx)=>{
         const rowDiv=document.createElement("div");
         rowDiv.classList.add("final-round-row");
@@ -1041,7 +1012,6 @@
           if(assigned!=="-"){
             card.classList.add(isCorrect?"correct":"incorrect");
           }
-          // Show poster & title on final screen
           let posterHTML=movie.poster?`<img class="movie-poster" src="${movie.poster}" alt="${movie.movie_name} poster">`:"";
           card.innerHTML=`
             ${posterHTML}
@@ -1054,7 +1024,6 @@
 
         finalCardsContainer.appendChild(rowDiv);
 
-        // Now add the round's detail under the cards
         const roundInfo=roundScores[idx];
         if(roundInfo){
           const infoDiv=document.createElement("div");
@@ -1066,7 +1035,6 @@
             Accuracy bonus: +${(roundInfo.fractionBonus||0).toFixed(0)}<br>
             Round Score: ${roundInfo.roundScore.toFixed(0)}
           `;
-          // Insert this after the row of cards
           finalCardsContainer.appendChild(infoDiv);
         }
       });
@@ -1151,10 +1119,6 @@ Think you can beat me? Head to oscers.com`;
     function findMovieCard(name){
       const cards=document.querySelectorAll("#movies-container .movie-card");
       for(let c of cards){
-        // We removed .movie-title in the round, 
-        // so we rely on matching the poster container?
-        // But if the user changes the poster, we won't have text. 
-        // We'll do a check if the "alt" matches the name:
         const poster=c.querySelector("img.movie-poster");
         if(poster && poster.alt===name+" poster"){
           return c;
