@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Stump the Buff - v2.7</title>
+  <title>Stump the Buff - v2.8</title>
   <style>
     /* ---------- GLOBAL / LAYOUT ---------- */
     html, body {
@@ -109,7 +109,6 @@
       border: 2px solid #444;
       transition: all 0.2s ease;
     }
-    /* New order: Timer, then Submit button, then Runtime cards, then Movie cards, then Joker */
     #submit-btn {
       font-size: 22px;
       padding: 12px 30px;
@@ -121,6 +120,7 @@
     #submit-btn:hover {
       background: #FFC700;
     }
+    /* Runtime cards under Submit */
     #runtimes-container {
       display: flex;
       justify-content: center;
@@ -128,21 +128,22 @@
       gap: 10px;
       margin-bottom: 20px;
     }
-    /* Movie cards arranged in a grid: 3 columns on first row, 2 on second */
+    /* Movie cards: 3 columns, centered horizontally */
     #movies-container {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+      grid-template-columns: repeat(3, 240px);
+      grid-auto-rows: auto;
+      justify-content: center;    /* center horizontally */
+      gap: 20px;
       margin-bottom: 20px;
       width: 100%;
     }
     .movie-card {
-      width: 240px; /* wider card */
+      width: 240px;
       border: 2px solid white;
-      margin: 5px auto;
-      padding: 20px; /* more padding */
+      padding: 20px;
       background-color: #000;
-      border-radius: 30px; /* more rounded */
+      border-radius: 30px;
       text-align: center;
       min-height: 100px;
       display: flex;
@@ -154,7 +155,7 @@
     .movie-title {
       font-weight: bold;
       margin-bottom: 5px;
-      font-size: 28px; /* slightly smaller */
+      font-size: 28px; /* slightly smaller than before */
     }
     .placed {
       border-color: #FFD700 !important;
@@ -206,7 +207,7 @@
       min-width: 200px;
     }
     .stats-box.empty { display: none; }
-    
+
     #joker-btn {
       display: inline-block;
       width: 80px;
@@ -228,7 +229,7 @@
       0% { box-shadow: 0 0 5px #FFD700; }
       100% { box-shadow: 0 0 20px #FFD700; }
     }
-    
+
     /* ---------- BONUS ROUND (GRID) ---------- */
     #bonus-container {
       text-align: center;
@@ -269,7 +270,7 @@
       font-weight: bold;
       padding: 5px;
     }
-    
+
     /* ---------- FINAL PAGE ---------- */
     #final-container {
       text-align: center;
@@ -327,7 +328,7 @@
       background-color: #330000;
       border-color: #f00;
     }
-    
+
     #share-twitter-btn, #copy-recap-btn, #play-again-btn {
       display: inline-block;
       margin: 10px 8px;
@@ -345,7 +346,7 @@
   <audio id="joker-sound" preload="auto">
     <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=" type="audio/wav">
   </audio>
-  
+
   <!-- INTRO SCREEN -->
   <div id="intro-container" class="page-container">
     <h1>Stump the Buff</h1>
@@ -362,31 +363,26 @@
       <button class="diff-btn" data-difficulty="hard" id="hard-btn">Hard</button>
     </div>
     <button id="begin-btn" disabled>Begin</button>
-    <div class="version-number">v2.6a</div>
+    <div class="version-number">v2.8</div>
   </div>
-  
+
   <!-- GAME SCREEN -->
   <div id="game-container" class="page-container">
     <div id="timer-box">
       <span id="timer-value">20</span>
     </div>
-    <!-- Submit button under timer -->
     <button id="submit-btn">Submit</button>
-    
-    <!-- Runtime cards under submit -->
+
     <div id="runtimes-container" class="cards-container"></div>
-    
-    <!-- Movie cards (wider, with more padding, smaller font) -->
     <div id="movies-container" class="cards-container"></div>
-    
-    <!-- Joker under movie cards -->
+
     <div class="center">
       <button id="joker-btn" class="glow-anim" title="Use Joker (once)">🤡</button>
     </div>
-    
+
     <div id="this-game-stats" class="stats-box empty"></div>
   </div>
-  
+
   <!-- BONUS ROUND (Grid Layout) -->
   <div id="bonus-container" class="page-container">
     <div id="bonus-timer-box">
@@ -397,7 +393,7 @@
     <div id="bonus-result"></div>
     <button id="bonus-continue-btn">Continue</button>
   </div>
-  
+
   <!-- FINAL SCREEN -->
   <div id="final-container" class="page-container">
     <div id="final-scores"></div>
@@ -412,7 +408,7 @@
       <button id="play-again-btn">Play Again?</button>
     </div>
   </div>
-  
+
   <script>
     /*******************************************************
      * GLOBAL STATE & CONFIG
@@ -429,34 +425,36 @@
     let roundTimers = [];
     let rounds = [];
     let currentRoundIndex = 0;
-    
+
     let totalCorrect = 0;
     let totalDifference = 0;
     let totalAnswered = 0;
     let totalScore = 0;
     let roundScores = [];
-    
+
     let jokerUsed = false;
     let timeLeft = 20;
     let roundTimer = null;
     let canDrag = false;
-    
+
     // Bonus
     let bonusMovies = [];
     let bonusUsed = false;
     let bonusTimer = null;
     let bonusTimeLeft = 10;
-    
+
     /*******************************************************
      * PAGE LOAD & CSV FETCH/INIT
      *******************************************************/
     document.addEventListener("DOMContentLoaded", async () => {
-      // Set up difficulty buttons and auto-default to Easy
+      // Difficulty buttons
       document.getElementById("easy-btn").addEventListener("click", () => setDifficulty("easy"));
       document.getElementById("medium-btn").addEventListener("click", () => setDifficulty("medium"));
       document.getElementById("hard-btn").addEventListener("click", () => setDifficulty("hard"));
+
+      // Auto-default to Easy
       setDifficulty("easy");
-      
+
       const beginBtn = document.getElementById("begin-btn");
       beginBtn.disabled = true;
       beginBtn.innerText = "Loading...";
@@ -468,20 +466,20 @@
         console.error("Error fetching CSV:", e);
         beginBtn.innerText = "Error loading data";
       }
-      
+
       beginBtn.addEventListener("click", onBeginGame);
-      
+
       // Joker
       document.getElementById("joker-btn").addEventListener("click", () => {
         if (!jokerUsed) useJoker();
       });
-      
+
       // Submit
       document.getElementById("submit-btn").addEventListener("click", onSubmitRound);
-      
+
       // Bonus
       document.getElementById("bonus-continue-btn").addEventListener("click", onFinishBonus);
-      
+
       // Final
       document.getElementById("share-twitter-btn").addEventListener("click", shareOnTwitter);
       document.getElementById("copy-recap-btn").addEventListener("click", copyRecap);
@@ -489,25 +487,25 @@
         document.getElementById("final-container").style.display = "none";
         document.getElementById("intro-container").style.display = "flex";
       });
-      
+
       // Toggle final details
       document.getElementById("details-toggle").addEventListener("click", () => {
         const det = document.getElementById("details-container");
         det.style.display = (det.style.display === "none" ? "block" : "none");
       });
     });
-    
+
     /*******************************************************
      * DIFFICULTY UI
      *******************************************************/
     function setDifficulty(diff) {
       difficulty = diff;
-      ["easy-btn", "medium-btn", "hard-btn"].forEach(id => {
+      ["easy-btn","medium-btn","hard-btn"].forEach(id => {
         document.getElementById(id).classList.remove("active");
       });
       document.getElementById(`${diff}-btn`).classList.add("active");
     }
-    
+
     /*******************************************************
      * FETCH CSV
      *******************************************************/
@@ -535,7 +533,7 @@
         allMovies.push(movie);
       }
     }
-    
+
     /*******************************************************
      * BEGIN GAME
      *******************************************************/
@@ -556,10 +554,10 @@
       roundScores = [];
       jokerUsed = false;
       bonusUsed = false;
-      
+
       document.getElementById("bonus-container").style.display = "none";
       document.getElementById("final-container").style.display = "none";
-      
+
       filterByDifficulty();
       if (filteredMovies.length < 25) {
         filteredMovies = allMovies.slice();
@@ -592,7 +590,7 @@
         }
       }
     }
-    
+
     /*******************************************************
      * ROUND LOGIC
      *******************************************************/
@@ -609,17 +607,16 @@
       const roundMovies = rounds[currentRoundIndex];
       const moviesContainer = document.getElementById("movies-container");
       const runtimesContainer = document.getElementById("runtimes-container");
-      
+
       timeLeft = roundTimers[currentRoundIndex] || 20;
       setupTimer();
       updateGameStatsBox();
-      
+
       moviesContainer.innerHTML = "";
       runtimesContainer.innerHTML = "";
-      
-      // Joker remains available until round submission.
+
       document.getElementById("joker-btn").style.display = jokerUsed ? "none" : "inline-block";
-      
+
       roundMovies.forEach(m => {
         const card = document.createElement("div");
         card.classList.add("movie-card");
@@ -629,7 +626,7 @@
         card.addEventListener("drop", e => dropHandler(e, m, card));
         moviesContainer.appendChild(card);
       });
-      
+
       const roundRuntimes = roundMovies.map((m, i) => ({
         runtime: m.Runtime,
         runtime_minutes: m.runtime_minutes,
@@ -649,11 +646,11 @@
         });
         runtimesContainer.appendChild(rc);
       });
-      
+
       fadeInCards();
       canDrag = true;
     }
-    
+
     function setupTimer() {
       clearInterval(roundTimer);
       const timerBox = document.getElementById("timer-box");
@@ -661,10 +658,11 @@
       timerVal.innerText = timeLeft;
       timerBox.style.color = "white";
       timerBox.style.borderColor = "#444";
-      
+
       roundTimer = setInterval(() => {
         timeLeft--;
         timerVal.innerText = timeLeft;
+
         if (timeLeft <= 3) {
           timerBox.style.color = "red";
           timerBox.style.borderColor = "red";
@@ -678,13 +676,14 @@
           timerBox.style.color = "white";
           timerBox.style.borderColor = "#444";
         }
+
         if (timeLeft <= 0) {
           clearInterval(roundTimer);
           onSubmitRound();
         }
       }, 1000);
     }
-    
+
     /*******************************************************
      * DRAG & DROP
      *******************************************************/
@@ -701,16 +700,18 @@
         }
       }
       if (!draggedCard) return;
+
       const rc = document.getElementById("runtimes-container");
       const existing = movieCard.querySelector(".runtime-card");
       if (existing) {
         rc.appendChild(existing);
       }
+
       movieCard.appendChild(draggedCard);
       movieCard.classList.add("placed");
       movieObj._assignedRuntime = parseInt(draggedCard.getAttribute("data-runtime"), 10);
     }
-    
+
     /*******************************************************
      * SUBMIT ROUND & SCORING
      *******************************************************/
@@ -718,18 +719,19 @@
       clearInterval(roundTimer);
       canDrag = false;
       document.getElementById("submit-btn").style.display = "none";
-      
+
       const roundMovies = rounds[currentRoundIndex];
       let roundCorrect = 0;
       let roundDiff = 0;
       let answeredCount = 0;
       let sumActual = 0;
-      
+
       const movieCards = document.getElementById("movies-container").children;
       for (let i = 0; i < movieCards.length; i++) {
         const card = movieCards[i];
         const correctRuntime = parseInt(card.getAttribute("data-correct"), 10);
         sumActual += correctRuntime;
+
         const assigned = card.querySelector(".runtime-card");
         if (assigned) {
           answeredCount++;
@@ -754,18 +756,35 @@
           card.appendChild(correctLine);
         }
       }
-      
-      // Only apply bonus multiplier if all 5 movies were answered
-      let bonusFactor = (answeredCount === 5) ? (1 - ((answeredCount ? (roundDiff / answeredCount) : 0) / (sumActual / 5))) ** 2 : 0;
-      const baseScore = roundCorrect * 1000;
-      const roundScore = baseScore * (1 + bonusFactor);
-      
+
+      // Only apply bonus multiplier if all 5 are answered
+      let bonusFactor = 0;
+      if (answeredCount === 5) {
+        // Example logic:
+        // fraction = (average difference) / (average actual runtime)
+        // bonusFactor = (1 - fraction) ^ 2
+        const avgActual = sumActual / 5;
+        // We'll wait to sum roundDiff after
+        // but we do need the difference per answered
+      }
+
+      // We must accumulate the total difference for stats
       roundMovies.forEach(m => {
         if (m._assignedRuntime != null) {
           roundDiff += Math.abs(m._assignedRuntime - m.runtime_minutes);
         }
       });
-      
+
+      if (answeredCount === 5) {
+        const avgActual = sumActual / 5;
+        const avgDiff = answeredCount ? (roundDiff / answeredCount) : avgActual;
+        const fraction = avgDiff / avgActual;
+        bonusFactor = (1 - fraction) ** 2;
+      }
+
+      const baseScore = roundCorrect * 1000;
+      const roundScore = baseScore * (1 + bonusFactor);
+
       totalCorrect += roundCorrect;
       totalDifference += roundDiff;
       totalAnswered += answeredCount;
@@ -777,14 +796,14 @@
         answered: answeredCount,
         roundScore: roundScore
       });
-      
+
       setTimeout(() => {
         currentRoundIndex++;
         document.getElementById("submit-btn").style.display = "block";
         startRound();
       }, 5000);
     }
-    
+
     /*******************************************************
      * GAME STATS
      *******************************************************/
@@ -806,7 +825,7 @@
         <div>Score: ${Math.round(totalScore)}</div>
       `;
     }
-    
+
     /*******************************************************
      * JOKER
      *******************************************************/
@@ -835,7 +854,6 @@
         });
       }, 5000);
     }
-    
     function findMovieCard(name) {
       const cards = document.querySelectorAll("#movies-container .movie-card");
       for (let c of cards) {
@@ -844,7 +862,7 @@
       }
       return null;
     }
-    
+
     /*******************************************************
      * BONUS ROUND (GRID)
      *******************************************************/
@@ -856,7 +874,7 @@
         pool = allMovies.slice();
       }
       bonusMovies = pool.slice(0, 5);
-      
+
       const container = document.getElementById("bonus-floating-container");
       container.innerHTML = "";
       bonusMovies.forEach(m => {
@@ -866,12 +884,11 @@
         card.addEventListener("click", () => pickBonusMovie(m, card));
         container.appendChild(card);
       });
-      
+
       setupBonusTimer();
       document.getElementById("bonus-message").innerText = "";
       document.getElementById("bonus-result").innerText = "";
     }
-    
     function setupBonusTimer() {
       clearInterval(bonusTimer);
       const box = document.getElementById("bonus-timer-box");
@@ -879,10 +896,11 @@
       val.innerText = bonusTimeLeft;
       box.style.color = "white";
       box.style.borderColor = "#444";
-      
+
       bonusTimer = setInterval(() => {
         bonusTimeLeft--;
         val.innerText = bonusTimeLeft;
+
         if (bonusTimeLeft <= 3) {
           box.style.color = "red";
           box.style.borderColor = "red";
@@ -890,6 +908,7 @@
           box.style.color = "orange";
           box.style.borderColor = "orange";
         }
+
         if (bonusTimeLeft <= 0) {
           clearInterval(bonusTimer);
           if (!bonusUsed) {
@@ -898,11 +917,11 @@
         }
       }, 1000);
     }
-    
     function pickBonusMovie(chosenMovie, chosenCard) {
       if (bonusUsed) return;
       bonusUsed = true;
       clearInterval(bonusTimer);
+
       let maxRuntime = -1;
       let maxMovie = null;
       bonusMovies.forEach(m => {
@@ -920,12 +939,11 @@
         document.getElementById("bonus-message").innerText = `Sorry, it was ${maxMovie["Movie Name"]} (${maxRuntime} min).`;
       }
     }
-    
     function onFinishBonus() {
       document.getElementById("bonus-container").style.display = "none";
       showFinalScreen();
     }
-    
+
     /*******************************************************
      * FINAL SCREEN
      *******************************************************/
@@ -934,6 +952,7 @@
       const accuracy = (totalCorrect / 25) * 100;
       const skill = totalAnswered ? (totalDifference / totalAnswered) : 0;
       document.getElementById("final-scores").innerText = `Final Score: ${Math.round(totalScore)}`;
+
       let breakdownHTML = "";
       roundScores.forEach(r => {
         breakdownHTML += `<div class="breakdown-row">
@@ -944,7 +963,7 @@
         Accuracy: ${accuracy.toFixed(1)}% | Skill: ${skill.toFixed(1)} min
       </div>`;
       document.getElementById("round-breakdown").innerHTML = breakdownHTML;
-      
+
       const finalCardsContainer = document.getElementById("final-cards-container");
       finalCardsContainer.innerHTML = "";
       rounds.forEach((round, idx) => {
@@ -973,7 +992,7 @@
         finalCardsContainer.appendChild(rowDiv);
       });
     }
-    
+
     /*******************************************************
      * SHARE & COPY
      *******************************************************/
@@ -1004,7 +1023,7 @@ Think you can beat me? Head to oscers.com`;
         alert("Failed to copy recap. Your browser may not allow clipboard writes.");
       });
     }
-    
+
     /*******************************************************
      * TRANSITIONS & UTILS
      *******************************************************/
