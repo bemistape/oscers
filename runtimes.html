@@ -476,6 +476,8 @@
     }
 
     function parseCSV(csvData) {
+      csvData = csvData.replace(/^\uFEFF/, "");
+
       const lines = csvData.trim().split(/\r?\n/);
       const headers = lines[0].split(",");
       const colMovieName = headers.indexOf("Movie Name");
