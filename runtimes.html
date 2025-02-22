@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Stump the Buff - v2.1 (Final Non-Truncated)</title>
+  <title>Stump the Buff - v2.1 (Intro Visible)</title>
   <style>
     /* ---------- GLOBAL / LAYOUT ---------- */
     html, body {
@@ -26,9 +26,7 @@
     h1, h2, h3, p {
       margin: 0 0 10px 0;
     }
-    button {
-      cursor: pointer;
-    }
+    button { cursor: pointer; }
     .version-number {
       text-align: center;
       font-size: 10px;
@@ -45,9 +43,7 @@
       padding: 8px 16px;
       margin: 5px;
     }
-    .diff-btn:hover {
-      background: #333;
-    }
+    .diff-btn:hover { background: #333; }
     #begin-btn {
       background: #FFD700;
       color: black;
@@ -61,8 +57,14 @@
       cursor: not-allowed;
     }
 
-    /* ---------- INTRO PAGE ---------- */
-    #intro-container,
+    /* ---------- MAIN CONTAINERS ---------- */
+    /* Only intro container is visible by default */
+    #intro-container {
+      display: flex;
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+    }
     #game-container,
     #bonus-container,
     #final-container {
@@ -71,6 +73,8 @@
       max-width: 900px;
       margin: 0 auto;
     }
+
+    /* ---------- INTRO PAGE ---------- */
     #intro-container .intro-rules {
       max-width: 600px;
       font-size: 16px;
@@ -78,9 +82,7 @@
       margin-bottom: 20px;
       text-align: center;
     }
-    .difficulty-box {
-      margin-bottom: 20px;
-    }
+    .difficulty-box { margin-bottom: 20px; }
     #loading-box {
       display: block;
       border: 2px solid #FFD700;
@@ -127,10 +129,7 @@
       min-height: 100px;
       transition: background-color 0.2s, border-color 0.2s;
     }
-    .movie-title {
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
+    .movie-title { font-weight: bold; margin-bottom: 5px; }
     .runtime-card {
       width: 100px;
       height: 60px;
@@ -144,16 +143,11 @@
       justify-content: center;
       margin: 5px;
       cursor: grab;
-      /* Gentle up/down float */
       animation: float-run 3s ease-in-out infinite alternate;
     }
     @keyframes float-run {
-      0% {
-        transform: translateY(0);
-      }
-      100% {
-        transform: translateY(-5px);
-      }
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-5px); }
     }
     .correct {
       background-color: #003300 !important;
@@ -166,23 +160,13 @@
       animation: shake-red 0.5s;
     }
     @keyframes pulse-green {
-      50% {
-        transform: scale(1.05);
-      }
+      50% { transform: scale(1.05); }
     }
     @keyframes shake-red {
-      20% {
-        transform: translateX(-3px);
-      }
-      40% {
-        transform: translateX(3px);
-      }
-      60% {
-        transform: translateX(-3px);
-      }
-      80% {
-        transform: translateX(3px);
-      }
+      20% { transform: translateX(-3px); }
+      40% { transform: translateX(3px); }
+      60% { transform: translateX(-3px); }
+      80% { transform: translateX(3px); }
     }
     .stats-box {
       border: 1px solid #666;
@@ -191,11 +175,9 @@
       width: fit-content;
       min-width: 200px;
     }
-    .stats-box.empty {
-      display: none;
-    }
+    .stats-box.empty { display: none; }
 
-    /* Joker button (clown emoji) */
+    /* ---------- JOKER BUTTON ---------- */
     #joker-btn {
       display: inline-block;
       width: 80px;
@@ -207,19 +189,13 @@
       color: white;
       margin: 10px auto;
     }
-    #joker-btn:hover {
-      background: #333;
-    }
+    #joker-btn:hover { background: #333; }
     .glow-anim {
       animation: glow 2s ease-in-out infinite alternate;
     }
     @keyframes glow {
-      0% {
-        box-shadow: 0 0 5px #FFD700;
-      }
-      100% {
-        box-shadow: 0 0 20px #FFD700;
-      }
+      0% { box-shadow: 0 0 5px #FFD700; }
+      100% { box-shadow: 0 0 20px #FFD700; }
     }
 
     /* ---------- BONUS ROUND ---------- */
@@ -264,9 +240,7 @@
     }
 
     /* ---------- FINAL PAGE ---------- */
-    #final-container {
-      text-align: center;
-    }
+    #final-container { text-align: center; }
     #final-scores {
       margin-bottom: 20px;
       font-size: 28px;
@@ -410,19 +384,15 @@
     let roundTimers = [];
     let rounds = [];
     let currentRoundIndex = 0;
-
     let totalCorrect = 0;
     let totalDifference = 0;
     let totalAnswered = 0;
     let totalScore = 0;
     let roundScores = [];
-
     let jokerUsed = false;
     let timeLeft = 20;
     let roundTimer = null;
     let canDrag = false;
-
-    // Bonus
     let bonusMovies = [];
     let bonusUsed = false;
     let bonusTimer = null;
@@ -432,7 +402,6 @@
      * PAGE LOAD & CSV FETCH/INIT
      *******************************************************/
     document.addEventListener("DOMContentLoaded", async () => {
-      // Difficulty buttons
       document.getElementById("easy-btn").addEventListener("click", () => setDifficulty("easy"));
       document.getElementById("medium-btn").addEventListener("click", () => setDifficulty("medium"));
       document.getElementById("hard-btn").addEventListener("click", () => setDifficulty("hard"));
@@ -440,36 +409,25 @@
       const beginBtn = document.getElementById("begin-btn");
       beginBtn.disabled = true;
       beginBtn.innerText = "Loading...";
-
       try {
         await fetchCSV();
+        if (!difficulty) setDifficulty("easy");
         beginBtn.disabled = false;
         beginBtn.innerText = "Begin";
       } catch(e) {
         console.error("Error fetching CSV:", e);
         beginBtn.innerText = "Error loading data";
       }
-
       beginBtn.addEventListener("click", onBeginGame);
-
-      // Joker
       document.getElementById("joker-btn").addEventListener("click", useJoker);
-
-      // Submit
       document.getElementById("submit-btn").addEventListener("click", onSubmitRound);
-
-      // Bonus continue
       document.getElementById("bonus-continue-btn").addEventListener("click", onFinishBonus);
-
-      // Final screen share & copy
       document.getElementById("share-twitter-btn").addEventListener("click", shareOnTwitter);
       document.getElementById("copy-recap-btn").addEventListener("click", copyRecap);
       document.getElementById("play-again-btn").addEventListener("click", () => {
         document.getElementById("final-container").style.display = "none";
         document.getElementById("intro-container").style.display = "flex";
       });
-
-      // Toggle details
       document.getElementById("details-toggle").addEventListener("click", () => {
         const det = document.getElementById("details-container");
         det.style.display = (det.style.display === "none" ? "block" : "none");
@@ -489,17 +447,13 @@
       const colRuntimeMin = headers.indexOf("runtime_minutes");
       const colRuntime = headers.indexOf("Runtime");
       const colVotesRank = headers.indexOf("Votes Percent Rank");
-
       for (let i = 1; i < lines.length; i++) {
-        const rowCells = lines[i].split(",");
-        if (rowCells.length < 4) continue;
-
+        const row = lines[i].split(",");
         let movie = {};
-        movie["Movie Name"] = rowCells[colMovieName] || "";
-        movie.runtime_minutes = parseInt(rowCells[colRuntimeMin] || "0", 10);
-        movie.Runtime = rowCells[colRuntime] || "";
-        movie._rank = parseFloat(rowCells[colVotesRank] || "0");
-
+        movie["Movie Name"] = row[colMovieName]?.trim() || "";
+        movie.runtime_minutes = parseInt(row[colRuntimeMin] || "0", 10);
+        movie.Runtime = row[colRuntime]?.trim() || "";
+        movie._rank = parseFloat(row[colVotesRank] || "0");
         movie._assignedRuntime = null;
         allMovies.push(movie);
       }
@@ -514,7 +468,6 @@
       const beginBtn = document.getElementById("begin-btn");
       beginBtn.innerText = "Loading...";
       beginBtn.disabled = true;
-
       setTimeout(() => {
         filterByDifficulty();
         beginBtn.innerText = "Begin";
@@ -531,7 +484,6 @@
       } else {
         filteredMovies = allMovies.filter(m => m._rank < 0.5);
       }
-      // fallback
       if (filteredMovies.length < 25) {
         filteredMovies = allMovies.slice();
       }
@@ -556,10 +508,8 @@
       roundScores = [];
       jokerUsed = false;
       bonusUsed = false;
-
       document.getElementById("bonus-container").style.display = "none";
       document.getElementById("final-container").style.display = "none";
-
       if (filteredMovies.length < 25) {
         filteredMovies = allMovies.slice();
       }
@@ -568,18 +518,17 @@
       startRound();
     }
 
-    // Simple chunk: first 25
     function buildRounds() {
       rounds = [];
       const pool = shuffle(filteredMovies.slice());
       if (pool.length < 25) {
         for (let i = 0; i < 5; i++) {
-          rounds.push(pool.slice(i*5, i*5+5));
+          rounds.push(pool.slice(i * 5, i * 5 + 5));
         }
       } else {
-        const selected = pool.slice(0,25);
+        const selected = pool.slice(0, 25);
         for (let i = 0; i < 5; i++) {
-          rounds.push(selected.slice(i*5, (i+1)*5));
+          rounds.push(selected.slice(i * 5, (i + 1) * 5));
         }
       }
     }
@@ -587,7 +536,6 @@
     function startRound() {
       if (currentRoundIndex >= 5) {
         document.getElementById("game-container").style.display = "none";
-        // skipping bonus
         showFinalScreen();
         return;
       }
@@ -598,20 +546,15 @@
       const roundMovies = rounds[currentRoundIndex];
       const moviesContainer = document.getElementById("movies-container");
       const runtimesContainer = document.getElementById("runtimes-container");
-      const roundHeading = document.getElementById("round-heading");
-      roundHeading.innerText = `Round ${currentRoundIndex + 1}`;
-
+      document.getElementById("round-heading").innerText = `Round ${currentRoundIndex + 1}`;
       const jokerBtn = document.getElementById("joker-btn");
       jokerBtn.style.display = jokerUsed ? "none" : "inline-block";
-
       moviesContainer.innerHTML = "";
       runtimesContainer.innerHTML = "";
-
       timeLeft = roundTimers[currentRoundIndex] || 20;
       setupTimer();
       updateGameStatsBox();
-
-      roundMovies.forEach((m) => {
+      roundMovies.forEach(m => {
         const card = document.createElement("div");
         card.classList.add("movie-card");
         card.setAttribute("data-correct", m.runtime_minutes);
@@ -620,14 +563,12 @@
         card.addEventListener("drop", e => dropHandler(e, m, card));
         moviesContainer.appendChild(card);
       });
-
       const roundRuntimes = roundMovies.map((m, i) => ({
         runtime: m.Runtime,
         runtime_minutes: m.runtime_minutes,
         uniqueId: `rt-${currentRoundIndex}-${i}`
       }));
       shuffle(roundRuntimes);
-
       roundRuntimes.forEach(rt => {
         const rc = document.createElement("div");
         rc.classList.add("runtime-card");
@@ -636,15 +577,11 @@
         rc.setAttribute("draggable", "true");
         rc.innerText = rt.runtime;
         rc.addEventListener("dragstart", e => {
-          if (!canDrag) {
-            e.preventDefault();
-            return;
-          }
+          if (!canDrag) { e.preventDefault(); return; }
           e.dataTransfer.setData("text/plain", rt.uniqueId);
         });
         runtimesContainer.appendChild(rc);
       });
-
       fadeInCards();
       canDrag = true;
     }
@@ -656,25 +593,13 @@
       timerVal.innerText = timeLeft;
       timerBox.style.color = "white";
       timerBox.style.borderColor = "#444";
-
       roundTimer = setInterval(() => {
         timeLeft--;
         timerVal.innerText = timeLeft;
-
-        if (timeLeft <= 3) {
-          timerBox.style.color = "red";
-          timerBox.style.borderColor = "red";
-        } else if (timeLeft <= 5) {
-          timerBox.style.color = "orange";
-          timerBox.style.borderColor = "orange";
-        } else if (timeLeft <= 10) {
-          timerBox.style.color = "yellow";
-          timerBox.style.borderColor = "yellow";
-        } else {
-          timerBox.style.color = "white";
-          timerBox.style.borderColor = "#444";
-        }
-
+        if (timeLeft <= 3) { timerBox.style.color = "red"; timerBox.style.borderColor = "red"; }
+        else if (timeLeft <= 5) { timerBox.style.color = "orange"; timerBox.style.borderColor = "orange"; }
+        else if (timeLeft <= 10) { timerBox.style.color = "yellow"; timerBox.style.borderColor = "yellow"; }
+        else { timerBox.style.color = "white"; timerBox.style.borderColor = "#444"; }
         if (timeLeft <= 0) {
           clearInterval(roundTimer);
           onSubmitRound();
@@ -695,12 +620,9 @@
         }
       }
       if (!draggedCard) return;
-
       const rc = document.getElementById("runtimes-container");
       const existing = movieCard.querySelector(".runtime-card");
-      if (existing) {
-        rc.appendChild(existing);
-      }
+      if (existing) { rc.appendChild(existing); }
       movieCard.appendChild(draggedCard);
       movieObj._assignedRuntime = parseInt(draggedCard.getAttribute("data-runtime"), 10);
     }
@@ -715,13 +637,11 @@
       let roundDiff = 0;
       let answeredCount = 0;
       let sumActual = 0;
-
       const movieCards = document.getElementById("movies-container").children;
       for (let i = 0; i < movieCards.length; i++) {
         const card = movieCards[i];
         const correctRuntime = parseInt(card.getAttribute("data-correct"), 10);
         sumActual += correctRuntime;
-
         const assigned = card.querySelector(".runtime-card");
         if (assigned) {
           answeredCount++;
@@ -749,7 +669,7 @@
 
       totalScore += roundScore;
       roundScores.push({
-        roundIndex: currentRoundIndex+1,
+        roundIndex: currentRoundIndex + 1,
         correct: roundCorrect,
         diff: roundDiff,
         answered: answeredCount,
@@ -788,10 +708,9 @@
       document.getElementById("joker-btn").style.display = "none";
       const snd = document.getElementById("joker-sound");
       snd.currentTime = 0;
-      snd.play().catch(()=>{});
+      snd.play().catch(() => {});
       const roundMovies = rounds[currentRoundIndex];
-      const sorted = [...roundMovies].sort((a,b) => b.runtime_minutes - a.runtime_minutes);
-
+      const sorted = [...roundMovies].sort((a, b) => b.runtime_minutes - a.runtime_minutes);
       const greenShades = ["#003300", "#006600", "#009900", "#00CC00", "#00FF00"];
       const originals = [];
       sorted.forEach((m, idx) => {
@@ -801,7 +720,6 @@
         card.style.backgroundColor = greenShades[idx];
         card.style.borderColor = greenShades[idx];
       });
-
       setTimeout(() => {
         originals.forEach(o => {
           o.card.style.backgroundColor = "#000";
@@ -837,10 +755,8 @@
       breakdownHTML += `<div class="breakdown-row">
         Accuracy: ${accuracy.toFixed(1)}% | Skill: ${skill.toFixed(1)} min
       </div>`;
-
       document.getElementById("round-breakdown").innerHTML = breakdownHTML;
 
-      // Show final 25 cards, labeled by round
       const finalCardsContainer = document.getElementById("final-cards-container");
       finalCardsContainer.innerHTML = "";
       rounds.forEach((round, idx) => {
@@ -860,7 +776,6 @@
           const actual = movie.runtime_minutes;
           const assigned = (movie._assignedRuntime !== null) ? movie._assignedRuntime : "-";
           const isCorrect = (assigned === actual);
-
           const card = document.createElement("div");
           card.classList.add("final-card");
           if (assigned !== "-") {
@@ -899,9 +814,7 @@ Score: ${Math.round(totalScore)}
 Accuracy: ${popcorn} (${accuracy.toFixed(1)}%)
 Skill: ${skill.toFixed(1)}
 Think you can beat me? Head to oscers.com`;
-      navigator.clipboard.writeText(text).then(() => {
-        alert("Recap copied to clipboard!");
-      });
+      navigator.clipboard.writeText(text).then(() => { alert("Recap copied to clipboard!"); });
     }
 
     function renderPopcorn(accuracyPercent) {
@@ -909,12 +822,8 @@ Think you can beat me? Head to oscers.com`;
       const full = Math.floor(ratingOutOf5);
       const frac = ratingOutOf5 - full;
       let html = "";
-      for (let i = 0; i < full; i++) {
-        html += "🍿";
-      }
-      if (frac > 0) {
-        html += "🍿";
-      }
+      for (let i = 0; i < full; i++) { html += "🍿"; }
+      if (frac > 0) { html += "🍿"; }
       return html + " ";
     }
     function getPopcornString(accuracyPercent) {
@@ -939,14 +848,6 @@ Think you can beat me? Head to oscers.com`;
       mc.offsetHeight;
       mc.style.opacity = "1";
       rc.style.opacity = "1";
-    }
-    function findMovieCard(name) {
-      const cards = document.querySelectorAll("#movies-container .movie-card");
-      for (let c of cards) {
-        const t = c.querySelector(".movie-title");
-        if (t && t.innerText === name) return c;
-      }
-      return null;
     }
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
