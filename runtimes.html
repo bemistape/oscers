@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Stump the Buff - v2.4</title>
+  <title>Stump the Buff - v2.5</title>
   <style>
     /* ---------- GLOBAL / LAYOUT ---------- */
     html, body {
@@ -44,10 +44,18 @@
       font-size: 16px;
       padding: 8px 16px;
       margin: 5px;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
     }
     .diff-btn:hover {
       background: #333;
     }
+    /* Show which difficulty is active */
+    .diff-btn.active {
+      background: #FFD700;
+      color: black;
+      border-color: #FFD700;
+    }
+
     #begin-btn {
       background: #FFD700;
       color: black;
@@ -130,7 +138,6 @@
       font-weight: bold;
       margin-bottom: 5px;
     }
-    /* highlight when a runtime is placed inside */
     .placed {
       border-color: #FFD700 !important;
       background-color: #111;
@@ -226,8 +233,8 @@
     }
     .floating-container {
       position: relative;
-      width: 800px;  /* expanded */
-      height: 400px; /* expanded */
+      width: 800px;
+      height: 400px;
       margin: 0 auto 20px auto;
       overflow: hidden;
       display: flex;
@@ -359,7 +366,7 @@
       <p>In this game, you'll be given 5 movies each round.</p>
       <p>Drag the runtime card to the movie you think it belongs to.</p>
       <p>You have a limited time each round and can submit early.</p>
-      <p>Use your <strong>Joker</strong> once to reveal the movies’ relative runtimes.</p>
+      <p>Use your <strong>Joker</strong> once at the start of the round.</p>
     </div>
     <div class="difficulty-box">
       <label style="font-size:16px; margin-right:10px;">Difficulty:</label>
@@ -368,7 +375,7 @@
       <button class="diff-btn" data-difficulty="hard" id="hard-btn">Hard</button>
     </div>
     <button id="begin-btn" disabled>Begin</button>
-    <div class="version-number">v2.4</div>
+    <div class="version-number">v2.5</div>
   </div>
 
   <!-- GAME SCREEN -->
@@ -383,7 +390,7 @@
     <!-- Then the Movie cards -->
     <div id="movies-container" class="cards-container"></div>
 
-    <!-- Then Joker under the Movie cards -->
+    <!-- Joker under the Movie cards -->
     <div class="center">
       <button id="joker-btn" class="glow-anim" title="Use Joker (once)">🤡</button>
     </div>
@@ -442,6 +449,7 @@
     let roundScores = [];
 
     let jokerUsed = false;
+    let canUseJoker = true;   // We'll hide/disable Joker once the round starts or user places a runtime
     let timeLeft = 20;
     let roundTimer = null;
     let canDrag = false;
@@ -456,9 +464,10 @@
      * PAGE LOAD & CSV FETCH/INIT
      *******************************************************/
     document.addEventListener("DOMContentLoaded", async () => {
-      document.getElementById("easy-btn").addEventListener("click", () => difficulty = "easy");
-      document.getElementById("medium-btn").addEventListener("click", () => difficulty = "medium");
-      document.getElementById("hard-btn").addEventListener("click", () => difficulty = "hard");
+      // Difficulty button highlights
+      document.getElementById("easy-btn").addEventListener("click", () => setDifficulty("easy"));
+      document.getElementById("medium-btn").addEventListener("click", () => setDifficulty("medium"));
+      document.getElementById("hard-btn").addEventListener("click", () => setDifficulty("hard"));
 
       const beginBtn = document.getElementById("begin-btn");
       beginBtn.disabled = true;
@@ -475,7 +484,11 @@
       beginBtn.addEventListener("click", onBeginGame);
 
       // Joker
-      document.getElementById("joker-btn").addEventListener("click", useJoker);
+      document.getElementById("joker-btn").addEventListener("click", () => {
+        if (canUseJoker) {
+          useJoker();
+        }
+      });
 
       // Submit
       document.getElementById("submit-btn").addEventListener("click", onSubmitRound);
@@ -498,12 +511,30 @@
       });
     });
 
+    /*******************************************************
+     * DIFFICULTY UI
+     *******************************************************/
+    function setDifficulty(diff) {
+      difficulty = diff;
+      // highlight the chosen button, un-highlight others
+      ["easy-btn","medium-btn","hard-btn"].forEach(id => {
+        const btn = document.getElementById(id);
+        btn.classList.remove("active");
+      });
+      const activeBtn = document.getElementById(`${diff}-btn`);
+      if (activeBtn) {
+        activeBtn.classList.add("active");
+      }
+    }
+
+    /*******************************************************
+     * FETCH CSV
+     *******************************************************/
     async function fetchCSV() {
       const resp = await fetch(csvUrl);
       const data = await resp.text();
       parseCSV(data);
     }
-
     function parseCSV(csvData) {
       const lines = csvData.trim().split(/\r?\n/);
       const headers = lines[0].split(",");
@@ -527,9 +558,12 @@
       }
     }
 
+    /*******************************************************
+     * BEGIN GAME
+     *******************************************************/
     function onBeginGame() {
       if (!difficulty) {
-        difficulty = "easy";
+        difficulty = "easy"; // default if none chosen
       }
       document.getElementById("intro-container").style.display = "none";
       document.getElementById("game-container").style.display = "flex";
@@ -544,6 +578,7 @@
       totalScore = 0;
       roundScores = [];
       jokerUsed = false;
+      canUseJoker = true;  // re-enable Joker for the new game
       bonusUsed = false;
 
       document.getElementById("bonus-container").style.display = "none";
@@ -571,7 +606,7 @@
 
     function buildRounds() {
       rounds = [];
-      const pool = shuffle(filteredMovies.slice());
+      let pool = shuffle(filteredMovies.slice());
       if (pool.length < 25) {
         for (let i = 0; i < 5; i++) {
           rounds.push(pool.slice(i*5, i*5+5));
@@ -584,8 +619,12 @@
       }
     }
 
+    /*******************************************************
+     * START ROUND
+     *******************************************************/
     function startRound() {
       if (currentRoundIndex >= 5) {
+        // done with main rounds
         document.getElementById("game-container").style.display = "none";
         document.getElementById("bonus-container").style.display = "flex";
         startBonusRound();
@@ -607,13 +646,20 @@
       moviesContainer.innerHTML = "";
       runtimesContainer.innerHTML = "";
 
+      // Joker can be used only at the start (once user places a runtime, we disable)
+      canUseJoker = true;
+      document.getElementById("joker-btn").style.display = jokerUsed ? "none" : "inline-block";
+
       // Create movie cards
       roundMovies.forEach(m => {
         const card = document.createElement("div");
         card.classList.add("movie-card");
         card.setAttribute("data-correct", m.runtime_minutes);
         card.innerHTML = `<div class="movie-title">${m["Movie Name"]}</div>`;
-        card.addEventListener("dragover", e => { if (canDrag) e.preventDefault(); });
+        // Once user places any runtime, disable Joker
+        card.addEventListener("dragover", e => {
+          if (canDrag) e.preventDefault();
+        });
         card.addEventListener("drop", e => dropHandler(e, m, card));
         moviesContainer.appendChild(card);
       });
@@ -632,11 +678,16 @@
         rc.setAttribute("data-runtime", rt.runtime_minutes.toString());
         rc.setAttribute("draggable", "true");
         rc.innerText = rt.runtime;
+        // Once user drags a runtime, we disable Joker
         rc.addEventListener("dragstart", e => {
           if (!canDrag) {
             e.preventDefault();
             return;
           }
+          // The moment they drag, Joker is no longer available
+          canUseJoker = false;
+          document.getElementById("joker-btn").style.display = "none";
+
           e.dataTransfer.setData("text/plain", rt.uniqueId);
         });
         runtimesContainer.appendChild(rc);
@@ -679,9 +730,17 @@
       }, 1000);
     }
 
+    /*******************************************************
+     * DRAG & DROP
+     *******************************************************/
     function dropHandler(e, movieObj, movieCard) {
       if (!canDrag) return;
       e.preventDefault();
+
+      // Once user places a runtime, Joker is disabled
+      canUseJoker = false;
+      document.getElementById("joker-btn").style.display = "none";
+
       const uniqueId = e.dataTransfer.getData("text/plain");
       const allRuntimeCards = document.querySelectorAll(".runtime-card");
       let draggedCard = null;
@@ -693,22 +752,21 @@
       }
       if (!draggedCard) return;
 
-      // If there's already a runtime in this movie, put it back in runtimes
       const rc = document.getElementById("runtimes-container");
       const existing = movieCard.querySelector(".runtime-card");
       if (existing) {
         rc.appendChild(existing);
       }
 
-      // Place the new runtime
       movieCard.appendChild(draggedCard);
-      // Add highlight
       movieCard.classList.add("placed");
 
-      // Store assignment
       movieObj._assignedRuntime = parseInt(draggedCard.getAttribute("data-runtime"), 10);
     }
 
+    /*******************************************************
+     * SUBMIT ROUND & SCORING
+     *******************************************************/
     function onSubmitRound() {
       clearInterval(roundTimer);
       canDrag = false;
@@ -720,14 +778,12 @@
       let answeredCount = 0;
       let sumActual = 0;
 
-      // Check each card
       const movieCards = document.getElementById("movies-container").children;
       for (let i = 0; i < movieCards.length; i++) {
         const card = movieCards[i];
         const correctRuntime = parseInt(card.getAttribute("data-correct"), 10);
         sumActual += correctRuntime;
 
-        // If a runtime was placed
         const assigned = card.querySelector(".runtime-card");
         if (assigned) {
           answeredCount++;
@@ -737,7 +793,6 @@
             card.classList.add("correct");
           } else {
             card.classList.add("incorrect");
-            // Show correct runtime if user was wrong
             const correctLine = document.createElement("div");
             correctLine.style.fontSize = "12px";
             correctLine.style.marginTop = "5px";
@@ -755,7 +810,6 @@
         }
       }
 
-      // Calculate difference
       roundMovies.forEach(m => {
         if (m._assignedRuntime != null) {
           roundDiff += Math.abs(m._assignedRuntime - m.runtime_minutes);
@@ -766,7 +820,6 @@
       totalDifference += roundDiff;
       totalAnswered += answeredCount;
 
-      // Score formula
       const baseScore = roundCorrect * 1000;
       const avgRuntime = sumActual / 5;
       const avgDiff = answeredCount ? (roundDiff / answeredCount) : avgRuntime;
@@ -783,7 +836,6 @@
         roundScore: roundScore
       });
 
-      // Delay so user can see correct/incorrect
       setTimeout(() => {
         currentRoundIndex++;
         document.getElementById("submit-btn").style.display = "block";
@@ -791,6 +843,9 @@
       }, 5000);
     }
 
+    /*******************************************************
+     * GAME SO FAR STATS
+     *******************************************************/
     function updateGameStatsBox() {
       const container = document.getElementById("this-game-stats");
       const totalPossible = currentRoundIndex * 5;
@@ -810,8 +865,11 @@
       `;
     }
 
+    /*******************************************************
+     * JOKER
+     *******************************************************/
     function useJoker() {
-      if (jokerUsed) return;
+      if (jokerUsed) return; // already used
       jokerUsed = true;
       document.getElementById("joker-btn").style.display = "none";
       const snd = document.getElementById("joker-sound");
@@ -838,15 +896,6 @@
       }, 5000);
     }
 
-    function findMovieCard(name) {
-      const cards = document.querySelectorAll("#movies-container .movie-card");
-      for (let c of cards) {
-        const t = c.querySelector(".movie-title");
-        if (t && t.innerText === name) return c;
-      }
-      return null;
-    }
-
     /*******************************************************
      * BONUS ROUND (FLOATING)
      *******************************************************/
@@ -863,16 +912,14 @@
       const container = document.getElementById("bonus-floating-container");
       container.innerHTML = "";
 
-      // Spread out more: random top in [-100..100], left in [-200..200]
+      // random offsets in [-200..200], [-100..100]
       bonusMovies.forEach((m, i) => {
         const card = document.createElement("div");
         card.classList.add("floating-card");
-
         const topPos = Math.random() * 200 - 100;
         const leftPos = Math.random() * 400 - 200;
         card.style.top = topPos + "px";
         card.style.left = leftPos + "px";
-
         const anim = ["floaty1","floaty2","floaty3"][Math.floor(Math.random()*3)];
         card.style.animation = `${anim} 4s ease-in-out infinite alternate`;
 
@@ -885,7 +932,6 @@
       document.getElementById("bonus-message").innerText = "";
       document.getElementById("bonus-result").innerText = "";
     }
-
     function setupBonusTimer() {
       clearInterval(bonusTimer);
       const box = document.getElementById("bonus-timer-box");
@@ -915,7 +961,6 @@
         }
       }, 1000);
     }
-
     function pickBonusMovie(chosenMovie, chosenCard) {
       if (bonusUsed) return;
       bonusUsed = true;
@@ -939,7 +984,6 @@
         document.getElementById("bonus-message").innerText = `Sorry, it was ${maxMovie["Movie Name"]} (${maxRuntime} min).`;
       }
     }
-
     function onFinishBonus() {
       document.getElementById("bonus-container").style.display = "none";
       showFinalScreen();
@@ -1013,7 +1057,6 @@ Think you can beat me? Head to oscers.com`;
       const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
       window.open(url, "_blank");
     }
-
     function copyRecap() {
       const accuracy = (totalCorrect / 25) * 100;
       const skill = totalAnswered ? (totalDifference / totalAnswered) : 0;
@@ -1030,32 +1073,22 @@ Think you can beat me? Head to oscers.com`;
       });
     }
 
-    function renderPopcorn(accuracyPercent) {
-      const ratingOutOf5 = (accuracyPercent / 100) * 5;
-      const full = Math.floor(ratingOutOf5);
-      const frac = ratingOutOf5 - full;
-      let html = "";
-      for (let i = 0; i < full; i++) {
-        html += "🍿";
-      }
-      if (frac > 0) {
-        html += "🍿";
-      }
-      return html + " ";
-    }
-    function getPopcornString(accuracyPercent) {
-      return renderPopcorn(accuracyPercent).trim();
-    }
-
     /*******************************************************
-     * TRANSITIONS & UTILS
+     * UTILS
      *******************************************************/
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
     function fadeOutCards(callback) {
       const mc = document.getElementById("movies-container");
       const rc = document.getElementById("runtimes-container");
       mc.style.opacity = "1";
       rc.style.opacity = "1";
-      mc.offsetHeight; // force reflow
+      mc.offsetHeight; 
       mc.style.opacity = "0";
       rc.style.opacity = "0";
       setTimeout(callback, 500);
@@ -1065,27 +1098,12 @@ Think you can beat me? Head to oscers.com`;
       const rc = document.getElementById("runtimes-container");
       mc.style.opacity = "0";
       rc.style.opacity = "0";
-      mc.offsetHeight; // reflow
+      mc.offsetHeight; 
       mc.style.opacity = "1";
       rc.style.opacity = "1";
     }
-    function shuffle(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    }
     function getPopcornString(accuracyPercent) {
       return renderPopcorn(accuracyPercent).trim();
-    }
-    function findMovieCard(name) {
-      const cards = document.querySelectorAll("#movies-container .movie-card");
-      for (let c of cards) {
-        const t = c.querySelector(".movie-title");
-        if (t && t.innerText === name) return c;
-      }
-      return null;
     }
     function renderPopcorn(accuracyPercent) {
       const ratingOutOf5 = (accuracyPercent / 100) * 5;
@@ -1099,6 +1117,14 @@ Think you can beat me? Head to oscers.com`;
         html += "🍿";
       }
       return html + " ";
+    }
+    function findMovieCard(name) {
+      const cards = document.querySelectorAll("#movies-container .movie-card");
+      for (let c of cards) {
+        const t = c.querySelector(".movie-title");
+        if (t && t.innerText === name) return c;
+      }
+      return null;
     }
   </script>
 </body>
