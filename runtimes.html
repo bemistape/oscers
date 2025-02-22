@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Stump the Buff - v3.2</title>
+  <title>Stump the Buff - v3.2 (Debug Edition)</title>
   <style>
     /* ---------- GLOBAL / LAYOUT ---------- */
     html, body {
@@ -127,20 +127,15 @@
       gap: 10px;
       margin-bottom: 20px;
     }
-
-    /* 
-       --- Changed this from a grid to a flex layout so that the movie cards 
-           are more obviously centered regardless of screen size. 
-    */
+    /* Justify center so movie cards are centered */
     #movies-container {
-      display: flex; /* was grid before */
+      display: flex;
       flex-wrap: wrap;
       justify-content: center;
       gap: 20px;
       margin-bottom: 20px;
       width: 100%;
     }
-
     .movie-card {
       width: 240px;
       border: 2px solid white;
@@ -179,15 +174,11 @@
       cursor: grab;
       animation: float-run 3s ease-in-out infinite alternate;
     }
-
-    /*
-       --- Changed these from green (#00FF00) to neon yellow (#fffd00).
-    */
+    /* Dragging glow changed to neon yellow */
     .runtime-card.dragging {
       outline: 3px solid #fffd00;
       box-shadow: 0 0 10px #fffd00;
     }
-
     @keyframes float-run {
       0% { transform: translateY(0); }
       100% { transform: translateY(-5px); }
@@ -312,11 +303,7 @@
       margin-bottom: 10px;
       text-align: center;
     }
-
-    /*
-       --- Now we use a grid with 3 columns, which will automatically
-           wrap to 2 in the next row if there are 5 items.
-    */
+    /* 3 columns for final cards, auto-wrap for leftover. */
     .final-round-row {
       display: grid; 
       grid-template-columns: repeat(3, 140px); 
@@ -324,16 +311,14 @@
       gap: 10px;
       justify-content: center;
       margin-bottom: 15px;
-      flex-wrap: wrap; /* leftover from the old approach, won't hurt */
     }
-
     .final-round-heading {
       font-size: 32px;
       text-align: center;
       width: 100%;
       font-weight: bold;
       margin-bottom: 8px;
-      grid-column: 1 / -1; /* makes the heading span full width */
+      grid-column: 1 / -1; /* span full width */
     }
     .final-card {
       border-radius: 10px;
@@ -413,7 +398,7 @@
       <button class="diff-btn" data-difficulty="hard" id="hard-btn">Hard</button>
     </div>
     <button id="begin-btn" disabled>Begin</button>
-    <div class="version-number">v3.2</div>
+    <div class="version-number">v3.2 (Debug)</div>
   </div>
 
   <!-- ROUND RECAP OVERLAY -->
@@ -597,6 +582,7 @@
 
       filterByDifficulty();
       if(filteredMovies.length<25){
+        // If too few are available for the chosen difficulty, we just use all movies
         filteredMovies=allMovies.slice();
       }
       roundTimers=TIMERS[difficulty]||[20,20,20,20,20];
@@ -617,10 +603,12 @@
       rounds=[];
       let pool=shuffle(filteredMovies.slice());
       if(pool.length<25){
+        // We'll just create 5 sub-arrays, some may be empty if <25 total
         for(let i=0;i<5;i++){
           rounds.push(pool.slice(i*5,i*5+5));
         }
-      }else{
+      } else {
+        // Otherwise, pick the first 25 from the shuffled list
         const selected=pool.slice(0,25);
         for(let i=0;i<5;i++){
           rounds.push(selected.slice(i*5,(i+1)*5));
@@ -637,6 +625,8 @@
         return;
       }
       fadeOutCards(()=>{
+        console.log(`\n=== Starting Round #${currentRoundIndex+1} ===`);
+        console.log("Movies for this round:", rounds[currentRoundIndex]);
         renderRound();
         fadeInCards();
       });
@@ -819,7 +809,6 @@
       card.appendChild(line);
     }
 
-    /* Move recap overlay to top center, more visible styling */
     function showRoundRecapOverlay(roundCorrect,answeredCount,leftoverBonus,fractionBonus,roundScore){
       const overlay=document.getElementById("round-recap-overlay");
       const title=document.getElementById("round-recap-title");
@@ -836,6 +825,8 @@
     }
 
     function nextRoundAfterRecap(){
+      console.log("Closing recap. Current roundIndex:", currentRoundIndex, " -> incrementing by 1.");
+      currentRoundIndex++;
       document.getElementById("round-recap-overlay").style.display="none";
       document.getElementById("submit-btn").style.display="block";
       startRound();
@@ -884,7 +875,7 @@
       bonusUsed=false;
       bonusTimeLeft=10;
       let pool=shuffle(filteredMovies.slice());
-      if(pool.length<5)pool=allMovies.slice();
+      if(pool.length<5) pool=allMovies.slice();
       bonusMovies=pool.slice(0,5);
 
       const container=document.getElementById("bonus-floating-container");
@@ -1093,7 +1084,7 @@ Think you can beat me? Head to oscers.com`;
       return null;
     }
 
-    // Added function to update game stats.
+    // Debug: update game stats
     function updateGameStatsBox(){
       const statsBox = document.getElementById("this-game-stats");
       statsBox.innerText = `Score: ${Math.round(totalScore)}`;
