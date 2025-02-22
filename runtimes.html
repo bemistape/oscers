@@ -823,59 +823,6 @@
       startRound();
     }
 
-    function showFinalScreen(){
-      document.getElementById("final-container").style.display="flex";
-      const accuracy=(totalCorrect/25)*100;
-      const skill=totalAnswered?(totalDifference/totalAnswered):0;
-      document.getElementById("final-scores").innerText=`Final Score: ${Math.round(totalScore)}`;
-
-      let breakdownHTML="";
-      roundScores.forEach(r=>{
-        breakdownHTML+=`
-          <div class="breakdown-row">
-            Round ${r.roundIndex}: ${r.correct}/5 correct<br>
-            Time bonus: +${(r.leftoverBonus||0).toFixed(0)}<br>
-            Accuracy bonus: +${(r.fractionBonus||0).toFixed(0)}<br>
-            Round Score: ${r.roundScore.toFixed(0)}
-          </div><br>
-        `;
-      });
-      breakdownHTML+=`<div class="breakdown-row">
-        Overall Accuracy: ${accuracy.toFixed(1)}% | Skill: ${skill.toFixed(1)} min
-      </div>`;
-      document.getElementById("round-breakdown").innerHTML=breakdownHTML;
-
-      const finalCardsContainer=document.getElementById("final-cards-container");
-      finalCardsContainer.innerHTML="";
-      rounds.forEach((round,idx)=>{
-        const rowDiv=document.createElement("div");
-        rowDiv.classList.add("final-round-row");
-
-        const heading=document.createElement("div");
-        heading.classList.add("final-round-heading");
-        heading.innerText=`Round ${idx+1}`;
-        rowDiv.appendChild(heading);
-
-        round.forEach(movie=>{
-          const actual=movie.runtime_minutes;
-          const assigned=(movie._assignedRuntime!==null)?movie._assignedRuntime:"-";
-          const isCorrect=(assigned===actual);
-          const card=document.createElement("div");
-          card.classList.add("final-card");
-          if(assigned!=="-"){
-            card.classList.add(isCorrect?"correct":"incorrect");
-          }
-          card.innerHTML=`
-            <div style="font-weight:bold; margin-bottom:5px;">${movie["Movie Name"]}</div>
-            <div>Actual: ${movie.Runtime}</div>
-            <div>Your Pick: ${assigned==="-"?"-":assigned+" min"}</div>
-          `;
-          rowDiv.appendChild(card);
-        });
-        finalCardsContainer.appendChild(rowDiv);
-      });
-    }
-
     /*******************************************************
      * JOKER: REVEAL RELATIVE RUNTIMES
      *******************************************************/
@@ -1123,9 +1070,15 @@ Think you can beat me? Head to oscers.com`;
       const cards=document.querySelectorAll("#movies-container .movie-card");
       for(let c of cards){
         const t=c.querySelector(".movie-title");
-        if(t&&t.innerText===name)return c;
+        if(t && t.innerText===name)return c;
       }
       return null;
+    }
+
+    // Added function to update game stats.
+    function updateGameStatsBox(){
+      const statsBox = document.getElementById("this-game-stats");
+      statsBox.innerText = `Score: ${totalScore}`;
     }
   </script>
 </body>
