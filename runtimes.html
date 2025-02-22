@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Stump the Buff - v4.4</title>
+  <title>Stump the Buff - v4.5</title>
   <style>
     /* ---------- GLOBAL / LAYOUT ---------- */
     html, body {
@@ -110,20 +110,16 @@
       border: 2px solid #444;
       transition: all 0.2s ease;
       position: relative;
-      font-size: 64px; /* countdown number */
+    }
+    /* Round name above the countdown */
+    #round-label {
+      font-size: 16px;
+      opacity: 0.9;
+      margin-bottom: 0px; /* closer to the number */
     }
     #timer-value {
-      z-index: 2;
+      font-size: 64px; /* big countdown */
     }
-    /*
-      Round label: smaller text below the main countdown
-    */
-    #round-label {
-      font-size: 14px;
-      opacity: 0.8;
-      margin-top: -4px; /* move it up a bit closer to the countdown number */
-    }
-
     #joker-btn {
       position: absolute;
       bottom: 8px;
@@ -254,7 +250,6 @@
     #bonus-container {
       text-align: center;
     }
-    /* We'll hide #bonus-floating-container until user hits "Begin Bonus" */
     #bonus-floating-container {
       display: none;
       grid-template-columns: repeat(5, 140px);
@@ -300,11 +295,10 @@
       border-radius: 6px;
       margin-bottom: 5px;
     }
-    /* We'll display the correct runtime after picking in a small line */
     .bonus-runtime {
       font-size: 12px;
       margin-top: 3px;
-      display: none; /* hidden by default, show it once user picks */
+      display: none;
     }
 
     /* ---------- FINAL PAGE ---------- */
@@ -316,7 +310,6 @@
       font-size: 28px;
       font-weight: bold;
     }
-    /* Put overall accuracy/skill in a box, right under final score */
     #final-overall-box {
       border: 1px solid #FFD700;
       padding: 10px;
@@ -326,7 +319,6 @@
     .final-buttons {
       margin-bottom: 20px;
     }
-
     .final-round-wrapper {
       border: 2px solid #666;
       border-radius: 10px;
@@ -337,7 +329,6 @@
       margin-right: auto;
       background: #111;
     }
-
     .final-round-heading {
       font-size: 20px;
       margin-bottom: 10px;
@@ -345,7 +336,6 @@
       font-weight: bold;
       text-align: center;
     }
-
     .final-round-row {
       display: grid; 
       grid-template-columns: repeat(5, 160px);
@@ -413,8 +403,31 @@
       margin-bottom: 10px;
     }
 
-    /* ---------- SOUND EFFECTS ---------- */
-    audio { display: none; }
+    /*
+      ---------- REACTION OVERLAY ----------
+      This is the new separate pop-up for the random quote.
+    */
+    #reaction-overlay {
+      display: none;
+      position: absolute;
+      top: 100px; /* a bit lower so it doesn't overlap the recap if it's big */
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.9);
+      padding: 20px;
+      border: 3px solid #00FFFF; /* just a different color so we see it easily */
+      border-radius: 10px;
+      text-align: center;
+      z-index: 99999; /* above the recap overlay */
+      width: 400px;
+    }
+    #reaction-overlay p {
+      margin-bottom: 10px;
+    }
+    #reaction-overlay .quote-line {
+      font-style: italic;
+      color: #FFD700;
+    }
   </style>
 </head>
 <body>
@@ -442,24 +455,28 @@
       <button class="diff-btn" data-difficulty="hard" id="hard-btn">Hard</button>
     </div>
     <button id="begin-btn" class="game-btn" disabled>Begin</button>
-    <div class="version-number">v4.4</div>
+    <div class="version-number">v4.5</div>
   </div>
 
   <!-- ROUND RECAP OVERLAY -->
   <div id="round-recap-overlay">
     <h3 id="round-recap-title"></h3>
     <p id="round-recap-details"></p>
-    <!-- Reaction line inserted below -->
-    <p id="round-recap-reaction" style="font-style:italic; color:#FFD700; margin-top:10px;"></p>
     <button id="round-recap-close-btn" class="game-btn" style="font-size:16px; padding:6px 12px;">OK</button>
+  </div>
+
+  <!-- REACTION OVERLAY (new) -->
+  <div id="reaction-overlay">
+    <p class="quote-line" id="reaction-quote"></p>
+    <button id="reaction-close-btn" class="game-btn" style="font-size:16px; padding:6px 12px;">OK</button>
   </div>
 
   <!-- GAME SCREEN -->
   <div id="game-container" class="page-container">
     <div id="timer-box">
-      <div id="timer-value">20</div>
-      <!-- Round # in smaller text under the countdown -->
+      <!-- Round label above countdown -->
       <div id="round-label">Round 1</div>
+      <div id="timer-value">20</div>
       <button id="joker-btn" class="glow-anim" title="Reveal relative runtimes briefly">🤡</button>
     </div>
     <div id="runtimes-container" class="cards-container"></div>
@@ -485,8 +502,7 @@
   <!-- FINAL SCREEN -->
   <div id="final-container" class="page-container">
     <div id="final-scores"></div>
-    <!-- Overall accuracy/skill in a box under final score -->
-    <div id="final-overall-box" style="display:inline-block;"></div>
+    <div id="final-overall-box"></div>
 
     <div class="final-buttons">
       <button id="share-twitter-btn" class="game-btn">Share on Twitter</button>
@@ -504,12 +520,13 @@
      * GLOBAL STATE & CONFIG
      *******************************************************/
     const csvUrl = "runtime_source_02222025.csv";
-    const reactionsUrl = "reactions.csv"; // new CSV for random reactions
+    const reactionsUrl = "reactions.csv"; // new CSV with potential commas/quotes
 
     let difficulty;
     let allMovies = [];
     let filteredMovies = [];
-    // Reactions
+
+    // Reactions arrays
     let perfectReactions = [];
     let closeReactions = [];
     let unimpressedReactions = [];
@@ -540,7 +557,10 @@
     let bonusUsed = false;
     let bonusTimer = null;
     let bonusTimeLeft = 10;
-    let bonusStarted = false; // track if user clicked "Begin Bonus"
+    let bonusStarted = false;
+
+    // For controlling the reaction overlay flow
+    let pendingReaction = ""; // store the reaction text for the next overlay
 
     document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById("easy-btn").addEventListener("click", () => setDifficulty("easy"));
@@ -553,8 +573,8 @@
       beginBtn.innerText = "Loading...";
 
       try {
-        await fetchMainCSV();      // load the main movie CSV
-        await fetchReactionsCSV(); // load the reactions CSV
+        await fetchMainCSV();
+        await fetchReactionsCSV(); // robust CSV parse for quotes
         beginBtn.disabled = false;
         beginBtn.innerText = "Begin";
       } catch(e) {
@@ -568,6 +588,12 @@
         if (!jokerUsed) useJoker();
       });
       document.getElementById("submit-btn").addEventListener("click", onSubmitRound);
+
+      // Reaction overlay close
+      document.getElementById("reaction-close-btn").addEventListener("click", ()=>{
+        document.getElementById("reaction-overlay").style.display="none";
+        nextRoundAfterReaction(); // proceed
+      });
 
       // Bonus
       document.getElementById("bonus-begin-btn").addEventListener("click", startBonusActual);
@@ -584,12 +610,18 @@
       // Round recap overlay
       document.getElementById("round-recap-close-btn").addEventListener("click", () => {
         document.getElementById("round-recap-overlay").style.display = "none";
-        nextRoundAfterRecap();
+        // Now show the separate reaction overlay if we have a reaction
+        if(pendingReaction){
+          showReactionOverlay(pendingReaction);
+        } else {
+          // fallback
+          nextRoundAfterReaction();
+        }
       });
     });
 
     /*******************************************************
-     * LOAD MAIN CSV
+     * CSV LOADING (Main + Reactions)
      *******************************************************/
     async function fetchMainCSV() {
       const resp = await fetch(csvUrl);
@@ -622,40 +654,72 @@
       }
     }
 
-    /*******************************************************
-     * LOAD REACTIONS CSV
-     *******************************************************/
-    async function fetchReactionsCSV() {
+    // We'll parse the reactions CSV with a more robust function that handles quotes and commas.
+    async function fetchReactionsCSV(){
       const resp = await fetch(reactionsUrl);
       let data = await resp.text();
       data = data.replace(/^\uFEFF/, "");
       parseReactionsCSV(data);
     }
-    function parseReactionsCSV(csvData) {
-      const lines = csvData.trim().split(/\r?\n/);
-      const headers = lines[0].split(",");
-      // columns: perfect, close, unimpressed, bad
+    function parseReactionsCSV(csvData){
+      // We'll use parseCSVWithQuotes below
+      const rows = parseCSVWithQuotes(csvData);
+      // rows[0] is header => perfect,close,unimpressed,bad
+      const headers = rows[0];
       const colPerfect = headers.indexOf("perfect");
       const colClose = headers.indexOf("close");
       const colUnimp = headers.indexOf("unimpressed");
       const colBad = headers.indexOf("bad");
+      for(let i=1; i<rows.length; i++){
+        const r = rows[i];
+        if(r.length<4) continue;
+        if(r[colPerfect]) perfectReactions.push(r[colPerfect]);
+        if(r[colClose]) closeReactions.push(r[colClose]);
+        if(r[colUnimp]) unimpressedReactions.push(r[colUnimp]);
+        if(r[colBad]) badReactions.push(r[colBad]);
+      }
+    }
 
-      for (let i=1; i<lines.length; i++){
-        const rowCells = lines[i].split(",");
-        if(rowCells.length<4) continue;
-        if(rowCells[colPerfect]) {
-          perfectReactions.push( rowCells[colPerfect].trim() );
-        }
-        if(rowCells[colClose]) {
-          closeReactions.push( rowCells[colClose].trim() );
-        }
-        if(rowCells[colUnimp]) {
-          unimpressedReactions.push( rowCells[colUnimp].trim() );
-        }
-        if(rowCells[colBad]) {
-          badReactions.push( rowCells[colBad].trim() );
+    // A minimal CSV parser that handles quotes and commas
+    function parseCSVWithQuotes(csv){
+      const lines = [];
+      let currentLine = [];
+      let currentCell = "";
+      let inQuotes = false;
+      for(let i=0; i<csv.length; i++){
+        const c = csv[i];
+        if(c==='"'){
+          // toggle or escape
+          if(inQuotes && csv[i+1]==='"'){
+            // escaped quote
+            currentCell+='"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if(c===',' && !inQuotes){
+          // end of cell
+          currentLine.push(currentCell);
+          currentCell="";
+        } else if((c==='\r' || c==='\n') && !inQuotes){
+          // end of line
+          if(c==='\r' && i<csv.length-1 && csv[i+1]==='\n'){
+            i++; // skip \n
+          }
+          currentLine.push(currentCell);
+          lines.push(currentLine);
+          currentLine=[];
+          currentCell="";
+        } else {
+          currentCell+=c;
         }
       }
+      // final cell if there's no newline at end
+      if(currentCell || currentLine.length>0){
+        currentLine.push(currentCell);
+        lines.push(currentLine);
+      }
+      return lines;
     }
 
     /*******************************************************
@@ -751,14 +815,13 @@
         fadeInCards();
       });
     }
-
     function renderRound(){
       timeLeft=roundTimers[currentRoundIndex]||20;
       setupTimer();
       updateGameStatsBox();
 
-      // Show round # in the timer circle
-      document.getElementById("round-label").innerText = `Round ${currentRoundIndex+1}`;
+      // Round label
+      document.getElementById("round-label").innerText=`Round ${currentRoundIndex+1}`;
 
       const moviesContainer=document.getElementById("movies-container");
       const runtimesContainer=document.getElementById("runtimes-container");
@@ -921,6 +984,20 @@
         roundScore
       });
 
+      // figure out which reaction set to pick from, store in pendingReaction
+      let reactionText="";
+      if(roundCorrect===5){
+        reactionText = randomFrom(perfectReactions);
+      } else if(roundCorrect===4){
+        reactionText = randomFrom(closeReactions);
+      } else if(roundCorrect===3 || roundCorrect===2){
+        reactionText = randomFrom(unimpressedReactions);
+      } else {
+        // 1 or 0
+        reactionText = randomFrom(badReactions);
+      }
+      pendingReaction = reactionText;
+
       showRoundRecapOverlay(roundCorrect,answeredCount,leftoverBonus,fractionBonus,roundScore);
     }
 
@@ -936,7 +1013,6 @@
       const overlay=document.getElementById("round-recap-overlay");
       const title=document.getElementById("round-recap-title");
       const details=document.getElementById("round-recap-details");
-      const reactionLine=document.getElementById("round-recap-reaction");
 
       title.innerText=`Round ${currentRoundIndex+1} Recap`;
       details.innerHTML=`
@@ -945,26 +1021,25 @@
         Accuracy bonus: <strong>+${fractionBonus.toFixed(0)}</strong><br>
         Round Score: <strong>${roundScore.toFixed(0)}</strong>
       `;
-
-      // figure out which reaction set to pick from
-      let reactionText = "";
-      if(roundCorrect===5){
-        reactionText = randomFrom(perfectReactions);
-      } else if(roundCorrect===4){
-        reactionText = randomFrom(closeReactions);
-      } else if(roundCorrect===3 || roundCorrect===2){
-        reactionText = randomFrom(unimpressedReactions);
-      } else {
-        // 1 or 0
-        reactionText = randomFrom(badReactions);
-      }
-      reactionLine.innerText = reactionText;
-
       overlay.style.display="block";
     }
 
+    // after user closes the recap overlay, show reaction overlay (if any)
     function nextRoundAfterRecap(){
-      document.getElementById("round-recap-overlay").style.display="none";
+      // we do nothing here because we now handle it in the event listener above
+      // (some leftover function if needed)
+    }
+    // show the reaction overlay
+    function showReactionOverlay(quoteText){
+      const ro=document.getElementById("reaction-overlay");
+      document.getElementById("reaction-quote").innerText=quoteText || "";
+      ro.style.display="block";
+    }
+    // user closes the reaction overlay
+    function nextRoundAfterReaction(){
+      // clear pending
+      pendingReaction="";
+      document.getElementById("reaction-overlay").style.display="none";
       document.getElementById("submit-btn").style.display="block";
       currentRoundIndex++;
       startRound();
@@ -1016,7 +1091,6 @@
 
       startBonusRound();
     }
-
     function startBonusRound(){
       bonusUsed=false;
       bonusTimeLeft=10;
@@ -1036,8 +1110,6 @@
           img.classList.add("bonus-poster");
           card.appendChild(img);
         }
-        // No title here
-        // We'll add a hidden runtime line to reveal after picking
         const runtimeLine=document.createElement("div");
         runtimeLine.classList.add("bonus-runtime");
         runtimeLine.innerText=`${m.runtime} min`;
@@ -1050,7 +1122,6 @@
       document.getElementById("bonus-message").innerText="";
       document.getElementById("bonus-result").innerText="";
     }
-
     function setupBonusTimer(){
       clearInterval(bonusTimer);
       const box=document.getElementById("bonus-timer-box");
@@ -1123,7 +1194,6 @@
       const skill=totalAnswered?(totalDifference/totalAnswered):0;
       document.getElementById("final-scores").innerText=`Final Score: ${Math.round(totalScore)}`;
 
-      // Show overall in a box
       const overallBox=document.getElementById("final-overall-box");
       overallBox.innerHTML=`Accuracy: ${accuracy.toFixed(1)}% | Skill: ${skill.toFixed(1)} min`;
 
@@ -1131,7 +1201,6 @@
       finalCardsContainer.innerHTML="";
 
       rounds.forEach((round,idx)=>{
-        // bounding box for each round
         const wrapper=document.createElement("div");
         wrapper.classList.add("final-round-wrapper");
 
@@ -1165,7 +1234,6 @@
 
         wrapper.appendChild(rowDiv);
 
-        // Now the round breakdown
         const roundInfo=roundScores[idx];
         if(roundInfo){
           const infoDiv=document.createElement("div");
