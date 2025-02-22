@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Stump the Buff - v4.3</title>
+  <title>Stump the Buff - v4.4</title>
   <style>
     /* ---------- GLOBAL / LAYOUT ---------- */
     html, body {
@@ -105,16 +105,25 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-size: 64px;
       font-weight: bold;
       color: white;
       border: 2px solid #444;
       transition: all 0.2s ease;
       position: relative;
+      font-size: 64px; /* countdown number */
     }
     #timer-value {
       z-index: 2;
     }
+    /*
+      Round label: smaller text below the main countdown
+    */
+    #round-label {
+      font-size: 14px;
+      opacity: 0.8;
+      margin-top: -4px; /* move it up a bit closer to the countdown number */
+    }
+
     #joker-btn {
       position: absolute;
       bottom: 8px;
@@ -129,11 +138,6 @@
     }
     #joker-btn:hover {
       background: #333;
-    }
-
-    /* Submit button is now placed below #movies-container in the HTML */
-    #submit-btn {
-      margin-top: 20px;
     }
 
     #runtimes-container {
@@ -151,6 +155,10 @@
       margin-bottom: 20px;
       width: 100%;
     }
+    #submit-btn {
+      margin-top: 20px;
+    }
+
     .movie-card {
       width: 160px;
       border: 2px solid white;
@@ -246,6 +254,16 @@
     #bonus-container {
       text-align: center;
     }
+    /* We'll hide #bonus-floating-container until user hits "Begin Bonus" */
+    #bonus-floating-container {
+      display: none;
+      grid-template-columns: repeat(5, 140px);
+      gap: 10px;
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto 20px auto;
+      justify-content: center;
+    }
     #bonus-timer-box {
       margin: 10px auto;
       width: 120px;
@@ -261,15 +279,6 @@
       border: 2px solid #444;
       transition: all 0.2s ease;
       margin-bottom: 20px;
-    }
-    #bonus-floating-container {
-      display: grid;
-      grid-template-columns: repeat(5, 140px);
-      gap: 10px;
-      width: 100%;
-      max-width: 800px;
-      margin: 0 auto 20px auto;
-      justify-content: center;
     }
     .floating-card {
       width: 140px;
@@ -291,6 +300,12 @@
       border-radius: 6px;
       margin-bottom: 5px;
     }
+    /* We'll display the correct runtime after picking in a small line */
+    .bonus-runtime {
+      font-size: 12px;
+      margin-top: 3px;
+      display: none; /* hidden by default, show it once user picks */
+    }
 
     /* ---------- FINAL PAGE ---------- */
     #final-container {
@@ -301,29 +316,43 @@
       font-size: 28px;
       font-weight: bold;
     }
-    /* We removed Show/Hide, so details are displayed by default. */
-    #details-container {
-      margin: 10px 0;
+    /* Put overall accuracy/skill in a box, right under final score */
+    #final-overall-box {
+      border: 1px solid #FFD700;
+      padding: 10px;
+      margin: 10px auto;
+      width: fit-content;
     }
-    .breakdown-row {
+    .final-buttons {
+      margin-bottom: 20px;
+    }
+
+    .final-round-wrapper {
+      border: 2px solid #666;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 20px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+      background: #111;
+    }
+
+    .final-round-heading {
+      font-size: 20px;
       margin-bottom: 10px;
+      text-transform: uppercase;
+      font-weight: bold;
       text-align: center;
     }
+
     .final-round-row {
       display: grid; 
       grid-template-columns: repeat(5, 160px);
       gap: 10px;
       justify-content: center;
-      margin-bottom: 25px;
+      margin-bottom: 15px;
       width: 100%;
-    }
-    .final-round-heading {
-      font-size: 22px;
-      text-align: center;
-      width: 100%;
-      font-weight: bold;
-      margin-bottom: 8px;
-      grid-column: 1 / -1;
     }
     .final-card {
       border-radius: 10px;
@@ -355,6 +384,10 @@
       width: 140px;
       border-radius: 6px;
       margin-bottom: 5px;
+    }
+    .round-breakdown-info {
+      text-align: center;
+      margin-top: 5px;
     }
 
     /* ---------- MINI-RECAP (per-round) ---------- */
@@ -409,57 +442,59 @@
       <button class="diff-btn" data-difficulty="hard" id="hard-btn">Hard</button>
     </div>
     <button id="begin-btn" class="game-btn" disabled>Begin</button>
-    <div class="version-number">v4.3</div>
+    <div class="version-number">v4.4</div>
   </div>
 
   <!-- ROUND RECAP OVERLAY -->
   <div id="round-recap-overlay">
     <h3 id="round-recap-title"></h3>
     <p id="round-recap-details"></p>
+    <!-- Reaction line inserted below -->
+    <p id="round-recap-reaction" style="font-style:italic; color:#FFD700; margin-top:10px;"></p>
     <button id="round-recap-close-btn" class="game-btn" style="font-size:16px; padding:6px 12px;">OK</button>
   </div>
 
   <!-- GAME SCREEN -->
   <div id="game-container" class="page-container">
     <div id="timer-box">
-      <span id="timer-value">20</span>
+      <div id="timer-value">20</div>
+      <!-- Round # in smaller text under the countdown -->
+      <div id="round-label">Round 1</div>
       <button id="joker-btn" class="glow-anim" title="Reveal relative runtimes briefly">🤡</button>
     </div>
     <div id="runtimes-container" class="cards-container"></div>
     <div id="movies-container" class="cards-container"></div>
-    <!-- Submit button is now below the movie cards -->
     <button id="submit-btn" class="game-btn" title="Submit early to earn extra time bonus!">Submit</button>
     <div id="this-game-stats" class="stats-box empty"></div>
   </div>
 
   <!-- BONUS ROUND (Grid Layout) -->
   <div id="bonus-container" class="page-container">
-    <!-- Re-added short explanation for the bonus round -->
-    <p style="max-width: 600px; margin-bottom: 20px;">
-      Bonus Round! Pick which movie has the longest runtime for +1000 points.
-      You have a short time to choose, so move quickly!
-    </p>
-    <div id="bonus-timer-box"><span id="bonus-timer-value">10</span></div>
+    <div id="bonus-intro" style="max-width:600px; margin-bottom:20px;">
+      <p><strong>Bonus Round!</strong> Pick which movie has the longest runtime for +1000 points. 
+         You have a short time, so choose quickly!</p>
+      <button id="bonus-begin-btn" class="game-btn">Begin Bonus</button>
+    </div>
+    <div id="bonus-timer-box" style="display:none;"><span id="bonus-timer-value">10</span></div>
     <h3 id="bonus-message"></h3>
     <div id="bonus-floating-container"></div>
-    <button id="bonus-continue-btn" class="game-btn">Continue</button>
+    <button id="bonus-continue-btn" class="game-btn" style="display:none;">Continue</button>
     <div id="bonus-result"></div>
   </div>
 
   <!-- FINAL SCREEN -->
   <div id="final-container" class="page-container">
     <div id="final-scores"></div>
+    <!-- Overall accuracy/skill in a box under final score -->
+    <div id="final-overall-box" style="display:inline-block;"></div>
 
-    <!-- Buttons are now above the round recaps, details are shown by default -->
     <div class="final-buttons">
       <button id="share-twitter-btn" class="game-btn">Share on Twitter</button>
       <button id="copy-recap-btn" class="game-btn">Copy Recap</button>
       <button id="play-again-btn" class="game-btn">Play Again?</button>
     </div>
 
-    <!-- We removed the Show/Hide toggle, details are displayed by default -->
     <div id="details-container">
-      <div id="round-breakdown"></div>
       <div id="final-cards-container"></div>
     </div>
   </div>
@@ -469,9 +504,17 @@
      * GLOBAL STATE & CONFIG
      *******************************************************/
     const csvUrl = "runtime_source_02222025.csv";
+    const reactionsUrl = "reactions.csv"; // new CSV for random reactions
+
     let difficulty;
     let allMovies = [];
     let filteredMovies = [];
+    // Reactions
+    let perfectReactions = [];
+    let closeReactions = [];
+    let unimpressedReactions = [];
+    let badReactions = [];
+
     const TIMERS = {
       easy:   [30, 30, 30, 30, 30],
       medium: [30, 25, 20, 15, 15],
@@ -497,6 +540,7 @@
     let bonusUsed = false;
     let bonusTimer = null;
     let bonusTimeLeft = 10;
+    let bonusStarted = false; // track if user clicked "Begin Bonus"
 
     document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById("easy-btn").addEventListener("click", () => setDifficulty("easy"));
@@ -507,13 +551,14 @@
       const beginBtn = document.getElementById("begin-btn");
       beginBtn.disabled = true;
       beginBtn.innerText = "Loading...";
+
       try {
-        await fetchCSV();
-        console.log("Parsed movies:", allMovies);
+        await fetchMainCSV();      // load the main movie CSV
+        await fetchReactionsCSV(); // load the reactions CSV
         beginBtn.disabled = false;
         beginBtn.innerText = "Begin";
       } catch(e) {
-        console.error("Error fetching CSV:", e);
+        console.error("Error loading data:", e);
         beginBtn.innerText = "Error loading data";
       }
 
@@ -524,7 +569,11 @@
       });
       document.getElementById("submit-btn").addEventListener("click", onSubmitRound);
 
+      // Bonus
+      document.getElementById("bonus-begin-btn").addEventListener("click", startBonusActual);
       document.getElementById("bonus-continue-btn").addEventListener("click", onFinishBonus);
+
+      // Final
       document.getElementById("share-twitter-btn").addEventListener("click", shareOnTwitter);
       document.getElementById("copy-recap-btn").addEventListener("click", copyRecap);
       document.getElementById("play-again-btn").addEventListener("click", () => {
@@ -532,7 +581,7 @@
         document.getElementById("intro-container").style.display = "flex";
       });
 
-      // Removed the details toggle entirely (no show/hide)
+      // Round recap overlay
       document.getElementById("round-recap-close-btn").addEventListener("click", () => {
         document.getElementById("round-recap-overlay").style.display = "none";
         nextRoundAfterRecap();
@@ -540,15 +589,15 @@
     });
 
     /*******************************************************
-     * CSV PARSING (with BOM removal)
+     * LOAD MAIN CSV
      *******************************************************/
-    async function fetchCSV() {
+    async function fetchMainCSV() {
       const resp = await fetch(csvUrl);
       let data = await resp.text();
       data = data.replace(/^\uFEFF/, "");
-      parseCSV(data);
+      parseMainCSV(data);
     }
-    function parseCSV(csvData) {
+    function parseMainCSV(csvData) {
       const lines = csvData.trim().split(/\r?\n/);
       const headers = lines[0].split(",");
       const colMovieName = headers.indexOf("movie_name");
@@ -573,6 +622,45 @@
       }
     }
 
+    /*******************************************************
+     * LOAD REACTIONS CSV
+     *******************************************************/
+    async function fetchReactionsCSV() {
+      const resp = await fetch(reactionsUrl);
+      let data = await resp.text();
+      data = data.replace(/^\uFEFF/, "");
+      parseReactionsCSV(data);
+    }
+    function parseReactionsCSV(csvData) {
+      const lines = csvData.trim().split(/\r?\n/);
+      const headers = lines[0].split(",");
+      // columns: perfect, close, unimpressed, bad
+      const colPerfect = headers.indexOf("perfect");
+      const colClose = headers.indexOf("close");
+      const colUnimp = headers.indexOf("unimpressed");
+      const colBad = headers.indexOf("bad");
+
+      for (let i=1; i<lines.length; i++){
+        const rowCells = lines[i].split(",");
+        if(rowCells.length<4) continue;
+        if(rowCells[colPerfect]) {
+          perfectReactions.push( rowCells[colPerfect].trim() );
+        }
+        if(rowCells[colClose]) {
+          closeReactions.push( rowCells[colClose].trim() );
+        }
+        if(rowCells[colUnimp]) {
+          unimpressedReactions.push( rowCells[colUnimp].trim() );
+        }
+        if(rowCells[colBad]) {
+          badReactions.push( rowCells[colBad].trim() );
+        }
+      }
+    }
+
+    /*******************************************************
+     * DIFFICULTY / SETUP
+     *******************************************************/
     function setDifficulty(diff) {
       difficulty = diff;
       ["easy-btn","medium-btn","hard-btn"].forEach(id => {
@@ -596,6 +684,7 @@
       roundScores=[];
       jokerUsed=false;
       bonusUsed=false;
+      bonusStarted=false;
 
       document.getElementById("bonus-container").style.display="none";
       document.getElementById("final-container").style.display="none";
@@ -642,11 +731,19 @@
       }
       console.log("Rounds built:", rounds);
     }
+
+    /*******************************************************
+     * ROUND LOGIC
+     *******************************************************/
     function startRound(){
       if(currentRoundIndex>=5){
         document.getElementById("game-container").style.display="none";
         document.getElementById("bonus-container").style.display="flex";
-        startBonusRound();
+        // Hide the actual bonus movies, show the intro
+        document.getElementById("bonus-intro").style.display="block";
+        document.getElementById("bonus-timer-box").style.display="none";
+        document.getElementById("bonus-floating-container").style.display="none";
+        document.getElementById("bonus-continue-btn").style.display="none";
         return;
       }
       fadeOutCards(()=>{
@@ -654,10 +751,14 @@
         fadeInCards();
       });
     }
+
     function renderRound(){
       timeLeft=roundTimers[currentRoundIndex]||20;
       setupTimer();
       updateGameStatsBox();
+
+      // Show round # in the timer circle
+      document.getElementById("round-label").innerText = `Round ${currentRoundIndex+1}`;
 
       const moviesContainer=document.getElementById("movies-container");
       const runtimesContainer=document.getElementById("runtimes-container");
@@ -835,6 +936,7 @@
       const overlay=document.getElementById("round-recap-overlay");
       const title=document.getElementById("round-recap-title");
       const details=document.getElementById("round-recap-details");
+      const reactionLine=document.getElementById("round-recap-reaction");
 
       title.innerText=`Round ${currentRoundIndex+1} Recap`;
       details.innerHTML=`
@@ -843,6 +945,21 @@
         Accuracy bonus: <strong>+${fractionBonus.toFixed(0)}</strong><br>
         Round Score: <strong>${roundScore.toFixed(0)}</strong>
       `;
+
+      // figure out which reaction set to pick from
+      let reactionText = "";
+      if(roundCorrect===5){
+        reactionText = randomFrom(perfectReactions);
+      } else if(roundCorrect===4){
+        reactionText = randomFrom(closeReactions);
+      } else if(roundCorrect===3 || roundCorrect===2){
+        reactionText = randomFrom(unimpressedReactions);
+      } else {
+        // 1 or 0
+        reactionText = randomFrom(badReactions);
+      }
+      reactionLine.innerText = reactionText;
+
       overlay.style.display="block";
     }
 
@@ -889,6 +1006,17 @@
     /*******************************************************
      * BONUS ROUND
      *******************************************************/
+    function startBonusActual(){
+      if(bonusStarted)return;
+      bonusStarted=true;
+      document.getElementById("bonus-intro").style.display="none";
+      document.getElementById("bonus-timer-box").style.display="flex";
+      document.getElementById("bonus-floating-container").style.display="grid";
+      document.getElementById("bonus-continue-btn").style.display="none";
+
+      startBonusRound();
+    }
+
     function startBonusRound(){
       bonusUsed=false;
       bonusTimeLeft=10;
@@ -902,18 +1030,18 @@
         const card=document.createElement("div");
         card.classList.add("floating-card");
         
-        // Show poster in bonus round
         if(m.poster){
           const img=document.createElement("img");
           img.src=m.poster;
           img.classList.add("bonus-poster");
           card.appendChild(img);
         }
-        // Then a small text with the movie name
-        const textDiv=document.createElement("div");
-        textDiv.innerText=m.movie_name;
-        textDiv.style.fontSize="14px";
-        card.appendChild(textDiv);
+        // No title here
+        // We'll add a hidden runtime line to reveal after picking
+        const runtimeLine=document.createElement("div");
+        runtimeLine.classList.add("bonus-runtime");
+        runtimeLine.innerText=`${m.runtime} min`;
+        card.appendChild(runtimeLine);
 
         card.addEventListener("click",()=>pickBonusMovie(m,card));
         container.appendChild(card);
@@ -922,6 +1050,7 @@
       document.getElementById("bonus-message").innerText="";
       document.getElementById("bonus-result").innerText="";
     }
+
     function setupBonusTimer(){
       clearInterval(bonusTimer);
       const box=document.getElementById("bonus-timer-box");
@@ -944,6 +1073,7 @@
           clearInterval(bonusTimer);
           if(!bonusUsed){
             document.getElementById("bonus-message").innerText="Time's up! No pick made.";
+            document.getElementById("bonus-continue-btn").style.display="inline-block";
           }
         }
       },1000);
@@ -968,6 +1098,16 @@
       }else{
         document.getElementById("bonus-message").innerText=`Sorry, it was ${maxMovie.movie_name} (${maxRuntime} min).`;
       }
+
+      // Reveal runtimes on all cards
+      const allCards=document.querySelectorAll("#bonus-floating-container .floating-card");
+      allCards.forEach(c=>{
+        const rt=c.querySelector(".bonus-runtime");
+        if(rt) rt.style.display="block";
+      });
+
+      // Show the Continue button
+      document.getElementById("bonus-continue-btn").style.display="inline-block";
     }
     function onFinishBonus(){
       document.getElementById("bonus-container").style.display="none";
@@ -983,24 +1123,25 @@
       const skill=totalAnswered?(totalDifference/totalAnswered):0;
       document.getElementById("final-scores").innerText=`Final Score: ${Math.round(totalScore)}`;
 
-      let overallHTML=`
-        <div class="breakdown-row">
-          Overall Accuracy: ${accuracy.toFixed(1)}% | Skill: ${skill.toFixed(1)} min
-        </div>
-      `;
-      document.getElementById("round-breakdown").innerHTML=overallHTML;
+      // Show overall in a box
+      const overallBox=document.getElementById("final-overall-box");
+      overallBox.innerHTML=`Accuracy: ${accuracy.toFixed(1)}% | Skill: ${skill.toFixed(1)} min`;
 
       const finalCardsContainer=document.getElementById("final-cards-container");
       finalCardsContainer.innerHTML="";
 
       rounds.forEach((round,idx)=>{
-        const rowDiv=document.createElement("div");
-        rowDiv.classList.add("final-round-row");
+        // bounding box for each round
+        const wrapper=document.createElement("div");
+        wrapper.classList.add("final-round-wrapper");
 
         const heading=document.createElement("div");
         heading.classList.add("final-round-heading");
         heading.innerText=`Round ${idx+1}`;
-        rowDiv.appendChild(heading);
+        wrapper.appendChild(heading);
+
+        const rowDiv=document.createElement("div");
+        rowDiv.classList.add("final-round-row");
 
         round.forEach(movie=>{
           const actual=movie.runtime;
@@ -1022,21 +1163,23 @@
           rowDiv.appendChild(card);
         });
 
-        finalCardsContainer.appendChild(rowDiv);
+        wrapper.appendChild(rowDiv);
 
+        // Now the round breakdown
         const roundInfo=roundScores[idx];
         if(roundInfo){
           const infoDiv=document.createElement("div");
-          infoDiv.classList.add("breakdown-row");
-          infoDiv.style.marginTop="5px";
+          infoDiv.classList.add("round-breakdown-info");
           infoDiv.innerHTML=`
             ${roundInfo.correct}/5 correct<br>
             Time bonus: +${(roundInfo.leftoverBonus||0).toFixed(0)}<br>
             Accuracy bonus: +${(roundInfo.fractionBonus||0).toFixed(0)}<br>
             Round Score: ${roundInfo.roundScore.toFixed(0)}
           `;
-          finalCardsContainer.appendChild(infoDiv);
+          wrapper.appendChild(infoDiv);
         }
+
+        finalCardsContainer.appendChild(wrapper);
       });
     }
 
@@ -1132,6 +1275,11 @@ Think you can beat me? Head to oscers.com`;
       if(statsBox.classList.contains("empty")){
         statsBox.classList.remove("empty");
       }
+    }
+    // pick random from array
+    function randomFrom(arr){
+      if(!arr || arr.length===0) return "";
+      return arr[Math.floor(Math.random()*arr.length)];
     }
   </script>
 </body>
