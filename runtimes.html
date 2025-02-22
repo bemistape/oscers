@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Stump the Buff - v3.2 (Joker in Timer)</title>
+  <title>Stump the Buff - v3.3 (Local CSV)</title>
   <style>
     /* ---------- GLOBAL / LAYOUT ---------- */
     html, body {
@@ -94,10 +94,6 @@
     .difficulty-box { margin-bottom: 20px; }
 
     /* ---------- GAME PAGE ---------- */
-    /*
-      Now the Joker button is inside #timer-box, so we set position: relative
-      on #timer-box and absolutely position the Joker at the bottom.
-    */
     #timer-box {
       margin: 10px auto;
       width: 160px;
@@ -113,14 +109,11 @@
       color: white;
       border: 2px solid #444;
       transition: all 0.2s ease;
-      position: relative; /* for the Joker's absolute positioning */
+      position: relative;
     }
     #timer-value {
-      z-index: 2; /* keep the number on top */
+      z-index: 2;
     }
-    /*
-      The Joker button is smaller and placed near the bottom of the circle.
-    */
     #joker-btn {
       position: absolute;
       bottom: 8px;
@@ -136,7 +129,6 @@
     #joker-btn:hover {
       background: #333;
     }
-
     #submit-btn {
       font-size: 22px;
       padding: 12px 30px;
@@ -156,7 +148,7 @@
       margin-bottom: 20px;
     }
     #movies-container {
-      display: flex; /* center them horizontally */
+      display: flex;
       flex-wrap: wrap;
       justify-content: center;
       gap: 20px;
@@ -202,7 +194,7 @@
       animation: float-run 3s ease-in-out infinite alternate;
     }
     .runtime-card.dragging {
-      outline: 3px solid #fffd00; /* neon yellow */
+      outline: 3px solid #fffd00;
       box-shadow: 0 0 10px #fffd00;
     }
     @keyframes float-run {
@@ -409,7 +401,7 @@
       <button class="diff-btn" data-difficulty="hard" id="hard-btn">Hard</button>
     </div>
     <button id="begin-btn" disabled>Begin</button>
-    <div class="version-number">v3.2 (Joker in Timer)</div>
+    <div class="version-number">v3.2 (Local CSV)</div>
   </div>
 
   <!-- ROUND RECAP OVERLAY -->
@@ -421,19 +413,13 @@
 
   <!-- GAME SCREEN -->
   <div id="game-container" class="page-container">
-    <!--
-      We moved the Joker button into the timer circle.
-      The original separate container for the Joker was removed.
-    -->
     <div id="timer-box">
       <span id="timer-value">20</span>
       <button id="joker-btn" class="glow-anim" title="Reveal relative runtimes briefly">🤡</button>
     </div>
-
     <button id="submit-btn" title="Submit early to earn extra time bonus!">Submit</button>
     <div id="runtimes-container" class="cards-container"></div>
     <div id="movies-container" class="cards-container"></div>
-
     <div id="this-game-stats" class="stats-box empty"></div>
   </div>
 
@@ -462,14 +448,11 @@
   </div>
 
   <script>
-    /* 
-      The JavaScript logic is unchanged. 
-      Only the HTML structure and a bit of CSS changed to embed the Joker button.
-    */
     /*******************************************************
      * GLOBAL STATE & CONFIG
      *******************************************************/
-    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vToIbm5XR9mtqOXHYzpF0jIXhGY9WI9m-QQak2KsZFB6CGVnRVRCPL3V6zFVbT6e_jLyGQM1e5XPjcX/pub?gid=131639577&single=true&output=csv";
+    // Updated CSV URL to local file
+    const csvUrl = "runtime_source.csv";
     let difficulty;
     let allMovies = [];
     let filteredMovies = [];
@@ -657,7 +640,6 @@
       moviesContainer.innerHTML="";
       runtimesContainer.innerHTML="";
 
-      // If Joker was used already, hide the button
       document.getElementById("joker-btn").style.display = jokerUsed ? "none" : "inline-block";
 
       const roundMovies=rounds[currentRoundIndex];
@@ -779,10 +761,8 @@
         }
       }
 
-      // leftover time bonus
       const leftoverBonus=timeLeft*10;
 
-      // sum difference
       roundMovies.forEach(m=>{
         if(m._assignedRuntime!=null){
           roundDiff+=Math.abs(m._assignedRuntime - m.runtime_minutes);
