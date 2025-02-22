@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Stump the Buff - v4.1</title>
+  <title>Stump the Buff - v4.2</title>
   <style>
     /* ---------- GLOBAL / LAYOUT ---------- */
     html, body {
@@ -37,6 +37,20 @@
     }
 
     /* ---------- BUTTON STYLES ---------- */
+    /* Unified style for all major buttons, including "Continue," "Share," "Copy," etc. */
+    .game-btn {
+      font-size: 22px;
+      padding: 12px 30px;
+      margin: 10px 5px;
+      background: #FFD700;
+      color: black;
+      border: none;
+      transition: background 0.2s;
+    }
+    .game-btn:hover {
+      background: #FFC700;
+    }
+
     .diff-btn {
       background: #222;
       border: 2px solid #FFD700;
@@ -54,17 +68,9 @@
       color: black;
       border-color: #FFD700;
     }
+
     #begin-btn {
-      background: #FFD700;
-      color: black;
-      border: none;
-      font-size: 22px;
-      padding: 12px 30px;
-      margin-top: 20px;
-    }
-    #begin-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+      /* we’ll reuse .game-btn styles for consistency */
     }
 
     /* ---------- MAIN CONTAINERS ---------- */
@@ -130,15 +136,7 @@
       background: #333;
     }
     #submit-btn {
-      font-size: 22px;
-      padding: 12px 30px;
-      margin: 20px auto;
-      background: #FFD700;
-      color: black;
-      border: none;
-    }
-    #submit-btn:hover {
-      background: #FFC700;
+      /* we’ll also reuse .game-btn for consistency */
     }
     #runtimes-container {
       display: flex;
@@ -147,26 +145,27 @@
       gap: 10px;
       margin-bottom: 20px;
     }
+    /*
+      Force a 5-column grid so the 5 Movie Cards are always side by side
+      on typical desktop screens. If the screen is narrower than ~800px,
+      they may wrap, but that’s a smaller scenario.
+    */
     #movies-container {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(5, 160px);
+      gap: 10px;
       justify-content: center;
-      gap: 10px; /* slightly smaller gap so all 5 can fit in one line */
       margin-bottom: 20px;
       width: 100%;
     }
-    /*
-      Movie Card smaller so five can fit in one line.
-      We also removed the tooltip (no more "title" attribute).
-    */
     .movie-card {
-      width: 160px; /* was 240px */
+      width: 160px;
       border: 2px solid white;
       padding: 10px;
       background-color: #000;
-      border-radius: 15px; /* smaller radius */
+      border-radius: 15px;
       text-align: center;
-      min-height: 220px; /* smaller height overall */
+      min-height: 220px;
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
@@ -178,17 +177,16 @@
       background-color: #111;
     }
     .movie-poster {
-      width: 140px; /* scaled down */
+      width: 140px;
       height: auto;
       margin-bottom: 5px;
       border-radius: 6px;
     }
-    .movie-title {
-      font-weight: bold;
-      margin-bottom: 5px;
-      font-size: 14px; /* smaller text */
-      line-height: 1.2;
-    }
+    /* 
+      We removed the movie title from the Round page
+      so there's no .movie-title in the Round card
+      (the final page still has text).
+    */
     .placed {
       border-color: #FFD700 !important;
       background-color: #111;
@@ -207,7 +205,7 @@
       margin: 5px;
       cursor: grab;
       animation: float-run 3s ease-in-out infinite alternate;
-      font-size: 14px; /* slightly smaller text */
+      font-size: 14px;
     }
     .runtime-card.dragging {
       outline: 3px solid #fffd00;
@@ -276,25 +274,37 @@
       transition: all 0.2s ease;
       margin-bottom: 20px;
     }
+    /*
+      We display posters in the bonus round, also in a 5-column grid.
+    */
     #bonus-floating-container {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(5, 140px);
       gap: 10px;
       width: 100%;
       max-width: 800px;
       margin: 0 auto 20px auto;
+      justify-content: center;
     }
     .floating-card {
-      width: 120px;
-      height: 120px;
+      width: 140px;
       border: 2px solid white;
-      border-radius: 60px;
+      border-radius: 10px;
       background: #000;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      padding: 5px;
+      padding: 10px;
+      cursor: pointer;
+      text-align: center;
+    }
+    .floating-card:hover {
+      background: #111;
+    }
+    .bonus-poster {
+      width: 120px;
+      border-radius: 6px;
+      margin-bottom: 5px;
     }
 
     /* ---------- FINAL PAGE ---------- */
@@ -325,14 +335,14 @@
     }
     .final-round-row {
       display: grid; 
-      grid-template-columns: repeat(3, 140px); 
-      grid-auto-rows: auto;
+      grid-template-columns: repeat(5, 160px);
       gap: 10px;
       justify-content: center;
-      margin-bottom: 15px;
+      margin-bottom: 25px;
+      width: 100%;
     }
     .final-round-heading {
-      font-size: 32px;
+      font-size: 22px;
       text-align: center;
       width: 100%;
       font-weight: bold;
@@ -344,9 +354,13 @@
       border: 2px solid #666;
       padding: 10px;
       text-align: center;
-      width: 140px;
       background: #000;
       margin: 5px;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
     }
     .final-card.correct {
       background-color: #003300;
@@ -355,6 +369,16 @@
     .final-card.incorrect {
       background-color: #330000;
       border-color: #f00;
+    }
+    .final-card .movie-title {
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+    .final-card .movie-poster {
+      width: 140px;
+      border-radius: 6px;
+      margin-bottom: 5px;
     }
 
     /* ---------- MINI-RECAP (per-round) ---------- */
@@ -378,14 +402,6 @@
     }
     #round-recap-overlay p {
       margin-bottom: 10px;
-    }
-    #round-recap-overlay button {
-      background: #222;
-      border: 2px solid #FFD700;
-      color: white;
-      font-size: 16px;
-      padding: 6px 12px;
-      cursor: pointer;
     }
 
     /* ---------- SOUND EFFECTS ---------- */
@@ -416,15 +432,15 @@
       <button class="diff-btn" data-difficulty="medium" id="medium-btn">Medium</button>
       <button class="diff-btn" data-difficulty="hard" id="hard-btn">Hard</button>
     </div>
-    <button id="begin-btn" disabled>Begin</button>
-    <div class="version-number">v4.1</div>
+    <button id="begin-btn" class="game-btn" disabled>Begin</button>
+    <div class="version-number">v4.2</div>
   </div>
 
   <!-- ROUND RECAP OVERLAY -->
   <div id="round-recap-overlay">
     <h3 id="round-recap-title"></h3>
     <p id="round-recap-details"></p>
-    <button id="round-recap-close-btn">OK</button>
+    <button id="round-recap-close-btn" class="game-btn" style="font-size:16px; padding:6px 12px;">OK</button>
   </div>
 
   <!-- GAME SCREEN -->
@@ -433,7 +449,8 @@
       <span id="timer-value">20</span>
       <button id="joker-btn" class="glow-anim" title="Reveal relative runtimes briefly">🤡</button>
     </div>
-    <button id="submit-btn" title="Submit early to earn extra time bonus!">Submit</button>
+    <!-- Submit button is also a .game-btn for consistent styling -->
+    <button id="submit-btn" class="game-btn" title="Submit early to earn extra time bonus!">Submit</button>
     <div id="runtimes-container" class="cards-container"></div>
     <div id="movies-container" class="cards-container"></div>
     <div id="this-game-stats" class="stats-box empty"></div>
@@ -443,23 +460,27 @@
   <div id="bonus-container" class="page-container">
     <div id="bonus-timer-box"><span id="bonus-timer-value">10</span></div>
     <h3 id="bonus-message"></h3>
-    <div id="bonus-floating-container" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; width:100%; max-width:800px; margin:0 auto 20px auto;"></div>
+    <div id="bonus-floating-container"></div>
+    <!-- "Continue" now matches the other game buttons -->
+    <button id="bonus-continue-btn" class="game-btn">Continue</button>
     <div id="bonus-result"></div>
-    <button id="bonus-continue-btn">Continue</button>
   </div>
 
   <!-- FINAL SCREEN -->
   <div id="final-container" class="page-container">
     <div id="final-scores"></div>
-    <button id="details-toggle">Show/Hide Details</button>
+    <button id="details-toggle" style="margin-bottom:20px;">Show/Hide Details</button>
     <div id="details-container">
+      <!-- We'll keep #round-breakdown for overall stats. 
+           The per-round details are now under each row of cards. -->
       <div id="round-breakdown"></div>
       <div id="final-cards-container"></div>
     </div>
-    <div>
-      <button id="share-twitter-btn">Share on Twitter</button>
-      <button id="copy-recap-btn">Copy Recap</button>
-      <button id="play-again-btn">Play Again?</button>
+    <div class="final-buttons">
+      <!-- All these buttons share .game-btn styling now -->
+      <button id="share-twitter-btn" class="game-btn">Share on Twitter</button>
+      <button id="copy-recap-btn" class="game-btn">Copy Recap</button>
+      <button id="play-again-btn" class="game-btn">Play Again?</button>
     </div>
   </div>
 
@@ -569,8 +590,6 @@
         movie.difficulty = rowCells[colDifficulty]?.trim().toLowerCase() || "";
         movie.group = rowCells[colGroup]?.trim().toUpperCase() || "";
         movie.poster = rowCells[colPoster]?.trim() || "";
-        /* overview is no longer used as a tooltip, so we won't store it to a 'title' attribute. 
-           We'll keep it in case we want it later. */
         movie.overview = rowCells[colOverview]?.trim() || "";
         movie._assignedRuntime = null;
         allMovies.push(movie);
@@ -616,11 +635,6 @@
       if(!difficulty)return;
       filteredMovies=allMovies.filter(m=>m.difficulty===difficulty);
     }
-
-    /*
-      We still build rounds from groups A-E, 
-      but we limit to exactly 5 rounds total. 
-    */
     function buildRounds(){
       const groups={A:[], B:[], C:[], D:[], E:[]};
       filteredMovies.forEach(movie=>{
@@ -631,8 +645,6 @@
       for(let g in groups){
         groups[g]=shuffle(groups[g]);
       }
-      // How many complete sets do we have across A,B,C,D,E?
-      // But we only want 5 total rounds
       const potentialRoundsCount=Math.min(
         groups["A"].length,
         groups["B"].length,
@@ -640,7 +652,7 @@
         groups["D"].length,
         groups["E"].length
       );
-      const finalCount=Math.min(potentialRoundsCount,5); // enforce max 5
+      const finalCount=Math.min(potentialRoundsCount,5);
       rounds=[];
       for(let i=0;i<finalCount;i++){
         rounds.push([
@@ -653,12 +665,6 @@
       }
       console.log("Rounds built:", rounds);
     }
-
-    /*
-      We also revert to the simpler logic: 
-      if (currentRoundIndex >= 5) => Bonus Round 
-      (since user wants 5 total rounds).
-    */
     function startRound(){
       if(currentRoundIndex>=5){
         document.getElementById("game-container").style.display="none";
@@ -688,12 +694,11 @@
         const card=document.createElement("div");
         card.classList.add("movie-card");
         card.setAttribute("data-correct",m.runtime);
-        /*
-          Removed tooltip usage; 
-          we won't use 'title' or anything for now.
-        */
+
+        // Only show the poster (no title text)
         let posterHTML=m.poster?`<img class="movie-poster" src="${m.poster}" alt="${m.movie_name} poster">`:"";
-        card.innerHTML=posterHTML+`<div class="movie-title">${m.movie_name}</div>`;
+        card.innerHTML=posterHTML;
+        
         card.addEventListener("dragover",e=>{if(canDrag)e.preventDefault();});
         card.addEventListener("drop",e=>dropHandler(e,m,card));
         moviesContainer.appendChild(card);
@@ -920,7 +925,20 @@
       bonusMovies.forEach(m=>{
         const card=document.createElement("div");
         card.classList.add("floating-card");
-        card.innerText=m.movie_name;
+        
+        // Show poster in bonus round too
+        if(m.poster){
+          const img=document.createElement("img");
+          img.src=m.poster;
+          img.classList.add("bonus-poster");
+          card.appendChild(img);
+        }
+        // Then the small text with the movie name
+        const textDiv=document.createElement("div");
+        textDiv.innerText=m.movie_name;
+        textDiv.style.fontSize="14px";
+        card.appendChild(textDiv);
+
         card.addEventListener("click",()=>pickBonusMovie(m,card));
         container.appendChild(card);
       });
@@ -989,24 +1007,21 @@
       const skill=totalAnswered?(totalDifference/totalAnswered):0;
       document.getElementById("final-scores").innerText=`Final Score: ${Math.round(totalScore)}`;
 
-      let breakdownHTML="";
-      roundScores.forEach(r=>{
-        breakdownHTML+=`
-          <div class="breakdown-row">
-            Round ${r.roundIndex}: ${r.correct}/5 correct<br>
-            Time bonus: +${(r.leftoverBonus||0).toFixed(0)}<br>
-            Accuracy bonus: +${(r.fractionBonus||0).toFixed(0)}<br>
-            Round Score: ${r.roundScore.toFixed(0)}
-          </div><br>
-        `;
-      });
-      breakdownHTML+=`<div class="breakdown-row">
-        Overall Accuracy: ${accuracy.toFixed(1)}% | Skill: ${skill.toFixed(1)} min
-      </div>`;
-      document.getElementById("round-breakdown").innerHTML=breakdownHTML;
+      /*
+        We'll keep the overall Accuracy & Skill in #round-breakdown at the top,
+        but we won't list per-round details here, because we want them under each round's cards.
+      */
+      let overallHTML=`
+        <div class="breakdown-row">
+          Overall Accuracy: ${accuracy.toFixed(1)}% | Skill: ${skill.toFixed(1)} min
+        </div>
+      `;
+      document.getElementById("round-breakdown").innerHTML=overallHTML;
 
       const finalCardsContainer=document.getElementById("final-cards-container");
       finalCardsContainer.innerHTML="";
+
+      // For each round, show the 5 final cards, then the round's detail.
       rounds.forEach((round,idx)=>{
         const rowDiv=document.createElement("div");
         rowDiv.classList.add("final-round-row");
@@ -1020,19 +1035,40 @@
           const actual=movie.runtime;
           const assigned=(movie._assignedRuntime!==null)?movie._assignedRuntime:"-";
           const isCorrect=(assigned===actual);
+
           const card=document.createElement("div");
           card.classList.add("final-card");
           if(assigned!=="-"){
             card.classList.add(isCorrect?"correct":"incorrect");
           }
+          // Show poster & title on final screen
+          let posterHTML=movie.poster?`<img class="movie-poster" src="${movie.poster}" alt="${movie.movie_name} poster">`:"";
           card.innerHTML=`
-            <div style="font-weight:bold; margin-bottom:5px;">${movie.movie_name}</div>
+            ${posterHTML}
+            <div class="movie-title">${movie.movie_name}</div>
             <div>Actual: ${movie.runtime} min</div>
             <div>Your Pick: ${assigned==="-"?"-":assigned+" min"}</div>
           `;
           rowDiv.appendChild(card);
         });
+
         finalCardsContainer.appendChild(rowDiv);
+
+        // Now add the round's detail under the cards
+        const roundInfo=roundScores[idx];
+        if(roundInfo){
+          const infoDiv=document.createElement("div");
+          infoDiv.classList.add("breakdown-row");
+          infoDiv.style.marginTop="5px";
+          infoDiv.innerHTML=`
+            ${roundInfo.correct}/5 correct<br>
+            Time bonus: +${(roundInfo.leftoverBonus||0).toFixed(0)}<br>
+            Accuracy bonus: +${(roundInfo.fractionBonus||0).toFixed(0)}<br>
+            Round Score: ${roundInfo.roundScore.toFixed(0)}
+          `;
+          // Insert this after the row of cards
+          finalCardsContainer.appendChild(infoDiv);
+        }
       });
     }
 
@@ -1115,8 +1151,14 @@ Think you can beat me? Head to oscers.com`;
     function findMovieCard(name){
       const cards=document.querySelectorAll("#movies-container .movie-card");
       for(let c of cards){
-        const t=c.querySelector(".movie-title");
-        if(t&&t.innerText===name)return c;
+        // We removed .movie-title in the round, 
+        // so we rely on matching the poster container?
+        // But if the user changes the poster, we won't have text. 
+        // We'll do a check if the "alt" matches the name:
+        const poster=c.querySelector("img.movie-poster");
+        if(poster && poster.alt===name+" poster"){
+          return c;
+        }
       }
       return null;
     }
