@@ -2,9 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Stump the Buff - v1.9-slim (No Default/Toggles)</title>
+  <title>Stump the Buff - v2.0 Reduced Spacing</title>
   <style>
-    /* ---------- GLOBAL & LAYOUT ---------- */
+    /* ==============================================
+       GLOBAL / PAGE LAYOUT
+       ============================================== */
     html, body {
       margin: 0;
       padding: 0;
@@ -13,6 +15,7 @@
       color: white;
       font-family: Rockwell, serif;
     }
+    /* Full-page flex container to center content */
     .page-container {
       display: flex;
       flex-direction: column;
@@ -25,14 +28,66 @@
     }
     h1, h2, h3, p {
       margin: 0 0 10px 0;
+      text-align: center;
     }
-    button { cursor: pointer; }
-    .version-number {
-      font-size: 10px;
-      opacity: 0.7;
-      margin-top: 20px;
+    .center {
+      text-align: center;
     }
-    /* ---------- BUTTON STYLES ---------- */
+    /* Buttons */
+    button {
+      cursor: pointer;
+    }
+    /* For headings like "Round 3" – a bigger, distinct style */
+    .round-heading {
+      font-size: 28px;
+      font-weight: bold;
+      margin: 10px 0;
+      text-align: center;
+      font-family: Georgia, serif;
+      letter-spacing: 1px;
+    }
+    /* A small glow effect if desired */
+    .glow-anim {
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+    @keyframes glow {
+      0%   { box-shadow: 0 0 5px #FFD700; }
+      100% { box-shadow: 0 0 20px #FFD700; }
+    }
+    /* Popcorn emoji */
+    .popcorn-emoji {
+      font-size: 24px;
+      display: inline-block;
+      margin: 0 2px;
+    }
+    /* Hide containers by default; show one at a time */
+    #intro-container,
+    #game-container,
+    #bonus-container,
+    #final-container {
+      display: none;
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    /* ==============================================
+       INTRO STYLES
+       ============================================== */
+    #intro-container .intro-rules {
+      max-width: 600px;
+      font-size: 16px;
+      line-height: 1.4;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .difficulty-box { margin-bottom: 20px; }
+    .toggle-advanced {
+      font-size: 14px;
+      margin-top: 10px;
+      color: #bbb;
+      text-decoration: underline;
+      cursor: pointer;
+    }
     .diff-btn {
       background: #222;
       border: 2px solid #FFD700;
@@ -42,6 +97,11 @@
       margin: 5px;
     }
     .diff-btn:hover { background: #333; }
+    #loading-box {
+      border: 2px solid #FFD700;
+      padding: 20px;
+      margin-top: 20px;
+    }
     #begin-btn {
       background: #FFD700;
       color: black;
@@ -51,26 +111,17 @@
       margin-top: 20px;
     }
     #begin-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    /* ---------- CONTAINER VISIBILITY ---------- */
-    #intro-container, #game-container, #bonus-container, #final-container {
-      display: none;
-      width: 100%;
-      max-width: 900px;
-    }
-    /* ---------- START PAGE ---------- */
-    #intro-container .intro-rules {
-      max-width: 600px;
-      font-size: 16px;
-      line-height: 1.4;
-      margin-bottom: 20px;
-    }
-    .difficulty-box { margin-bottom: 20px; }
-    #loading-box {
-      border: 2px solid #FFD700;
-      padding: 20px;
+    .version-number {
+      font-size: 10px;
+      opacity: 0.7;
       margin-top: 20px;
     }
-    /* ---------- GAME PAGE ---------- */
+    /* ==============================================
+       GAME STYLES
+       ============================================== */
+    #game-container {
+      text-align: center;
+    }
     #timer-box {
       margin: 10px auto;
       width: 160px;
@@ -150,10 +201,23 @@
       min-width: 200px;
     }
     .stats-box.empty { display: none; }
-    /* ---------- BONUS ROUND ---------- */
-    #bonus-container {
-      text-align: center;
+    /* ---------- JOKER BUTTON ---------- */
+    #joker-btn {
+      display: inline-block;
+      width: 80px;
+      height: 80px;
+      border-radius: 40px;
+      font-size: 32px;
+      background: #222;
+      border: 2px solid #FFD700;
+      color: white;
+      margin: 10px auto;
     }
+    #joker-btn:hover { background: #333; }
+    /* ==============================================
+       BONUS ROUND (Simplified Grid)
+       ============================================== */
+    #bonus-container { text-align: center; }
     #bonus-timer-box {
       margin: 10px auto;
       width: 120px;
@@ -190,7 +254,9 @@
       font-weight: bold;
       cursor: pointer;
     }
-    /* ---------- FINAL PAGE ---------- */
+    /* ==============================================
+       FINAL PAGE
+       ============================================== */
     #final-container { text-align: center; }
     #final-scores {
       margin-bottom: 20px;
@@ -231,6 +297,16 @@
     .final-card.incorrect {
       background-color: #330000;
       border-color: #f00;
+    }
+    #share-twitter-btn, #copy-recap-btn, #play-again-btn {
+      display: inline-block;
+      margin: 10px 8px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background: #222;
+      color: white;
+      border: 2px solid #FFD700;
     }
   </style>
 </head>
@@ -338,6 +414,8 @@
       beginBtn.innerText = "Loading...";
       try {
         await fetchCSV();
+        // Default to Easy if not set
+        if (!difficulty) setDifficulty("easy");
         beginBtn.disabled = false;
         beginBtn.innerText = "Begin";
       } catch(e) {
@@ -441,40 +519,21 @@
     }
 
     /*******************************************************
-     * BUILD ROUNDS (5 sets of 5) with 10-min spacing
+     * BUILD ROUNDS (Simple Chunking into 5 rounds)
      *******************************************************/
     function buildRounds() {
       rounds = [];
       let pool = shuffle(filteredMovies.slice());
       if (pool.length < 25) {
-        for (let i = 0; i < 5; i++) { rounds.push(pool.slice(i*5, i*5+5)); }
-        return;
-      }
-      for (let r = 0; r < 5; r++) {
-        let chunk = pick5WithSpacing(pool, 10);
-        if (chunk.length < 5) { chunk = pool.slice(0,5); }
-        chunk.forEach(m => { 
-          const idx = pool.indexOf(m);
-          if (idx >= 0) pool.splice(idx,1);
-        });
-        rounds.push(chunk);
-      }
-    }
-    function pick5WithSpacing(moviePool, spacing) {
-      const tries = 2000;
-      for (let attempt = 0; attempt < tries; attempt++) {
-        const candidate = shuffle(moviePool.slice()).slice(0,5);
-        if (allDiffBy(candidate, spacing)) return candidate;
-      }
-      return [];
-    }
-    function allDiffBy(movies, spacing) {
-      for (let i = 0; i < movies.length; i++) {
-        for (let j = i+1; j < movies.length; j++) {
-          if (Math.abs(movies[i].runtime_minutes - movies[j].runtime_minutes) < spacing) return false;
+        for (let i = 0; i < 5; i++) {
+          rounds.push(pool.slice(i * 5, (i + 1) * 5));
+        }
+      } else {
+        let selected = pool.slice(0, 25);
+        for (let i = 0; i < 5; i++) {
+          rounds.push(selected.slice(i * 5, (i + 1) * 5));
         }
       }
-      return true;
     }
 
     /*******************************************************
@@ -672,10 +731,10 @@
       bonusTimeLeft = 10;
       let pool = shuffle(filteredMovies.slice());
       if (pool.length < 5) pool = allMovies.slice();
-      bonusMovies = pool.slice(0, 5);
+      bonusMovies = pool.slice(0,5);
       const grid = document.getElementById("bonus-grid");
       grid.innerHTML = "";
-      bonusMovies.forEach((m) => {
+      bonusMovies.forEach(m => {
         const card = document.createElement("div");
         card.classList.add("bonus-card");
         card.innerText = m["Movie Name"];
@@ -740,7 +799,9 @@
           Round ${r.roundIndex}: ${r.correct}/5 correct → +${r.roundScore.toFixed(0)} pts
         </div>`;
       });
-      if (bonusUsed) { breakdownHTML += `<div class="breakdown-row">Bonus Round: +1000 pts</div>`; }
+      if (bonusUsed) {
+        breakdownHTML += `<div class="breakdown-row">Bonus Round: +1000 pts</div>`;
+      }
       breakdownHTML += `<div class="breakdown-row">
         Accuracy: ${accuracy.toFixed(1)}% | Skill: ${skill.toFixed(1)} min
       </div>`;
