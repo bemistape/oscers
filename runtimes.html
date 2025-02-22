@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Stump the Buff - v2.9</title>
+  <title>Stump the Buff - v3.0</title>
   <style>
     /* ---------- GLOBAL / LAYOUT ---------- */
     html, body {
@@ -116,26 +116,10 @@
       background: #FFD700;
       color: black;
       border: none;
-      /* Tooltip for instructions */
-      position: relative;
     }
     #submit-btn:hover {
       background: #FFC700;
     }
-    #submit-btn[title]:hover::after {
-      content: attr(title);
-      position: absolute;
-      top: -35px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #333;
-      color: #fff;
-      padding: 5px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      white-space: nowrap;
-    }
-
     #runtimes-container {
       display: flex;
       justify-content: center;
@@ -190,11 +174,6 @@
       cursor: grab;
       animation: float-run 3s ease-in-out infinite alternate;
     }
-    /* ADDED for highlight while dragging */
-    .runtime-card.dragging {
-      outline: 3px solid #00FF00;
-      box-shadow: 0 0 10px #00FF00;
-    }
     @keyframes float-run {
       0% { transform: translateY(0); }
       100% { transform: translateY(-5px); }
@@ -202,7 +181,7 @@
     .correct {
       background-color: #003300 !important;
       border-color: #00FF00 !important;
-      animation: bounce-correct 0.5s; /* small bounce for correct */
+      animation: bounce-correct 0.5s;
     }
     .incorrect {
       background-color: #330000 !important;
@@ -240,23 +219,9 @@
       border: 2px solid #FFD700;
       color: white;
       margin: 10px auto;
-      position: relative;
     }
     #joker-btn:hover {
       background: #333;
-    }
-    #joker-btn[title]:hover::after {
-      content: attr(title);
-      position: absolute;
-      top: -35px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #333;
-      color: #fff;
-      padding: 5px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      white-space: nowrap;
     }
     .glow-anim {
       animation: glow 2s ease-in-out infinite alternate;
@@ -364,57 +329,13 @@
       background-color: #330000;
       border-color: #f00;
     }
-
-    /* ---------- TIME-BASED BONUS & MINI-RECAP ---------- */
-    /* We'll add a small overlay after each round. */
-    #round-recap-overlay {
-      display: none;
-      position: fixed;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.8);
-      padding: 20px;
-      border: 2px solid #FFD700;
-      border-radius: 10px;
-      text-align: center;
-      z-index: 9999;
-    }
-    #round-recap-overlay button {
-      margin-top: 10px;
-      background: #222;
-      border: 2px solid #FFD700;
-      color: white;
-      font-size: 16px;
-      padding: 6px 12px;
-      cursor: pointer;
-    }
-
-    /* ---------- PROGRESS BAR ---------- */
-    #progress-container {
-      width: 80%;
-      max-width: 400px;
-      height: 10px;
-      background: #444;
-      margin: 10px auto;
-      border-radius: 5px;
-      overflow: hidden;
-    }
-    #progress-bar {
-      width: 0%;
-      height: 100%;
-      background: #FFD700;
-    }
-
-    /* ---------- SOUND EFFECTS FOR CORRECT/INCORRECT ---------- */
-    audio {
-      display: none; /* hidden audio elements */
-    }
   </style>
 </head>
 <body>
-  <!-- SOUND EFFECTS -->
-  <audio id="ding-sound" src="data:audio/wav;base64,UklGRgAAAABXQVZFZm10IBIAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="></audio>
-  <audio id="buzz-sound" src="data:audio/wav;base64,UklGRgAAAABXQVZFZm10IBIAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="></audio>
+  <!-- AUDIO FOR JOKER (optional) -->
+  <audio id="joker-sound" preload="auto">
+    <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=" type="audio/wav">
+  </audio>
 
   <!-- INTRO SCREEN -->
   <div id="intro-container" class="page-container">
@@ -422,7 +343,7 @@
     <div class="intro-rules">
       <p>In this game, you'll be given 5 movies each round.</p>
       <p>Drag the runtime card to the movie you think it belongs to.</p>
-      <p>You have a limited time each round and can submit early.</p>
+      <p>You have a limited time each round and can submit early for a time-based bonus.</p>
       <p>Use your <strong>Joker</strong> once at the start of the round.</p>
     </div>
     <div class="difficulty-box">
@@ -432,39 +353,22 @@
       <button class="diff-btn" data-difficulty="hard" id="hard-btn">Hard</button>
     </div>
     <button id="begin-btn" disabled>Begin</button>
-    <div class="version-number">v2.9</div>
-  </div>
-
-  <!-- ROUND RECAP OVERLAY -->
-  <div id="round-recap-overlay">
-    <h3 id="round-recap-title"></h3>
-    <p id="round-recap-details"></p>
-    <button id="round-recap-close-btn">OK</button>
+    <div class="version-number">v3.0</div>
   </div>
 
   <!-- GAME SCREEN -->
   <div id="game-container" class="page-container">
-    <!-- Progress bar -->
-    <div id="progress-container" title="Rounds Progress">
-      <div id="progress-bar"></div>
-    </div>
-
-    <div id="timer-box">
-      <span id="timer-value">20</span>
-    </div>
-    <button id="submit-btn" title="Submit your answers early for extra time bonus!">Submit</button>
-
+    <div id="timer-box"><span id="timer-value">20</span></div>
+    <button id="submit-btn">Submit</button>
     <div id="runtimes-container" class="cards-container"></div>
     <div id="movies-container" class="cards-container"></div>
-
     <div class="center">
       <button id="joker-btn" class="glow-anim" title="One-time reveal of relative runtimes">🤡</button>
     </div>
-
     <div id="this-game-stats" class="stats-box empty"></div>
   </div>
 
-  <!-- BONUS ROUND (Grid Layout) -->
+  <!-- BONUS ROUND -->
   <div id="bonus-container" class="page-container">
     <div id="bonus-timer-box">
       <span id="bonus-timer-value">10</span>
@@ -491,7 +395,10 @@
   </div>
 
   <script>
-    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vToIbm5XR9mtqOXHYzpF0jIXhGY9WI9m-QQak2KsZFB6CGVnRVRCPL3V6zFVbT6e_jLyGQM1e5XPjcX/pub?gid=131639577&single=true&output=csv";
+    /*******************************************************
+     * GLOBAL STATE & CONFIG
+     *******************************************************/
+    const csvUrl = "YOUR_CSV_LINK_HERE";  // ensure columns match "Movie Name", "runtime_minutes", "Runtime", "Votes Percent Rank"
     let difficulty;
     let allMovies = [];
     let filteredMovies = [];
@@ -515,11 +422,6 @@
     let roundTimer = null;
     let canDrag = false;
 
-    // For the time-based bonus
-    // leftoverTime = timeLeft
-    // leftoverTime * 10 bonus points
-    // Then we do normal fraction-based multiplier only if all 5 are answered
-
     // Bonus
     let bonusMovies = [];
     let bonusUsed = false;
@@ -530,14 +432,14 @@
       document.getElementById("easy-btn").addEventListener("click", () => setDifficulty("easy"));
       document.getElementById("medium-btn").addEventListener("click", () => setDifficulty("medium"));
       document.getElementById("hard-btn").addEventListener("click", () => setDifficulty("hard"));
-
-      setDifficulty("easy");
+      setDifficulty("easy"); // default
 
       const beginBtn = document.getElementById("begin-btn");
       beginBtn.disabled = true;
       beginBtn.innerText = "Loading...";
       try {
         await fetchCSV();
+        console.log("allMovies loaded:", allMovies); // debug
         beginBtn.disabled = false;
         beginBtn.innerText = "Begin";
       } catch(e) {
@@ -547,24 +449,13 @@
 
       beginBtn.addEventListener("click", onBeginGame);
 
-      // Joker
       document.getElementById("joker-btn").addEventListener("click", () => {
         if (!jokerUsed) useJoker();
       });
-
-      // Submit
       document.getElementById("submit-btn").addEventListener("click", onSubmitRound);
 
-      // Round Recap overlay close
-      document.getElementById("round-recap-close-btn").addEventListener("click", () => {
-        document.getElementById("round-recap-overlay").style.display = "none";
-        nextRoundAfterRecap();
-      });
-
-      // Bonus
       document.getElementById("bonus-continue-btn").addEventListener("click", onFinishBonus);
 
-      // Final
       document.getElementById("share-twitter-btn").addEventListener("click", shareOnTwitter);
       document.getElementById("copy-recap-btn").addEventListener("click", copyRecap);
       document.getElementById("play-again-btn").addEventListener("click", () => {
@@ -572,12 +463,43 @@
         document.getElementById("intro-container").style.display = "flex";
       });
 
-      // Toggle final details
       document.getElementById("details-toggle").addEventListener("click", () => {
         const det = document.getElementById("details-container");
         det.style.display = (det.style.display === "none" ? "block" : "none");
       });
     });
+
+    async function fetchCSV() {
+      const resp = await fetch(csvUrl);
+      const data = await resp.text();
+      parseCSV(data);
+    }
+
+    function parseCSV(csvData) {
+      const lines = csvData.trim().split(/\r?\n/);
+      const headers = lines[0].split(",");
+      const colMovieName = headers.indexOf("Movie Name");
+      const colRuntimeMin = headers.indexOf("runtime_minutes");
+      const colRuntime = headers.indexOf("Runtime");
+      const colVotesRank = headers.indexOf("Votes Percent Rank");
+
+      for (let i = 1; i < lines.length; i++) {
+        const rowCells = lines[i].split(",");
+        if (rowCells.length < 4) continue; // skip incomplete rows
+
+        let movie = {};
+        movie["Movie Name"] = rowCells[colMovieName]?.trim() || "";
+        movie.runtime_minutes = parseInt(rowCells[colRuntimeMin] || "0", 10);
+        movie.Runtime = rowCells[colRuntime] || "";
+        movie._rank = parseFloat(rowCells[colVotesRank] || "0");
+
+        movie._assignedRuntime = null;
+        // only add if there's a valid name
+        if (movie["Movie Name"]) {
+          allMovies.push(movie);
+        }
+      }
+    }
 
     function setDifficulty(diff) {
       difficulty = diff;
@@ -587,37 +509,13 @@
       document.getElementById(`${diff}-btn`).classList.add("active");
     }
 
-    async function fetchCSV() {
-      const resp = await fetch(csvUrl);
-      const data = await resp.text();
-      parseCSV(data);
-    }
-    function parseCSV(csvData) {
-      const lines = csvData.trim().split(/\r?\n/);
-      const headers = lines[0].split(",");
-      const colMovieName = headers.indexOf("Movie Name");
-      const colRuntimeMin = headers.indexOf("runtime_minutes");
-      const colRuntime = headers.indexOf("Runtime");
-      const colVotesRank = headers.indexOf("Votes Percent Rank");
-      for (let i = 1; i < lines.length; i++) {
-        const rowCells = lines[i].split(",");
-        if (rowCells.length < 4) continue;
-        let movie = {};
-        movie["Movie Name"] = rowCells[colMovieName]?.trim() || "";
-        movie.runtime_minutes = parseInt(rowCells[colRuntimeMin] || "0", 10);
-        movie.Runtime = rowCells[colRuntime] || "";
-        movie._rank = parseFloat(rowCells[colVotesRank] || "0");
-        movie._assignedRuntime = null;
-        allMovies.push(movie);
-      }
-    }
-
     function onBeginGame() {
       if (!difficulty) difficulty = "easy";
       document.getElementById("intro-container").style.display = "none";
       document.getElementById("game-container").style.display = "flex";
       setupGame();
     }
+
     function setupGame() {
       currentRoundIndex = 0;
       totalCorrect = 0;
@@ -633,12 +531,14 @@
 
       filterByDifficulty();
       if (filteredMovies.length < 25) {
+        // fallback to all if not enough
         filteredMovies = allMovies.slice();
       }
       roundTimers = TIMERS[difficulty] || [20,20,20,20,20];
       buildRounds();
       startRound();
     }
+
     function filterByDifficulty() {
       if (!difficulty) return;
       if (difficulty === "easy") {
@@ -649,10 +549,12 @@
         filteredMovies = allMovies.filter(m => m._rank < 0.5);
       }
     }
+
     function buildRounds() {
       rounds = [];
-      let pool = shuffle(filteredMovies.slice());
+      const pool = shuffle(filteredMovies.slice());
       if (pool.length < 25) {
+        // fallback
         for (let i = 0; i < 5; i++) {
           rounds.push(pool.slice(i*5, i*5+5));
         }
@@ -662,25 +564,33 @@
           rounds.push(selected.slice(i*5, (i+1)*5));
         }
       }
+      console.log("Rounds built:", rounds);
     }
 
     function startRound() {
       if (currentRoundIndex >= 5) {
+        // done, go to bonus
         document.getElementById("game-container").style.display = "none";
         document.getElementById("bonus-container").style.display = "flex";
         startBonusRound();
         return;
       }
-      fadeOutCards(renderRound);
+      fadeOutCards(() => {
+        renderRound();
+        fadeInCards();
+      });
     }
+
     function renderRound() {
       timeLeft = roundTimers[currentRoundIndex] || 20;
       setupTimer();
       updateGameStatsBox();
-      updateProgressBar();
 
-      document.getElementById("movies-container").innerHTML = "";
-      document.getElementById("runtimes-container").innerHTML = "";
+      const moviesContainer = document.getElementById("movies-container");
+      const runtimesContainer = document.getElementById("runtimes-container");
+      moviesContainer.innerHTML = "";
+      runtimesContainer.innerHTML = "";
+
       document.getElementById("joker-btn").style.display = jokerUsed ? "none" : "inline-block";
 
       const roundMovies = rounds[currentRoundIndex];
@@ -691,10 +601,11 @@
         card.innerHTML = `<div class="movie-title">${m["Movie Name"]}</div>`;
         card.addEventListener("dragover", e => { if (canDrag) e.preventDefault(); });
         card.addEventListener("drop", e => dropHandler(e, m, card));
-        document.getElementById("movies-container").appendChild(card);
+        moviesContainer.appendChild(card);
       });
 
-      const roundRuntimes = roundMovies.map((m, i) => ({
+      // build runtime cards
+      const roundRuntimes = roundMovies.map((m,i) => ({
         runtime: m.Runtime,
         runtime_minutes: m.runtime_minutes,
         uniqueId: `rt-${currentRoundIndex}-${i}`
@@ -706,27 +617,23 @@
         rc.setAttribute("data-unique", rt.uniqueId);
         rc.setAttribute("data-runtime", rt.runtime_minutes.toString());
         rc.innerText = rt.runtime;
-        rc.setAttribute("draggable", "true");
+        rc.setAttribute("draggable","true");
         rc.addEventListener("dragstart", e => {
           if (!canDrag) { e.preventDefault(); return; }
-          rc.classList.add("dragging"); // highlight
           e.dataTransfer.setData("text/plain", rt.uniqueId);
         });
-        rc.addEventListener("dragend", e => {
-          rc.classList.remove("dragging");
-        });
-        document.getElementById("runtimes-container").appendChild(rc);
+        runtimesContainer.appendChild(rc);
       });
 
-      fadeInCards();
       canDrag = true;
     }
 
     function setupTimer() {
       clearInterval(roundTimer);
+      styleTimerBox(timeLeft);
+
       const timerVal = document.getElementById("timer-value");
       timerVal.innerText = timeLeft;
-      styleTimerBox(timeLeft);
 
       roundTimer = setInterval(() => {
         timeLeft--;
@@ -761,17 +668,16 @@
       if (!canDrag) return;
       e.preventDefault();
       const uniqueId = e.dataTransfer.getData("text/plain");
-      const draggedCard = document.querySelector(`.runtime-card[data-unique="${uniqueId}"]`);
-      if (!draggedCard) return;
+      const dragged = document.querySelector(`.runtime-card[data-unique="${uniqueId}"]`);
+      if (!dragged) return;
 
       const rc = document.getElementById("runtimes-container");
       const existing = movieCard.querySelector(".runtime-card");
-      if (existing) {
-        rc.appendChild(existing);
-      }
-      movieCard.appendChild(draggedCard);
+      if (existing) rc.appendChild(existing);
+
+      movieCard.appendChild(dragged);
       movieCard.classList.add("placed");
-      movieObj._assignedRuntime = parseInt(draggedCard.getAttribute("data-runtime"), 10);
+      movieObj._assignedRuntime = parseInt(dragged.getAttribute("data-runtime"),10);
     }
 
     function onSubmitRound() {
@@ -785,56 +691,50 @@
       let answeredCount = 0;
       let sumActual = 0;
 
-      const movieCards = document.getElementById("movies-container").children;
-      for (let i = 0; i < movieCards.length; i++) {
-        const card = movieCards[i];
-        const correctRuntime = parseInt(card.getAttribute("data-correct"), 10);
+      const cards = document.getElementById("movies-container").children;
+      for (let i=0; i<cards.length; i++){
+        const card = cards[i];
+        const correctRuntime = parseInt(card.getAttribute("data-correct"),10);
         sumActual += correctRuntime;
 
         const assigned = card.querySelector(".runtime-card");
-        if (assigned) {
+        if(assigned){
           answeredCount++;
-          const userRuntime = parseInt(assigned.getAttribute("data-runtime"), 10);
-          if (userRuntime === correctRuntime) {
+          const userRuntime = parseInt(assigned.getAttribute("data-runtime"),10);
+          if(userRuntime === correctRuntime){
             roundCorrect++;
             card.classList.add("correct");
-            playDing();
           } else {
             card.classList.add("incorrect");
-            playBuzz();
             showCorrectLine(card, correctRuntime);
           }
         } else {
           card.classList.add("incorrect");
-          playBuzz();
           showCorrectLine(card, correctRuntime);
         }
       }
 
-      // leftoverTime bonus
-      let leftoverBonus = timeLeft * 10; // e.g. leftoverTime * 10
-      let fractionBonus = 0; // fraction-based multiplier
-      let roundScore = 0;
+      // leftover time bonus
+      const leftoverBonus = timeLeft * 10;
 
-      // Now accumulate total difference for stats
-      // but also needed for fraction-based multiplier
+      // now sum difference
       roundMovies.forEach(m => {
-        if (m._assignedRuntime != null) {
+        if(m._assignedRuntime != null){
           roundDiff += Math.abs(m._assignedRuntime - m.runtime_minutes);
         }
       });
 
-      const baseScore = roundCorrect * 1000;
-
-      // If all 5 answered, do fraction-based bonus
-      if (answeredCount === 5) {
-        const avgActual = sumActual / 5;
-        const avgDiff = answeredCount ? (roundDiff / answeredCount) : avgActual;
+      // fraction-based bonus if all answered
+      let fractionBonus = 0;
+      if(answeredCount === 5){
+        const avgActual = sumActual/5;
+        const avgDiff = roundDiff/answeredCount;
         const fraction = avgDiff / avgActual;
-        fractionBonus = baseScore * (1 - fraction) ** 2;
+        fractionBonus = (1000*roundCorrect) * (1 - fraction)**2;
       }
 
-      roundScore = baseScore + leftoverBonus + fractionBonus;
+      const baseScore = roundCorrect*1000;
+      const roundScore = baseScore + leftoverBonus + fractionBonus;
 
       totalCorrect += roundCorrect;
       totalDifference += roundDiff;
@@ -842,71 +742,41 @@
       totalScore += roundScore;
 
       roundScores.push({
-        roundIndex: currentRoundIndex + 1,
+        roundIndex: currentRoundIndex+1,
         correct: roundCorrect,
         diff: roundDiff,
         answered: answeredCount,
-        leftoverBonus: leftoverBonus,
-        fractionBonus: fractionBonus,
-        roundScore: roundScore
+        leftoverBonus,
+        fractionBonus,
+        roundScore
       });
 
-      // Show a mini recap overlay
-      showRoundRecapOverlay(roundCorrect, answeredCount, leftoverBonus, fractionBonus, roundScore);
-
+      // small delay to let user see correct/incorrect
+      setTimeout(() => {
+        currentRoundIndex++;
+        document.getElementById("submit-btn").style.display = "block";
+        startRound();
+      }, 5000);
     }
 
-    function showCorrectLine(card, correctRuntime) {
-      const correctLine = document.createElement("div");
-      correctLine.style.fontSize = "12px";
-      correctLine.style.marginTop = "5px";
-      correctLine.innerText = `Correct: ${correctRuntime} min`;
-      card.appendChild(correctLine);
+    function showCorrectLine(card, correctRuntime){
+      const line = document.createElement("div");
+      line.style.fontSize = "12px";
+      line.style.marginTop = "5px";
+      line.innerText = `Correct: ${correctRuntime} min`;
+      card.appendChild(line);
     }
 
-    function showRoundRecapOverlay(roundCorrect, answeredCount, leftoverBonus, fractionBonus, roundScore) {
-      const overlay = document.getElementById("round-recap-overlay");
-      const title = document.getElementById("round-recap-title");
-      const details = document.getElementById("round-recap-details");
-
-      title.innerText = `Round ${currentRoundIndex + 1} Recap`;
-      details.innerHTML = `
-        You got <strong>${roundCorrect}</strong> correct out of 5.
-        <br>Time bonus: <strong>+${leftoverBonus.toFixed(0)}</strong>
-        <br>Accuracy bonus: <strong>+${fractionBonus.toFixed(0)}</strong>
-        <br>Round Score: <strong>${roundScore.toFixed(0)}</strong>
-      `;
-      overlay.style.display = "block";
-    }
-
-    function nextRoundAfterRecap() {
-      document.getElementById("round-recap-overlay").style.display = "none";
-      currentRoundIndex++;
-      document.getElementById("submit-btn").style.display = "block";
-      startRound();
-    }
-
-    function playDing() {
-      const ding = document.getElementById("ding-sound");
-      ding.currentTime = 0;
-      ding.play().catch(() => {});
-    }
-    function playBuzz() {
-      const buzz = document.getElementById("buzz-sound");
-      buzz.currentTime = 0;
-      buzz.play().catch(() => {});
-    }
-
-    function updateGameStatsBox() {
+    function updateGameStatsBox(){
       const container = document.getElementById("this-game-stats");
       const totalPossible = currentRoundIndex * 5;
-      if (totalPossible <= 0) {
+      if(totalPossible <= 0){
         container.classList.add("empty");
         return;
       }
       container.classList.remove("empty");
-      const accuracy = (totalCorrect / totalPossible) * 100;
-      const skill = totalAnswered ? (totalDifference / totalAnswered) : 0;
+      const accuracy = (totalCorrect / totalPossible)*100;
+      const skill = totalAnswered ? (totalDifference/totalAnswered) : 0;
       const pop = renderPopcorn(accuracy);
       container.innerHTML = `
         <h4>The Game So Far</h4>
@@ -916,14 +786,14 @@
       `;
     }
 
-    function startBonusRound() {
+    function startBonusRound(){
       bonusUsed = false;
       bonusTimeLeft = 10;
       let pool = shuffle(filteredMovies.slice());
-      if (pool.length < 5) {
+      if(pool.length<5){
         pool = allMovies.slice();
       }
-      bonusMovies = pool.slice(0, 5);
+      bonusMovies = pool.slice(0,5);
 
       const container = document.getElementById("bonus-floating-container");
       container.innerHTML = "";
@@ -931,117 +801,117 @@
         const card = document.createElement("div");
         card.classList.add("floating-card");
         card.innerText = m["Movie Name"];
-        card.addEventListener("click", () => pickBonusMovie(m, card));
+        card.addEventListener("click", ()=>pickBonusMovie(m,card));
         container.appendChild(card);
       });
 
       setupBonusTimer();
-      document.getElementById("bonus-message").innerText = "";
-      document.getElementById("bonus-result").innerText = "";
+      document.getElementById("bonus-message").innerText="";
+      document.getElementById("bonus-result").innerText="";
     }
 
-    function setupBonusTimer() {
+    function setupBonusTimer(){
       clearInterval(bonusTimer);
       const box = document.getElementById("bonus-timer-box");
       const val = document.getElementById("bonus-timer-value");
-      val.innerText = bonusTimeLeft;
-      box.style.color = "white";
-      box.style.borderColor = "#444";
+      val.innerText=bonusTimeLeft;
+      box.style.color="white";
+      box.style.borderColor="#444";
 
-      bonusTimer = setInterval(() => {
+      bonusTimer = setInterval(()=>{
         bonusTimeLeft--;
-        val.innerText = bonusTimeLeft;
+        val.innerText=bonusTimeLeft;
 
-        if (bonusTimeLeft <= 3) {
-          box.style.color = "red";
-          box.style.borderColor = "red";
-        } else if (bonusTimeLeft <= 5) {
-          box.style.color = "orange";
-          box.style.borderColor = "orange";
+        if(bonusTimeLeft<=3){
+          box.style.color="red";
+          box.style.borderColor="red";
+        } else if(bonusTimeLeft<=5){
+          box.style.color="orange";
+          box.style.borderColor="orange";
         }
-
-        if (bonusTimeLeft <= 0) {
+        if(bonusTimeLeft<=0){
           clearInterval(bonusTimer);
-          if (!bonusUsed) {
-            document.getElementById("bonus-message").innerText = "Time's up! No pick made.";
+          if(!bonusUsed){
+            document.getElementById("bonus-message").innerText="Time's up! No pick made.";
           }
         }
-      }, 1000);
+      },1000);
     }
-    function pickBonusMovie(chosenMovie, chosenCard) {
-      if (bonusUsed) return;
-      bonusUsed = true;
+
+    function pickBonusMovie(chosenMovie, chosenCard){
+      if(bonusUsed)return;
+      bonusUsed=true;
       clearInterval(bonusTimer);
 
-      let maxRuntime = -1;
-      let maxMovie = null;
-      bonusMovies.forEach(m => {
-        if (m.runtime_minutes > maxRuntime) {
-          maxRuntime = m.runtime_minutes;
-          maxMovie = m;
+      let maxRuntime=-1, maxMovie=null;
+      bonusMovies.forEach(m=>{
+        if(m.runtime_minutes>maxRuntime){
+          maxRuntime=m.runtime_minutes;maxMovie=m;
         }
       });
-      const correct = (chosenMovie.runtime_minutes === maxRuntime);
-      chosenCard.classList.add(correct ? "correct" : "incorrect");
-      if (correct) {
-        totalScore += 1000;
-        document.getElementById("bonus-message").innerText = "Correct! +1000 points.";
+      const correct=(chosenMovie.runtime_minutes===maxRuntime);
+      chosenCard.classList.add(correct?"correct":"incorrect");
+      if(correct){
+        totalScore+=1000;
+        document.getElementById("bonus-message").innerText="Correct! +1000 points.";
       } else {
-        document.getElementById("bonus-message").innerText = `Sorry, it was ${maxMovie["Movie Name"]} (${maxRuntime} min).`;
+        document.getElementById("bonus-message").innerText=`Sorry, it was ${maxMovie["Movie Name"]} (${maxRuntime} min).`;
       }
     }
-    function onFinishBonus() {
-      document.getElementById("bonus-container").style.display = "none";
+
+    function onFinishBonus(){
+      document.getElementById("bonus-container").style.display="none";
       showFinalScreen();
     }
 
-    function showFinalScreen() {
-      document.getElementById("final-container").style.display = "flex";
-      const accuracy = (totalCorrect / 25) * 100;
-      const skill = totalAnswered ? (totalDifference / totalAnswered) : 0;
-      document.getElementById("final-scores").innerText = `Final Score: ${Math.round(totalScore)}`;
+    function showFinalScreen(){
+      document.getElementById("final-container").style.display="flex";
+      const accuracy=(totalCorrect/25)*100;
+      const skill=totalAnswered?(totalDifference/totalAnswered):0;
+      document.getElementById("final-scores").innerText=`Final Score: ${Math.round(totalScore)}`;
 
-      let breakdownHTML = "";
-      roundScores.forEach(r => {
-        breakdownHTML += `<div class="breakdown-row">
-          Round ${r.roundIndex}: ${r.correct}/5 correct
-          <br>Time bonus: +${(r.leftoverBonus || 0).toFixed(0)}
-          <br>Accuracy bonus: +${(r.fractionBonus || 0).toFixed(0)}
-          <br>Round Score: ${r.roundScore.toFixed(0)}
-          <br><br>
-        </div>`;
+      let breakdownHTML="";
+      roundScores.forEach(r=>{
+        breakdownHTML+=`
+          <div class="breakdown-row">
+            Round ${r.roundIndex}: ${r.correct}/5 correct
+            <br>Time bonus: +${(r.leftoverBonus||0).toFixed(0)}
+            <br>Accuracy bonus: +${(r.fractionBonus||0).toFixed(0)}
+            <br>Round Score: ${r.roundScore.toFixed(0)}
+          </div>
+          <br>
+        `;
       });
-      accuracyDisplay(accuracy, skill, breakdownHTML);
-    }
-
-    function accuracyDisplay(accuracy, skill, breakdownHTML) {
-      breakdownHTML += `<div class="breakdown-row">
+      breakdownHTML+=`<div class="breakdown-row">
         Accuracy: ${accuracy.toFixed(1)}% | Skill: ${skill.toFixed(1)} min
       </div>`;
-      document.getElementById("round-breakdown").innerHTML = breakdownHTML;
 
-      const finalCardsContainer = document.getElementById("final-cards-container");
-      finalCardsContainer.innerHTML = "";
-      rounds.forEach((round, idx) => {
-        const rowDiv = document.createElement("div");
+      document.getElementById("round-breakdown").innerHTML=breakdownHTML;
+
+      const finalCardsContainer=document.getElementById("final-cards-container");
+      finalCardsContainer.innerHTML="";
+      rounds.forEach((round,idx)=>{
+        const rowDiv=document.createElement("div");
         rowDiv.classList.add("final-round-row");
-        const heading = document.createElement("div");
+
+        const heading=document.createElement("div");
         heading.classList.add("final-round-heading");
-        heading.innerText = `Round ${idx + 1}`;
+        heading.innerText=`Round ${idx+1}`;
         rowDiv.appendChild(heading);
-        round.forEach(movie => {
-          const actual = movie.runtime_minutes;
-          const assigned = (movie._assignedRuntime !== null) ? movie._assignedRuntime : "-";
-          const isCorrect = (assigned === actual);
-          const card = document.createElement("div");
+
+        round.forEach(movie=>{
+          const actual=movie.runtime_minutes;
+          const assigned=(movie._assignedRuntime!==null)?movie._assignedRuntime:"-";
+          const isCorrect=(assigned===actual);
+          const card=document.createElement("div");
           card.classList.add("final-card");
-          if (assigned !== "-") {
-            card.classList.add(isCorrect ? "correct" : "incorrect");
+          if(assigned!=="-"){
+            card.classList.add(isCorrect?"correct":"incorrect");
           }
-          card.innerHTML = `
+          card.innerHTML=`
             <div style="font-weight:bold; margin-bottom:5px;">${movie["Movie Name"]}</div>
             <div>Actual: ${movie.Runtime}</div>
-            <div>Your Pick: ${assigned === "-" ? "-" : assigned + " min"}</div>
+            <div>Your Pick: ${assigned==="-"?"-":assigned+" min"}</div>
           `;
           rowDiv.appendChild(card);
         });
@@ -1049,76 +919,83 @@
       });
     }
 
-    function shareOnTwitter() {
-      const accuracy = (totalCorrect / 25) * 100;
-      const skill = totalAnswered ? (totalDifference / totalAnswered) : 0;
-      const popcorn = getPopcornString(accuracy);
-      const text = `Stump the Buff Recap:
+    function shareOnTwitter(){
+      const accuracy=(totalCorrect/25)*100;
+      const skill=totalAnswered?(totalDifference/totalAnswered):0;
+      const popcorn=getPopcornString(accuracy);
+      const text=`Stump the Buff Recap:
 Score: ${Math.round(totalScore)}
 Accuracy: ${popcorn} (${accuracy.toFixed(1)}%)
 Skill: ${skill.toFixed(1)}
 Think you can beat me? Head to oscers.com`;
-      const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-      window.open(url, "_blank");
+      const url=`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+      window.open(url,"_blank");
     }
-    function copyRecap() {
-      const accuracy = (totalCorrect / 25) * 100;
-      const skill = totalAnswered ? (totalDifference / totalAnswered) : 0;
-      const popcorn = getPopcornString(accuracy);
-      const text = `Stump the Buff Recap:
+    function copyRecap(){
+      const accuracy=(totalCorrect/25)*100;
+      const skill=totalAnswered?(totalDifference/totalAnswered):0;
+      const popcorn=getPopcornString(accuracy);
+      const text=`Stump the Buff Recap:
 Score: ${Math.round(totalScore)}
 Accuracy: ${popcorn} (${accuracy.toFixed(1)}%)
 Skill: ${skill.toFixed(1)}
 Think you can beat me? Head to oscers.com`;
-      navigator.clipboard.writeText(text).then(() => {
+      navigator.clipboard.writeText(text).then(()=>{
         alert("Recap copied to clipboard!");
-      }).catch(() => {
+      }).catch(()=>{
         alert("Failed to copy recap. Your browser may not allow clipboard writes.");
       });
     }
 
     /* UTILS */
-    function fadeOutCards(callback) {
-      const mc = document.getElementById("movies-container");
-      const rc = document.getElementById("runtimes-container");
-      mc.style.opacity = "1";
-      rc.style.opacity = "1";
+    function fadeOutCards(callback){
+      const mc=document.getElementById("movies-container");
+      const rc=document.getElementById("runtimes-container");
+      mc.style.opacity="1";
+      rc.style.opacity="1";
       mc.offsetHeight;
-      mc.style.opacity = "0";
-      rc.style.opacity = "0";
-      setTimeout(callback, 500);
+      mc.style.opacity="0";
+      rc.style.opacity="0";
+      setTimeout(callback,500);
     }
-    function fadeInCards() {
-      const mc = document.getElementById("movies-container");
-      const rc = document.getElementById("runtimes-container");
-      mc.style.opacity = "0";
-      rc.style.opacity = "0";
+    function fadeInCards(){
+      const mc=document.getElementById("movies-container");
+      const rc=document.getElementById("runtimes-container");
+      mc.style.opacity="0";
+      rc.style.opacity="0";
       mc.offsetHeight;
-      mc.style.opacity = "1";
-      rc.style.opacity = "1";
+      mc.style.opacity="1";
+      rc.style.opacity="1";
     }
-    function shuffle(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+    function shuffle(array){
+      for(let i=array.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [array[i],array[j]]=[array[j],array[i]];
       }
       return array;
     }
-    function getPopcornString(accuracyPercent) {
+    function getPopcornString(accuracyPercent){
       return renderPopcorn(accuracyPercent).trim();
     }
-    function renderPopcorn(accuracyPercent) {
-      const ratingOutOf5 = (accuracyPercent / 100) * 5;
-      const full = Math.floor(ratingOutOf5);
-      const frac = ratingOutOf5 - full;
-      let html = "";
-      for (let i = 0; i < full; i++) {
-        html += "🍿";
+    function renderPopcorn(accuracyPercent){
+      const ratingOutOf5=(accuracyPercent/100)*5;
+      const full=Math.floor(ratingOutOf5);
+      const frac=ratingOutOf5-full;
+      let html="";
+      for(let i=0;i<full;i++){
+        html+="🍿";
       }
-      if (frac > 0) {
-        html += "🍿";
+      if(frac>0){
+        html+="🍿";
       }
-      return html + " ";
+      return html+" ";
+    }
+    function showCorrectLine(card, correctRuntime){
+      const line=document.createElement("div");
+      line.style.fontSize="12px";
+      line.style.marginTop="5px";
+      line.innerText=`Correct: ${correctRuntime} min`;
+      card.appendChild(line);
     }
   </script>
 </body>
