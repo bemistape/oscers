@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Stump the Buff - v3.2 (Debug Edition)</title>
+  <title>Stump the Buff - v3.2 (Joker in Timer)</title>
   <style>
     /* ---------- GLOBAL / LAYOUT ---------- */
     html, body {
@@ -94,6 +94,10 @@
     .difficulty-box { margin-bottom: 20px; }
 
     /* ---------- GAME PAGE ---------- */
+    /*
+      Now the Joker button is inside #timer-box, so we set position: relative
+      on #timer-box and absolutely position the Joker at the bottom.
+    */
     #timer-box {
       margin: 10px auto;
       width: 160px;
@@ -101,6 +105,7 @@
       background-color: #222;
       border-radius: 80px;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       font-size: 64px;
@@ -108,7 +113,30 @@
       color: white;
       border: 2px solid #444;
       transition: all 0.2s ease;
+      position: relative; /* for the Joker's absolute positioning */
     }
+    #timer-value {
+      z-index: 2; /* keep the number on top */
+    }
+    /*
+      The Joker button is smaller and placed near the bottom of the circle.
+    */
+    #joker-btn {
+      position: absolute;
+      bottom: 8px;
+      width: 48px;
+      height: 48px;
+      border-radius: 24px;
+      font-size: 24px;
+      background: #222;
+      border: 2px solid #FFD700;
+      color: white;
+      z-index: 3;
+    }
+    #joker-btn:hover {
+      background: #333;
+    }
+
     #submit-btn {
       font-size: 22px;
       padding: 12px 30px;
@@ -127,9 +155,8 @@
       gap: 10px;
       margin-bottom: 20px;
     }
-    /* Justify center so movie cards are centered */
     #movies-container {
-      display: flex;
+      display: flex; /* center them horizontally */
       flex-wrap: wrap;
       justify-content: center;
       gap: 20px;
@@ -174,9 +201,8 @@
       cursor: grab;
       animation: float-run 3s ease-in-out infinite alternate;
     }
-    /* Dragging glow changed to neon yellow */
     .runtime-card.dragging {
-      outline: 3px solid #fffd00;
+      outline: 3px solid #fffd00; /* neon yellow */
       box-shadow: 0 0 10px #fffd00;
     }
     @keyframes float-run {
@@ -214,20 +240,6 @@
     }
     .stats-box.empty { display: none; }
 
-    #joker-btn {
-      display: inline-block;
-      width: 80px;
-      height: 80px;
-      border-radius: 40px;
-      font-size: 32px;
-      background: #222;
-      border: 2px solid #FFD700;
-      color: white;
-      margin: 10px auto;
-    }
-    #joker-btn:hover {
-      background: #333;
-    }
     .glow-anim {
       animation: glow 2s ease-in-out infinite alternate;
     }
@@ -303,7 +315,6 @@
       margin-bottom: 10px;
       text-align: center;
     }
-    /* 3 columns for final cards, auto-wrap for leftover. */
     .final-round-row {
       display: grid; 
       grid-template-columns: repeat(3, 140px); 
@@ -318,7 +329,7 @@
       width: 100%;
       font-weight: bold;
       margin-bottom: 8px;
-      grid-column: 1 / -1; /* span full width */
+      grid-column: 1 / -1;
     }
     .final-card {
       border-radius: 10px;
@@ -398,7 +409,7 @@
       <button class="diff-btn" data-difficulty="hard" id="hard-btn">Hard</button>
     </div>
     <button id="begin-btn" disabled>Begin</button>
-    <div class="version-number">v3.2 (Debug)</div>
+    <div class="version-number">v3.2 (Joker in Timer)</div>
   </div>
 
   <!-- ROUND RECAP OVERLAY -->
@@ -410,13 +421,19 @@
 
   <!-- GAME SCREEN -->
   <div id="game-container" class="page-container">
-    <div id="timer-box"><span id="timer-value">20</span></div>
+    <!--
+      We moved the Joker button into the timer circle.
+      The original separate container for the Joker was removed.
+    -->
+    <div id="timer-box">
+      <span id="timer-value">20</span>
+      <button id="joker-btn" class="glow-anim" title="Reveal relative runtimes briefly">🤡</button>
+    </div>
+
     <button id="submit-btn" title="Submit early to earn extra time bonus!">Submit</button>
     <div id="runtimes-container" class="cards-container"></div>
     <div id="movies-container" class="cards-container"></div>
-    <div class="center">
-      <button id="joker-btn" class="glow-anim" title="Reveal relative runtimes briefly">🤡</button>
-    </div>
+
     <div id="this-game-stats" class="stats-box empty"></div>
   </div>
 
@@ -445,6 +462,10 @@
   </div>
 
   <script>
+    /* 
+      The JavaScript logic is unchanged. 
+      Only the HTML structure and a bit of CSS changed to embed the Joker button.
+    */
     /*******************************************************
      * GLOBAL STATE & CONFIG
      *******************************************************/
@@ -582,7 +603,6 @@
 
       filterByDifficulty();
       if(filteredMovies.length<25){
-        // If too few are available for the chosen difficulty, we just use all movies
         filteredMovies=allMovies.slice();
       }
       roundTimers=TIMERS[difficulty]||[20,20,20,20,20];
@@ -603,12 +623,10 @@
       rounds=[];
       let pool=shuffle(filteredMovies.slice());
       if(pool.length<25){
-        // We'll just create 5 sub-arrays, some may be empty if <25 total
         for(let i=0;i<5;i++){
           rounds.push(pool.slice(i*5,i*5+5));
         }
-      } else {
-        // Otherwise, pick the first 25 from the shuffled list
+      }else{
         const selected=pool.slice(0,25);
         for(let i=0;i<5;i++){
           rounds.push(selected.slice(i*5,(i+1)*5));
@@ -625,8 +643,6 @@
         return;
       }
       fadeOutCards(()=>{
-        console.log(`\n=== Starting Round #${currentRoundIndex+1} ===`);
-        console.log("Movies for this round:", rounds[currentRoundIndex]);
         renderRound();
         fadeInCards();
       });
@@ -641,7 +657,8 @@
       moviesContainer.innerHTML="";
       runtimesContainer.innerHTML="";
 
-      document.getElementById("joker-btn").style.display=jokerUsed?"none":"inline-block";
+      // If Joker was used already, hide the button
+      document.getElementById("joker-btn").style.display = jokerUsed ? "none" : "inline-block";
 
       const roundMovies=rounds[currentRoundIndex];
       roundMovies.forEach(m=>{
@@ -722,7 +739,7 @@
 
       const rc=document.getElementById("runtimes-container");
       const existing=movieCard.querySelector(".runtime-card");
-      if(existing)rc.appendChild(existing);
+      if(existing) rc.appendChild(existing);
 
       movieCard.appendChild(dragged);
       movieCard.classList.add("placed");
@@ -768,7 +785,7 @@
       // sum difference
       roundMovies.forEach(m=>{
         if(m._assignedRuntime!=null){
-          roundDiff+=Math.abs(m._assignedRuntime-m.runtime_minutes);
+          roundDiff+=Math.abs(m._assignedRuntime - m.runtime_minutes);
         }
       });
 
@@ -781,7 +798,7 @@
       }
 
       const baseScore=roundCorrect*1000;
-      const roundScore=baseScore+leftoverBonus+fractionBonus;
+      const roundScore=baseScore + leftoverBonus + fractionBonus;
 
       totalCorrect+=roundCorrect;
       totalDifference+=roundDiff;
@@ -825,10 +842,9 @@
     }
 
     function nextRoundAfterRecap(){
-      console.log("Closing recap. Current roundIndex:", currentRoundIndex, " -> incrementing by 1.");
-      currentRoundIndex++;
       document.getElementById("round-recap-overlay").style.display="none";
       document.getElementById("submit-btn").style.display="block";
+      currentRoundIndex++;
       startRound();
     }
 
@@ -840,15 +856,13 @@
       jokerUsed=true;
       document.getElementById("joker-btn").style.display="none";
 
-      // play beep
       const snd=document.getElementById("joker-sound");
       snd.currentTime=0;
       snd.play().catch(()=>{});
 
       const roundMovies=rounds[currentRoundIndex];
-      const sorted=[...roundMovies].sort((a,b)=>b.runtime_minutes-a.runtime_minutes);
+      const sorted=[...roundMovies].sort((a,b)=>b.runtime_minutes - a.runtime_minutes);
 
-      // color-coded green from darkest to brightest
       const greenShades=["#003300","#006600","#009900","#00CC00","#00FF00"];
       const originals=[];
       sorted.forEach((m,idx)=>{
@@ -859,7 +873,6 @@
         card.style.borderColor=greenShades[idx];
       });
 
-      // revert after 5s
       setTimeout(()=>{
         originals.forEach(o=>{
           o.card.style.backgroundColor="#000";
@@ -922,7 +935,7 @@
       bonusUsed=true;
       clearInterval(bonusTimer);
 
-      let maxRuntime=-1,maxMovie=null;
+      let maxRuntime=-1, maxMovie=null;
       bonusMovies.forEach(m=>{
         if(m.runtime_minutes>maxRuntime){
           maxRuntime=m.runtime_minutes;
@@ -1084,7 +1097,6 @@ Think you can beat me? Head to oscers.com`;
       return null;
     }
 
-    // Debug: update game stats
     function updateGameStatsBox(){
       const statsBox = document.getElementById("this-game-stats");
       statsBox.innerText = `Score: ${Math.round(totalScore)}`;
