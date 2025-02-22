@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Stump the Buff - v2.2 (Complete)</title>
+  <title>Stump the Buff - v2.3</title>
   <style>
     /* ---------- GLOBAL / LAYOUT ---------- */
     html, body {
@@ -121,7 +121,7 @@
       border-radius: 15px; /* more rounded edges */
       text-align: center;
       min-height: 100px;
-      display: flex;        /* center title vertically & horizontally */
+      display: flex;        
       flex-direction: column;
       justify-content: center;
       align-items: center;
@@ -131,6 +131,12 @@
       font-weight: bold;
       margin-bottom: 5px;
     }
+    /* highlight when a runtime is placed inside */
+    .placed {
+      border-color: #FFD700 !important;
+      background-color: #111;
+    }
+
     .runtime-card {
       width: 100px;
       height: 60px;
@@ -201,7 +207,7 @@
       100% { box-shadow: 0 0 20px #FFD700; }
     }
 
-    /* ---------- BONUS ROUND ---------- */
+    /* ---------- BONUS ROUND (FLOATING) ---------- */
     #bonus-container {
       text-align: center;
     }
@@ -221,25 +227,42 @@
       transition: all 0.2s ease;
       margin-bottom: 20px;
     }
-    .bonus-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 10px;
-      width: 100%;
-      max-width: 600px;
-      margin: 0 auto;
+    .floating-container {
+      position: relative;
+      width: 600px;
+      height: 300px;
+      margin: 0 auto 20px auto;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .bonus-card {
+    .floating-card {
+      position: absolute;
+      width: 120px;
+      height: 120px;
       border: 2px solid white;
-      border-radius: 50%;
-      width: 100px;
-      height: 100px;
+      border-radius: 60px;
       background: #000;
+      text-align: center;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      cursor: pointer;
+      padding: 5px;
+    }
+    @keyframes floaty1 {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(60px, 30px); }
+    }
+    @keyframes floaty2 {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(-40px, 40px); }
+    }
+    @keyframes floaty3 {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(40px, -40px); }
     }
 
     /* ---------- FINAL PAGE ---------- */
@@ -275,6 +298,14 @@
       margin-bottom: 15px;
       flex-wrap: wrap;
     }
+    /* Round name bigger */
+    .final-round-heading {
+      font-size: 24px;
+      text-align: center;
+      width: 100%;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
     .final-card {
       border-radius: 10px;
       border: 2px solid #666;
@@ -292,6 +323,20 @@
       background-color: #330000;
       border-color: #f00;
     }
+
+    /* ---------- LARGER SUBMIT BUTTON ---------- */
+    #submit-btn {
+      font-size: 22px;
+      padding: 12px 30px;
+      margin: 20px auto;
+      background: #FFD700;
+      color: black;
+      border: none;
+    }
+    #submit-btn:hover {
+      background: #FFC700;
+    }
+
     #share-twitter-btn, #copy-recap-btn, #play-again-btn {
       display: inline-block;
       margin: 10px 8px;
@@ -326,7 +371,7 @@
       <button class="diff-btn" data-difficulty="hard" id="hard-btn">Hard</button>
     </div>
     <button id="begin-btn" disabled>Begin</button>
-    <div class="version-number">v2.2</div>
+    <div class="version-number">v2.3</div>
   </div>
 
   <!-- GAME SCREEN -->
@@ -334,26 +379,31 @@
     <div id="timer-box">
       <span id="timer-value">20</span>
     </div>
-    <h2 id="round-heading" style="font-family:Georgia, serif; margin:10px 0;"></h2>
 
-    <!-- Runtimes first, then Joker (switched places) -->
+    <!-- Runtimes first -->
     <div id="runtimes-container" class="cards-container"></div>
+
+    <!-- Then the Movie cards -->
+    <div id="movies-container" class="cards-container"></div>
+
+    <!-- Then Joker under the Movie cards -->
     <div class="center">
       <button id="joker-btn" class="glow-anim" title="Use Joker (once)">🤡</button>
     </div>
-    <div id="movies-container" class="cards-container"></div>
 
+    <!-- Stats & Submit -->
     <div id="this-game-stats" class="stats-box empty"></div>
     <button id="submit-btn">Submit</button>
   </div>
 
-  <!-- BONUS ROUND (Simplified Grid) -->
+  <!-- BONUS ROUND (Floating) -->
   <div id="bonus-container" class="page-container">
     <div id="bonus-timer-box">
       <span id="bonus-timer-value">10</span>
     </div>
     <h3 id="bonus-message"></h3>
-    <div class="bonus-grid" id="bonus-grid"></div>
+    <!-- floating container for the cards -->
+    <div class="floating-container" id="bonus-floating-container"></div>
     <div id="bonus-result"></div>
     <button id="bonus-continue-btn">Continue</button>
   </div>
@@ -411,7 +461,6 @@
      * PAGE LOAD & CSV FETCH/INIT
      *******************************************************/
     document.addEventListener("DOMContentLoaded", async () => {
-      // Difficulty buttons
       document.getElementById("easy-btn").addEventListener("click", () => difficulty = "easy");
       document.getElementById("medium-btn").addEventListener("click", () => difficulty = "medium");
       document.getElementById("hard-btn").addEventListener("click", () => difficulty = "hard");
@@ -419,7 +468,6 @@
       const beginBtn = document.getElementById("begin-btn");
       beginBtn.disabled = true;
       beginBtn.innerText = "Loading...";
-
       try {
         await fetchCSV();
         // Once data is fetched, user can pick difficulty & begin
@@ -477,7 +525,7 @@
         let movie = {};
         movie["Movie Name"] = rowCells[colMovieName]?.trim() || "";
         movie.runtime_minutes = parseInt(rowCells[colRuntimeMin] || "0", 10);
-        movie.Runtime = rowCells[colRuntime]?.trim() || "";
+        movie.Runtime = rowCells[colRuntime] || "";
         movie._rank = parseFloat(rowCells[colVotesRank] || "0");
 
         movie._assignedRuntime = null;
@@ -558,36 +606,36 @@
       const roundMovies = rounds[currentRoundIndex];
       const moviesContainer = document.getElementById("movies-container");
       const runtimesContainer = document.getElementById("runtimes-container");
-      const roundHeading = document.getElementById("round-heading");
-      roundHeading.innerText = `Round ${currentRoundIndex + 1}`;
 
-      const jokerBtn = document.getElementById("joker-btn");
-      jokerBtn.style.display = jokerUsed ? "none" : "inline-block";
-
-      moviesContainer.innerHTML = "";
-      runtimesContainer.innerHTML = "";
-
+      // Timer
       timeLeft = roundTimers[currentRoundIndex] || 20;
       setupTimer();
       updateGameStatsBox();
 
+      // Clear containers
+      moviesContainer.innerHTML = "";
+      runtimesContainer.innerHTML = "";
+
+      // Create movie cards
       roundMovies.forEach(m => {
         const card = document.createElement("div");
         card.classList.add("movie-card");
         card.setAttribute("data-correct", m.runtime_minutes);
         card.innerHTML = `<div class="movie-title">${m["Movie Name"]}</div>`;
-        card.addEventListener("dragover", e => { if (canDrag) e.preventDefault(); });
+        card.addEventListener("dragover", e => {
+          if (canDrag) e.preventDefault();
+        });
         card.addEventListener("drop", e => dropHandler(e, m, card));
         moviesContainer.appendChild(card);
       });
 
+      // Create runtime cards
       const roundRuntimes = roundMovies.map((m, i) => ({
         runtime: m.Runtime,
         runtime_minutes: m.runtime_minutes,
         uniqueId: `rt-${currentRoundIndex}-${i}`
       }));
       shuffle(roundRuntimes);
-
       roundRuntimes.forEach(rt => {
         const rc = document.createElement("div");
         rc.classList.add("runtime-card");
@@ -656,12 +704,20 @@
       }
       if (!draggedCard) return;
 
+      // If there's already a runtime in this movie, put it back in runtimes
       const rc = document.getElementById("runtimes-container");
       const existing = movieCard.querySelector(".runtime-card");
       if (existing) {
         rc.appendChild(existing);
       }
+
+      // Place the new runtime
       movieCard.appendChild(draggedCard);
+
+      // Add a highlight class
+      movieCard.classList.add("placed");
+
+      // Store assignment
       movieObj._assignedRuntime = parseInt(draggedCard.getAttribute("data-runtime"), 10);
     }
 
@@ -675,11 +731,14 @@
       let roundDiff = 0;
       let answeredCount = 0;
       let sumActual = 0;
+
       const movieCards = document.getElementById("movies-container").children;
       for (let i = 0; i < movieCards.length; i++) {
         const card = movieCards[i];
         const correctRuntime = parseInt(card.getAttribute("data-correct"), 10);
         sumActual += correctRuntime;
+
+        // If a runtime was placed
         const assigned = card.querySelector(".runtime-card");
         if (assigned) {
           answeredCount++;
@@ -696,7 +755,15 @@
             correctLine.innerText = `Correct: ${correctRuntime} min`;
             card.appendChild(correctLine);
           }
-          roundDiff += Math.abs(userRuntime - correctRuntime);
+        }
+      }
+
+      // Calculate difference
+      // (We only accumulate difference for answered movies)
+      for (let i = 0; i < roundMovies.length; i++) {
+        const assigned = roundMovies[i]._assignedRuntime;
+        if (assigned != null) {
+          roundDiff += Math.abs(assigned - roundMovies[i].runtime_minutes);
         }
       }
 
@@ -704,6 +771,7 @@
       totalDifference += roundDiff;
       totalAnswered += answeredCount;
 
+      // Score formula
       const baseScore = roundCorrect * 1000;
       const avgRuntime = sumActual / 5;
       const avgDiff = answeredCount ? (roundDiff / answeredCount) : avgRuntime;
@@ -720,6 +788,7 @@
         roundScore: roundScore
       });
 
+      // Delay so user can see correct/incorrect
       setTimeout(() => {
         currentRoundIndex++;
         document.getElementById("submit-btn").style.display = "block";
@@ -784,25 +853,37 @@
     }
 
     /*******************************************************
-     * BONUS ROUND
+     * BONUS ROUND (FLOATING)
      *******************************************************/
     function startBonusRound() {
       bonusUsed = false;
       bonusTimeLeft = 10;
+
+      // pick 5 random from filtered
       let pool = shuffle(filteredMovies.slice());
       if (pool.length < 5) {
         pool = allMovies.slice();
       }
       bonusMovies = pool.slice(0,5);
 
-      const grid = document.getElementById("bonus-grid");
-      grid.innerHTML = "";
-      bonusMovies.forEach(m => {
+      // floating container approach
+      const container = document.getElementById("bonus-floating-container");
+      container.innerHTML = "";
+      bonusMovies.forEach((m, i) => {
         const card = document.createElement("div");
-        card.classList.add("bonus-card");
+        card.classList.add("floating-card");
+
+        // random position & random anim
+        const topPos = Math.random() * 150 - 75;
+        const leftPos = Math.random() * 200 - 100;
+        card.style.top = topPos + "px";
+        card.style.left = leftPos + "px";
+        const anim = ["floaty1","floaty2","floaty3"][Math.floor(Math.random()*3)];
+        card.style.animation = `${anim} 4s ease-in-out infinite alternate`;
+
         card.innerText = m["Movie Name"];
         card.addEventListener("click", () => pickBonusMovie(m, card));
-        grid.appendChild(card);
+        container.appendChild(card);
       });
 
       setupBonusTimer();
@@ -845,6 +926,7 @@
       bonusUsed = true;
       clearInterval(bonusTimer);
 
+      // find the actual longest
       let maxRuntime = -1;
       let maxMovie = null;
       bonusMovies.forEach(m => {
@@ -856,7 +938,6 @@
 
       const correct = (chosenMovie.runtime_minutes === maxRuntime);
       chosenCard.classList.add(correct ? "correct" : "incorrect");
-
       if (correct) {
         totalScore += 1000;
         document.getElementById("bonus-message").innerText = "Correct! +1000 points.";
@@ -890,7 +971,6 @@
       breakdownHTML += `<div class="breakdown-row">
         Accuracy: ${accuracy.toFixed(1)}% | Skill: ${skill.toFixed(1)} min
       </div>`;
-
       document.getElementById("round-breakdown").innerHTML = breakdownHTML;
 
       const finalCardsContainer = document.getElementById("final-cards-container");
@@ -899,12 +979,9 @@
         const rowDiv = document.createElement("div");
         rowDiv.classList.add("final-round-row");
 
-        // Round heading
+        // bigger round heading
         const heading = document.createElement("div");
-        heading.style.textAlign = "center";
-        heading.style.width = "100%";
-        heading.style.fontWeight = "bold";
-        heading.style.marginBottom = "5px";
+        heading.classList.add("final-round-heading");
         heading.innerText = `Round ${idx + 1}`;
         rowDiv.appendChild(heading);
 
