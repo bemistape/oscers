@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Stump the Buff - v2.3</title>
+  <title>Stump the Buff - v2.4</title>
   <style>
     /* ---------- GLOBAL / LAYOUT ---------- */
     html, body {
@@ -62,7 +62,6 @@
     }
 
     /* ---------- MAIN CONTAINERS ---------- */
-    /* Intro is visible by default; others hidden until needed */
     #intro-container {
       display: flex;
       width: 100%;
@@ -118,10 +117,10 @@
       margin: 5px;
       padding: 10px;
       background-color: #000;
-      border-radius: 15px; /* more rounded edges */
+      border-radius: 15px;
       text-align: center;
       min-height: 100px;
-      display: flex;        
+      display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
@@ -136,7 +135,6 @@
       border-color: #FFD700 !important;
       background-color: #111;
     }
-
     .runtime-card {
       width: 100px;
       height: 60px;
@@ -184,7 +182,6 @@
     }
     .stats-box.empty { display: none; }
 
-    /* ---------- JOKER BUTTON ---------- */
     #joker-btn {
       display: inline-block;
       width: 80px;
@@ -229,13 +226,14 @@
     }
     .floating-container {
       position: relative;
-      width: 600px;
-      height: 300px;
+      width: 800px;  /* expanded */
+      height: 400px; /* expanded */
       margin: 0 auto 20px auto;
       overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
+      background: #111;
     }
     .floating-card {
       position: absolute;
@@ -298,7 +296,6 @@
       margin-bottom: 15px;
       flex-wrap: wrap;
     }
-    /* Round name bigger */
     .final-round-heading {
       font-size: 24px;
       text-align: center;
@@ -371,7 +368,7 @@
       <button class="diff-btn" data-difficulty="hard" id="hard-btn">Hard</button>
     </div>
     <button id="begin-btn" disabled>Begin</button>
-    <div class="version-number">v2.3</div>
+    <div class="version-number">v2.4</div>
   </div>
 
   <!-- GAME SCREEN -->
@@ -391,7 +388,6 @@
       <button id="joker-btn" class="glow-anim" title="Use Joker (once)">🤡</button>
     </div>
 
-    <!-- Stats & Submit -->
     <div id="this-game-stats" class="stats-box empty"></div>
     <button id="submit-btn">Submit</button>
   </div>
@@ -402,7 +398,6 @@
       <span id="bonus-timer-value">10</span>
     </div>
     <h3 id="bonus-message"></h3>
-    <!-- floating container for the cards -->
     <div class="floating-container" id="bonus-floating-container"></div>
     <div id="bonus-result"></div>
     <button id="bonus-continue-btn">Continue</button>
@@ -470,7 +465,6 @@
       beginBtn.innerText = "Loading...";
       try {
         await fetchCSV();
-        // Once data is fetched, user can pick difficulty & begin
         beginBtn.disabled = false;
         beginBtn.innerText = "Begin";
       } catch(e) {
@@ -535,7 +529,6 @@
 
     function onBeginGame() {
       if (!difficulty) {
-        // Default to easy if none chosen
         difficulty = "easy";
       }
       document.getElementById("intro-container").style.display = "none";
@@ -593,7 +586,6 @@
 
     function startRound() {
       if (currentRoundIndex >= 5) {
-        // After 5 rounds, go to bonus
         document.getElementById("game-container").style.display = "none";
         document.getElementById("bonus-container").style.display = "flex";
         startBonusRound();
@@ -607,7 +599,6 @@
       const moviesContainer = document.getElementById("movies-container");
       const runtimesContainer = document.getElementById("runtimes-container");
 
-      // Timer
       timeLeft = roundTimers[currentRoundIndex] || 20;
       setupTimer();
       updateGameStatsBox();
@@ -622,9 +613,7 @@
         card.classList.add("movie-card");
         card.setAttribute("data-correct", m.runtime_minutes);
         card.innerHTML = `<div class="movie-title">${m["Movie Name"]}</div>`;
-        card.addEventListener("dragover", e => {
-          if (canDrag) e.preventDefault();
-        });
+        card.addEventListener("dragover", e => { if (canDrag) e.preventDefault(); });
         card.addEventListener("drop", e => dropHandler(e, m, card));
         moviesContainer.appendChild(card);
       });
@@ -713,8 +702,7 @@
 
       // Place the new runtime
       movieCard.appendChild(draggedCard);
-
-      // Add a highlight class
+      // Add highlight
       movieCard.classList.add("placed");
 
       // Store assignment
@@ -732,6 +720,7 @@
       let answeredCount = 0;
       let sumActual = 0;
 
+      // Check each card
       const movieCards = document.getElementById("movies-container").children;
       for (let i = 0; i < movieCards.length; i++) {
         const card = movieCards[i];
@@ -755,17 +744,23 @@
             correctLine.innerText = `Correct: ${correctRuntime} min`;
             card.appendChild(correctLine);
           }
+        } else {
+          // No runtime assigned
+          card.classList.add("incorrect");
+          const correctLine = document.createElement("div");
+          correctLine.style.fontSize = "12px";
+          correctLine.style.marginTop = "5px";
+          correctLine.innerText = `Correct: ${correctRuntime} min`;
+          card.appendChild(correctLine);
         }
       }
 
       // Calculate difference
-      // (We only accumulate difference for answered movies)
-      for (let i = 0; i < roundMovies.length; i++) {
-        const assigned = roundMovies[i]._assignedRuntime;
-        if (assigned != null) {
-          roundDiff += Math.abs(assigned - roundMovies[i].runtime_minutes);
+      roundMovies.forEach(m => {
+        if (m._assignedRuntime != null) {
+          roundDiff += Math.abs(m._assignedRuntime - m.runtime_minutes);
         }
-      }
+      });
 
       totalCorrect += roundCorrect;
       totalDifference += roundDiff;
@@ -859,25 +854,25 @@
       bonusUsed = false;
       bonusTimeLeft = 10;
 
-      // pick 5 random from filtered
       let pool = shuffle(filteredMovies.slice());
       if (pool.length < 5) {
         pool = allMovies.slice();
       }
       bonusMovies = pool.slice(0,5);
 
-      // floating container approach
       const container = document.getElementById("bonus-floating-container");
       container.innerHTML = "";
+
+      // Spread out more: random top in [-100..100], left in [-200..200]
       bonusMovies.forEach((m, i) => {
         const card = document.createElement("div");
         card.classList.add("floating-card");
 
-        // random position & random anim
-        const topPos = Math.random() * 150 - 75;
-        const leftPos = Math.random() * 200 - 100;
+        const topPos = Math.random() * 200 - 100;
+        const leftPos = Math.random() * 400 - 200;
         card.style.top = topPos + "px";
         card.style.left = leftPos + "px";
+
         const anim = ["floaty1","floaty2","floaty3"][Math.floor(Math.random()*3)];
         card.style.animation = `${anim} 4s ease-in-out infinite alternate`;
 
@@ -926,7 +921,6 @@
       bonusUsed = true;
       clearInterval(bonusTimer);
 
-      // find the actual longest
       let maxRuntime = -1;
       let maxMovie = null;
       bonusMovies.forEach(m => {
@@ -959,8 +953,7 @@
 
       const accuracy = (totalCorrect / 25) * 100;
       const skill = totalAnswered ? (totalDifference / totalAnswered) : 0;
-      const fs = document.getElementById("final-scores");
-      fs.innerText = `Final Score: ${Math.round(totalScore)}`;
+      document.getElementById("final-scores").innerText = `Final Score: ${Math.round(totalScore)}`;
 
       let breakdownHTML = "";
       roundScores.forEach(r => {
@@ -979,7 +972,6 @@
         const rowDiv = document.createElement("div");
         rowDiv.classList.add("final-round-row");
 
-        // bigger round heading
         const heading = document.createElement("div");
         heading.classList.add("final-round-heading");
         heading.innerText = `Round ${idx + 1}`;
@@ -1084,6 +1076,9 @@ Think you can beat me? Head to oscers.com`;
       }
       return array;
     }
+    function getPopcornString(accuracyPercent) {
+      return renderPopcorn(accuracyPercent).trim();
+    }
     function findMovieCard(name) {
       const cards = document.querySelectorAll("#movies-container .movie-card");
       for (let c of cards) {
@@ -1091,6 +1086,19 @@ Think you can beat me? Head to oscers.com`;
         if (t && t.innerText === name) return c;
       }
       return null;
+    }
+    function renderPopcorn(accuracyPercent) {
+      const ratingOutOf5 = (accuracyPercent / 100) * 5;
+      const full = Math.floor(ratingOutOf5);
+      const frac = ratingOutOf5 - full;
+      let html = "";
+      for (let i = 0; i < full; i++) {
+        html += "🍿";
+      }
+      if (frac > 0) {
+        html += "🍿";
+      }
+      return html + " ";
     }
   </script>
 </body>
