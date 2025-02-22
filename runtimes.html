@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Stump the Buff - v2.6a</title>
+  <title>Stump the Buff - v2.7</title>
   <style>
     /* ---------- GLOBAL / LAYOUT ---------- */
     html, body {
@@ -35,7 +35,7 @@
       opacity: 0.7;
       margin-top: 20px;
     }
-    
+
     /* ---------- BUTTON STYLES ---------- */
     .diff-btn {
       background: #222;
@@ -66,7 +66,7 @@
       opacity: 0.5;
       cursor: not-allowed;
     }
-    
+
     /* ---------- MAIN CONTAINERS ---------- */
     #intro-container {
       display: flex;
@@ -82,7 +82,7 @@
       max-width: 900px;
       margin: 0 auto;
     }
-    
+
     /* ---------- INTRO PAGE ---------- */
     #intro-container .intro-rules {
       max-width: 600px;
@@ -92,7 +92,7 @@
       text-align: center;
     }
     .difficulty-box { margin-bottom: 20px; }
-    
+
     /* ---------- GAME PAGE ---------- */
     #timer-box {
       margin: 10px auto;
@@ -109,13 +109,17 @@
       border: 2px solid #444;
       transition: all 0.2s ease;
     }
-    /* Use grid for movie cards: 3 columns for 5 cards (3 on first row, 2 on second) */
-    #movies-container {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 20px;
-      width: 100%;
+    /* New order: Timer, then Submit button, then Runtime cards, then Movie cards, then Joker */
+    #submit-btn {
+      font-size: 22px;
+      padding: 12px 30px;
+      margin: 20px auto;
+      background: #FFD700;
+      color: black;
+      border: none;
+    }
+    #submit-btn:hover {
+      background: #FFC700;
     }
     #runtimes-container {
       display: flex;
@@ -124,13 +128,21 @@
       gap: 10px;
       margin-bottom: 20px;
     }
+    /* Movie cards arranged in a grid: 3 columns on first row, 2 on second */
+    #movies-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+      width: 100%;
+    }
     .movie-card {
-      width: 180px;
+      width: 240px; /* wider card */
       border: 2px solid white;
       margin: 5px auto;
-      padding: 10px;
+      padding: 20px; /* more padding */
       background-color: #000;
-      border-radius: 25px;
+      border-radius: 30px; /* more rounded */
       text-align: center;
       min-height: 100px;
       display: flex;
@@ -142,7 +154,7 @@
     .movie-title {
       font-weight: bold;
       margin-bottom: 5px;
-      font-size: 32px;
+      font-size: 28px; /* slightly smaller */
     }
     .placed {
       border-color: #FFD700 !important;
@@ -237,7 +249,6 @@
       transition: all 0.2s ease;
       margin-bottom: 20px;
     }
-    /* Use grid so bonus cards don’t overlap */
     #bonus-floating-container {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
@@ -293,7 +304,7 @@
       flex-wrap: wrap;
     }
     .final-round-heading {
-      font-size: 32px; /* Bigger round names */
+      font-size: 32px;
       text-align: center;
       width: 100%;
       font-weight: bold;
@@ -315,19 +326,6 @@
     .final-card.incorrect {
       background-color: #330000;
       border-color: #f00;
-    }
-    
-    /* ---------- LARGER SUBMIT BUTTON ---------- */
-    #submit-btn {
-      font-size: 22px;
-      padding: 12px 30px;
-      margin: 20px auto;
-      background: #FFD700;
-      color: black;
-      border: none;
-    }
-    #submit-btn:hover {
-      background: #FFC700;
     }
     
     #share-twitter-btn, #copy-recap-btn, #play-again-btn {
@@ -364,7 +362,7 @@
       <button class="diff-btn" data-difficulty="hard" id="hard-btn">Hard</button>
     </div>
     <button id="begin-btn" disabled>Begin</button>
-    <div class="version-number">v2.6</div>
+    <div class="version-number">v2.6a</div>
   </div>
   
   <!-- GAME SCREEN -->
@@ -372,18 +370,21 @@
     <div id="timer-box">
       <span id="timer-value">20</span>
     </div>
+    <!-- Submit button under timer -->
+    <button id="submit-btn">Submit</button>
     
-    <!-- Movie cards arranged in a grid (3 columns, then 2) -->
+    <!-- Runtime cards under submit -->
+    <div id="runtimes-container" class="cards-container"></div>
+    
+    <!-- Movie cards (wider, with more padding, smaller font) -->
     <div id="movies-container" class="cards-container"></div>
     
-    <!-- Runtimes appear above; Joker under the movie cards -->
-    <div id="runtimes-container" class="cards-container"></div>
+    <!-- Joker under movie cards -->
     <div class="center">
       <button id="joker-btn" class="glow-anim" title="Use Joker (once)">🤡</button>
     </div>
     
     <div id="this-game-stats" class="stats-box empty"></div>
-    <button id="submit-btn">Submit</button>
   </div>
   
   <!-- BONUS ROUND (Grid Layout) -->
@@ -392,7 +393,7 @@
       <span id="bonus-timer-value">10</span>
     </div>
     <h3 id="bonus-message"></h3>
-    <div id="bonus-floating-container" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; width: 100%; max-width: 800px; margin: 0 auto 20px auto;"></div>
+    <div id="bonus-floating-container" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; width:100%; max-width:800px; margin:0 auto 20px auto;"></div>
     <div id="bonus-result"></div>
     <button id="bonus-continue-btn">Continue</button>
   </div>
@@ -436,7 +437,6 @@
     let roundScores = [];
     
     let jokerUsed = false;
-    // Joker remains selectable until round submission
     let timeLeft = 20;
     let roundTimer = null;
     let canDrag = false;
@@ -451,12 +451,10 @@
      * PAGE LOAD & CSV FETCH/INIT
      *******************************************************/
     document.addEventListener("DOMContentLoaded", async () => {
-      // Set up difficulty buttons and default to Easy
+      // Set up difficulty buttons and auto-default to Easy
       document.getElementById("easy-btn").addEventListener("click", () => setDifficulty("easy"));
       document.getElementById("medium-btn").addEventListener("click", () => setDifficulty("medium"));
       document.getElementById("hard-btn").addEventListener("click", () => setDifficulty("hard"));
-      
-      // Auto-default to Easy
       setDifficulty("easy");
       
       const beginBtn = document.getElementById("begin-btn");
@@ -504,7 +502,6 @@
      *******************************************************/
     function setDifficulty(diff) {
       difficulty = diff;
-      // Highlight the chosen button
       ["easy-btn", "medium-btn", "hard-btn"].forEach(id => {
         document.getElementById(id).classList.remove("active");
       });
