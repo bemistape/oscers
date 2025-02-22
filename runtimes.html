@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Stump the Buff - v1.9-slim</title>
+  <title>Stump the Buff - v1.9-slim (No Default/Toggles)</title>
   <style>
     /* ---------- GLOBAL & LAYOUT ---------- */
     html, body {
@@ -65,13 +65,6 @@
       margin-bottom: 20px;
     }
     .difficulty-box { margin-bottom: 20px; }
-    .toggle-advanced {
-      font-size: 14px;
-      margin-top: 10px;
-      color: #bbb;
-      text-decoration: underline;
-      cursor: pointer;
-    }
     #loading-box {
       border: 2px solid #FFD700;
       padding: 20px;
@@ -157,7 +150,7 @@
       min-width: 200px;
     }
     .stats-box.empty { display: none; }
-    /* ---------- BONUS ROUND (Simpler) ---------- */
+    /* ---------- BONUS ROUND ---------- */
     #bonus-container {
       text-align: center;
     }
@@ -198,9 +191,7 @@
       cursor: pointer;
     }
     /* ---------- FINAL PAGE ---------- */
-    #final-container {
-      text-align: center;
-    }
+    #final-container { text-align: center; }
     #final-scores {
       margin-bottom: 20px;
       font-size: 28px;
@@ -255,18 +246,13 @@
     <div class="intro-rules">
       <p>You’ll see 5 movies each round. Drag each runtime onto the movie you think it belongs to.</p>
       <p>You have limited time each round and can submit early.</p>
-      <p>Use your Joker once to briefly reveal the movies’ relative runtimes.</p>
+      <p>Use your Joker once to reveal the movies’ relative runtimes.</p>
     </div>
     <div class="difficulty-box">
-      <div>
-        <label style="font-size:16px; margin-right:10px;">Difficulty:</label>
-        <button class="diff-btn" data-difficulty="easy" id="easy-btn">Easy</button>
-        <span id="advanced-diffs" style="display:none;">
-          <button class="diff-btn" data-difficulty="medium" id="medium-btn">Medium</button>
-          <button class="diff-btn" data-difficulty="hard" id="hard-btn">Hard</button>
-        </span>
-      </div>
-      <div class="toggle-advanced" id="toggle-advanced">Show Advanced Difficulty</div>
+      <label style="font-size:16px; margin-right:10px;">Difficulty:</label>
+      <button class="diff-btn" data-difficulty="easy" id="easy-btn">Easy</button>
+      <button class="diff-btn" data-difficulty="medium" id="medium-btn">Medium</button>
+      <button class="diff-btn" data-difficulty="hard" id="hard-btn">Hard</button>
     </div>
     <div id="loading-box">
       <p>Loading data...</p>
@@ -286,7 +272,7 @@
     <button id="submit-btn">Submit</button>
   </div>
 
-  <!-- BONUS ROUND (Simplified, static grid) -->
+  <!-- BONUS ROUND (Simplified Grid) -->
   <div id="bonus-container" class="page-container">
     <div id="bonus-timer-box"><span id="bonus-timer-value">10</span></div>
     <h3 id="bonus-message"></h3>
@@ -315,7 +301,7 @@
      * GLOBAL STATE & CONFIG
      *******************************************************/
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vToIbm5XR9mtqOXHYzpF0jIXhGY9WI9m-QQak2KsZFB6CGVnRVRCPL3V6zFVbT6e_jLyGQM1e5XPjcX/pub?gid=131639577&single=true&output=csv";
-    let difficulty = "easy";
+    let difficulty;
     let allMovies = [];
     let filteredMovies = [];
     const TIMERS = {
@@ -344,17 +330,6 @@
      * PAGE LOAD & CSV FETCH/INIT
      *******************************************************/
     document.addEventListener("DOMContentLoaded", async () => {
-      document.getElementById("toggle-advanced").addEventListener("click", () => {
-        const adv = document.getElementById("advanced-diffs");
-        const toggle = document.getElementById("toggle-advanced");
-        if (adv.style.display === "none") {
-          adv.style.display = "inline";
-          toggle.innerText = "Hide Advanced Difficulty";
-        } else {
-          adv.style.display = "none";
-          toggle.innerText = "Show Advanced Difficulty";
-        }
-      });
       document.getElementById("easy-btn").addEventListener("click", () => setDifficulty("easy"));
       document.getElementById("medium-btn").addEventListener("click", () => setDifficulty("medium"));
       document.getElementById("hard-btn").addEventListener("click", () => setDifficulty("hard"));
@@ -363,7 +338,6 @@
       beginBtn.innerText = "Loading...";
       try {
         await fetchCSV();
-        setDifficulty("easy");
         beginBtn.disabled = false;
         beginBtn.innerText = "Begin";
       } catch(e) {
@@ -391,7 +365,6 @@
       const data = await resp.text();
       parseCSV(data);
     }
-
     function parseCSV(csvData) {
       const lines = csvData.trim().split(/\r?\n/);
       const headers = parseCSVLine(lines[0]);
@@ -417,14 +390,9 @@
       let inQuotes = false;
       for (let i = 0; i < line.length; i++) {
         const c = line[i];
-        if (c === '"') {
-          inQuotes = !inQuotes;
-        } else if (c === ',' && !inQuotes) {
-          result.push(cur.trim());
-          cur = "";
-        } else {
-          cur += c;
-        }
+        if (c === '"') { inQuotes = !inQuotes; }
+        else if (c === ',' && !inQuotes) { result.push(cur.trim()); cur = ""; }
+        else { cur += c; }
       }
       result.push(cur.trim());
       return result;
@@ -445,9 +413,7 @@
       } else {
         filteredMovies = allMovies.filter(m => m._rank < 0.5);
       }
-      if (filteredMovies.length < 25) {
-        filteredMovies = allMovies.slice();
-      }
+      if (filteredMovies.length < 25) { filteredMovies = allMovies.slice(); }
     }
 
     /*******************************************************
@@ -481,16 +447,14 @@
       rounds = [];
       let pool = shuffle(filteredMovies.slice());
       if (pool.length < 25) {
-        for (let i = 0; i < 5; i++) {
-          rounds.push(pool.slice(i*5, i*5+5));
-        }
+        for (let i = 0; i < 5; i++) { rounds.push(pool.slice(i*5, i*5+5)); }
         return;
       }
       for (let r = 0; r < 5; r++) {
         let chunk = pick5WithSpacing(pool, 10);
         if (chunk.length < 5) { chunk = pool.slice(0,5); }
         chunk.forEach(m => { 
-          const idx = pool.indexOf(m); 
+          const idx = pool.indexOf(m);
           if (idx >= 0) pool.splice(idx,1);
         });
         rounds.push(chunk);
@@ -519,7 +483,6 @@
     function startRound() {
       if (currentRoundIndex >= 5) {
         document.getElementById("game-container").style.display = "none";
-        // For simplicity, we skip bonus round here
         showFinalScreen();
         return;
       }
@@ -673,13 +636,13 @@
       const snd = document.getElementById("joker-sound");
       snd.currentTime = 0; snd.play().catch(()=>{});
       const roundMovies = rounds[currentRoundIndex];
-      const sorted = [...roundMovies].sort((a,b) => b.runtime_minutes - a.runtime_minutes);
+      const sorted = [...roundMovies].sort((a, b) => b.runtime_minutes - a.runtime_minutes);
       const greenShades = ["#003300", "#006600", "#009900", "#00CC00", "#00FF00"];
       const originals = [];
       sorted.forEach((m, idx) => {
         const card = findMovieCard(m["Movie Name"]);
         if (!card) return;
-        originals.push({ card: card, bg: card.style.backgroundColor, bc: card.style.borderColor });
+        originals.push({ card, bg: card.style.backgroundColor, bc: card.style.borderColor });
         card.style.backgroundColor = greenShades[idx];
         card.style.borderColor = greenShades[idx];
       });
@@ -700,7 +663,7 @@
     }
 
     /*******************************************************
-     * BONUS ROUND (Simpler Grid)
+     * BONUS ROUND (Simplified Grid)
      *******************************************************/
     function startBonusRound() {
       document.getElementById("game-container").style.display = "none";
@@ -709,10 +672,10 @@
       bonusTimeLeft = 10;
       let pool = shuffle(filteredMovies.slice());
       if (pool.length < 5) pool = allMovies.slice();
-      bonusMovies = pool.slice(0,5);
+      bonusMovies = pool.slice(0, 5);
       const grid = document.getElementById("bonus-grid");
       grid.innerHTML = "";
-      bonusMovies.forEach((m, i) => {
+      bonusMovies.forEach((m) => {
         const card = document.createElement("div");
         card.classList.add("bonus-card");
         card.innerText = m["Movie Name"];
@@ -777,9 +740,7 @@
           Round ${r.roundIndex}: ${r.correct}/5 correct → +${r.roundScore.toFixed(0)} pts
         </div>`;
       });
-      if (bonusUsed) {
-        breakdownHTML += `<div class="breakdown-row">Bonus Round: +1000 pts</div>`;
-      }
+      if (bonusUsed) { breakdownHTML += `<div class="breakdown-row">Bonus Round: +1000 pts</div>`; }
       breakdownHTML += `<div class="breakdown-row">
         Accuracy: ${accuracy.toFixed(1)}% | Skill: ${skill.toFixed(1)} min
       </div>`;
