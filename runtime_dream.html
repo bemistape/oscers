@@ -5,51 +5,62 @@
   <title>Runtime Dream</title>
   <style>
     html, body {
-      margin: 0; padding: 0; overflow: hidden;
-      width: 100%; height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
       background: #000;
       font-family: sans-serif;
     }
+
+    /* Container that slowly zooms and pans. */
     #zoom-container {
       position: relative;
       width: 100%;
       height: 100%;
-      /* Slow zoom in/out */
       animation: slowZoom 15s ease-in-out infinite alternate;
       overflow: hidden;
     }
-    /* Keyframes for slow zoom */
+    /* Keyframes for more pronounced zoom & subtle side pans. */
     @keyframes slowZoom {
-      0%   { transform: scale(1); }
-      100% { transform: scale(1.1); }
+      0%   { transform: translate(0,0) scale(0.8); }
+      25%  { transform: translate(-3%, 2%) scale(1.2); }
+      50%  { transform: translate(2%, -3%) scale(0.9); }
+      75%  { transform: translate(-1%, -1%) scale(1.3); }
+      100% { transform: translate(0,0) scale(1.0); }
     }
 
+    /* The main container where elements are placed. */
     #container {
       position: absolute;
-      width: 100%; height: 100%;
-      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      top: 0; 
+      left: 0;
     }
 
-    /* Basic styling for movie groups */
+    /* Movie group container (poster + runtime). */
     .movie-group {
       position: absolute;
       display: flex;
       flex-direction: column;
       align-items: center;
       pointer-events: none;
-      /* Start fully visible; we’ll handle fade manually */
       opacity: 1;
-      /* Random color/filter transformations added via JS */
-      transition: filter 2s linear, opacity 1s ease-out;
+      transition: opacity 1s ease-out;
+      /* Random scale assigned in JS. */
     }
 
+    /* Poster styling with a glow. */
     .poster {
       width: 120px;
       border: 3px solid #fff;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
       transition: transform 1.5s ease-in-out;
     }
 
-    /* The runtime button with “time warp” swirl effect */
+    /* Runtime button with a subtle swirl/flicker. */
     .runtime-btn {
       margin-top: -5px;
       background: #ff6347;
@@ -58,50 +69,47 @@
       padding: 5px 10px;
       font-size: 0.8rem;
       border-radius: 5px;
-      position: relative;
-      animation: timeWarp 4s ease-in-out infinite;
       pointer-events: none;
+      animation: timeWarp 4s ease-in-out infinite;
     }
-    /* Simple wave (swirl) effect on runtime text */
     @keyframes timeWarp {
       0%, 100% { transform: rotate(0deg); }
       50% { transform: rotate(3deg) scale(1.05); }
     }
 
-    /* Flicker / glitch effect for runtime text */
+    /* Flicker / glitch effect for runtime text. */
     .runtime-glitch {
       animation: glitchText 1s steps(2, end) 1;
     }
     @keyframes glitchText {
-      0% { opacity: 0; }
-      50% { opacity: 1; }
+      0%   { opacity: 0; }
+      50%  { opacity: 1; }
       100% { opacity: 1; }
     }
 
-    /* Emoji styling */
+    /* Emoji styling. */
     .emoji {
       position: absolute;
       font-size: 2rem;
       pointer-events: none;
       opacity: 1;
       transition: opacity 1s ease-out;
+      /* Also get a faint glow. */
+      text-shadow: 0 0 10px rgba(255,255,255,0.8);
     }
 
-    /* Fragment “shards” from posters on fade-out */
-    .poster-shard {
+    /* Simple styling for trailing “ghosts.” */
+    .poster-ghost {
       position: absolute;
-      width: 40px;
-      height: 40px;
-      overflow: hidden;
-      background-repeat: no-repeat;
       pointer-events: none;
-      opacity: 1;
+      opacity: 0.6;
       transition: opacity 1s ease-out;
+      z-index: -1; /* behind the main poster */
     }
   </style>
 </head>
 <body>
-  <!-- Background MIDI audio -->
+  <!-- Background MIDI audio (autoplay may be blocked by browsers) -->
   <audio src="Casablanca.mid" autoplay loop>
     Your browser does not support the audio element.
   </audio>
@@ -111,7 +119,7 @@
   </div>
 
   <script>
-    // Simple CSV parser (no commas in fields assumed)
+    // Basic CSV parser (assumes no commas within fields).
     function parseCSV(data) {
       const lines = data.trim().split('\n');
       const header = lines.shift().split(',');
@@ -125,7 +133,7 @@
       });
     }
 
-    // Global arrays to track movies, their DOM elements, and basic positions for collisions
+    // Track all movie groups for collision / drifting
     let allGroups = [];
 
     fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vToIbm5XR9mtqOXHYzpF0jIXhGY9WI9m-QQak2KsZFB6CGVnRVRCPL3V6zFVbT6e_jLyGQM1e5XPjcX/pub?gid=534697964&single=true&output=csv')
@@ -134,47 +142,9 @@
         const movies = parseCSV(data);
         const container = document.getElementById('container');
 
-        // Create a random color/filter effect
-        function randomFilter() {
-          const hue = Math.floor(Math.random() * 360);
-          const sat = 50 + Math.floor(Math.random() * 50);
-          const bright = 70 + Math.floor(Math.random() * 30);
-          return `hue-rotate(${hue}deg) saturate(${sat}%) brightness(${bright}%)`;
-        }
-
-        // Create fragmentation shards for fade-out
-        function fragmentPoster(posterElem, x, y) {
-          const shardCount = 6; // arbitrary
-          for(let i=0; i<shardCount; i++){
-            const shard = document.createElement('div');
-            shard.className = 'poster-shard';
-            // Each shard is 40x40, so if the poster is 120 wide, we can cover 3 shards across, 4 down, etc.
-            // We'll place them around the original poster position, with random offsets
-            const offsetX = (Math.random() - 0.5) * 80; // random drift
-            const offsetY = (Math.random() - 0.5) * 80;
-            shard.style.left = (x + offsetX) + 'px';
-            shard.style.top = (y + offsetY) + 'px';
-            shard.style.backgroundImage = `url(${posterElem.src})`;
-            shard.style.backgroundSize = `120px auto`;
-            // Clip a random portion of the poster
-            const bx = Math.random() * 80;
-            const by = Math.random() * 80;
-            shard.style.backgroundPosition = `-${bx}px -${by}px`;
-            container.appendChild(shard);
-
-            // Animate shards away
-            setTimeout(() => {
-              shard.style.opacity = 0;
-            }, 50);
-            setTimeout(() => {
-              if(shard.parentNode) shard.parentNode.removeChild(shard);
-            }, 1050);
-          }
-        }
-
-        // Create chaotic collisions: store positions, do basic overlap checks, shift if needed
+        // Basic collision avoidance
         function avoidCollisions(g) {
-          const threshold = 100; // approximate bounding box size
+          const threshold = 100; 
           allGroups.forEach(other => {
             if(other === g) return;
             const dx = g.x - other.x;
@@ -192,12 +162,10 @@
           });
         }
 
-        // Randomly glitch the runtime text
+        // Occasionally glitch the runtime text
         function glitchRuntime(runtimeElem, originalText) {
-          if(Math.random() < 0.2) { // 20% chance to glitch
+          if(Math.random() < 0.2) { // 20% chance
             runtimeElem.classList.add('runtime-glitch');
-            const oldText = runtimeElem.innerText;
-            // Randomly show weird text
             runtimeElem.innerText = Math.random() < 0.5 ? '∞ min' : (Math.floor(Math.random()*(-10)) + ' min');
             setTimeout(() => {
               runtimeElem.innerText = originalText;
@@ -208,17 +176,39 @@
           }
         }
 
+        // Create trailing ghost behind the poster
+        function createGhost(posterSrc, x, y, scale) {
+          const ghost = document.createElement('img');
+          ghost.src = posterSrc;
+          ghost.className = 'poster-ghost';
+          ghost.style.left = x + 'px';
+          ghost.style.top = y + 'px';
+          ghost.style.width = '120px';
+          ghost.style.border = '3px solid #fff';
+          ghost.style.boxShadow = '0 0 15px rgba(255, 255, 255, 0.7)';
+          ghost.style.transform = 'scale(' + scale + ')';
+          container.appendChild(ghost);
+
+          // Fade out ghost
+          setTimeout(() => {
+            ghost.style.opacity = 0;
+          }, 50);
+          setTimeout(() => {
+            if(ghost.parentNode) ghost.parentNode.removeChild(ghost);
+          }, 1050);
+        }
+
         function createMovieGroup() {
           if(!movies.length) return;
           const movie = movies[Math.floor(Math.random() * movies.length)];
 
-          // group object
+          // Create group object
           let g = {
             el: document.createElement('div'),
             x: Math.random() * (window.innerWidth - 200),
             y: Math.random() * (window.innerHeight - 200),
             vx: (Math.random() - 0.5) * 1.2, // slow drift
-            vy: (Math.random() - 0.5) * 1.2,
+            vy: (Math.random() - 0.5) * 1.2
           };
           g.el.className = 'movie-group';
           container.appendChild(g.el);
@@ -237,34 +227,32 @@
           runtimeElem.innerText = runtimeText;
           g.el.appendChild(runtimeElem);
 
-          // Apply a random filter for the weird color shift
-          g.el.style.filter = randomFilter();
+          // Random overall scale for the group
+          const scale = (0.7 + Math.random() * 0.8).toFixed(2);
+          g.el.style.transform = 'scale(' + scale + ')';
 
           // Position the group
           g.el.style.left = g.x + 'px';
           g.el.style.top = g.y + 'px';
 
-          // Occasionally glitch
+          // Possibly glitch
           glitchRuntime(runtimeElem, runtimeText);
 
-          // Store in global array
+          // Keep track of this group
           allGroups.push(g);
 
           // Fade out after some time
           setTimeout(() => {
-            // Fragmentation
-            const rect = posterElem.getBoundingClientRect();
-            fragmentPoster(posterElem, rect.left, rect.top);
             g.el.style.opacity = 0;
             setTimeout(() => {
               if(g.el.parentNode) g.el.parentNode.removeChild(g.el);
               const idx = allGroups.indexOf(g);
               if(idx !== -1) allGroups.splice(idx, 1);
             }, 1000);
-          }, 12000); // keep it on screen for ~12s
+          }, 12000); // ~12s on screen
         }
 
-        // Create emojis too
+        // Create emojis
         function createEmoji() {
           const emojis = ['🍿','🎬'];
           const e = document.createElement('div');
@@ -286,29 +274,42 @@
           }, 5000);
         }
 
-        // Basic movement loop for collisions & drifting
+        // Movement + collisions + trailing ghost
         function animate() {
           allGroups.forEach(g => {
+            // Create a trailing ghost occasionally
+            if(Math.random() < 0.03) {
+              const rect = g.el.getBoundingClientRect();
+              createGhost(
+                g.el.querySelector('.poster').src,
+                rect.left,
+                rect.top,
+                parseFloat(g.el.style.transform.replace(/[^\d.]/g,'')) || 1
+              );
+            }
+
+            // Update position
             g.x += g.vx;
             g.y += g.vy;
-            // bounce off edges
+            // Bounce off edges
             if(g.x < 0 || g.x > window.innerWidth - 150) g.vx *= -1;
             if(g.y < 0 || g.y > window.innerHeight - 150) g.vy *= -1;
-            // attempt collisions
+
+            // Collisions
             avoidCollisions(g);
 
-            // apply updated position
+            // Apply new position
             g.el.style.left = g.x + 'px';
             g.el.style.top = g.y + 'px';
           });
           requestAnimationFrame(animate);
         }
 
-        // Start intervals
+        // Timers for repeated creation
         setInterval(createMovieGroup, 1000);
         setInterval(createEmoji, 2000);
 
-        // Kick off movement
+        // Kick off animation
         animate();
       })
       .catch(err => console.error(err));
