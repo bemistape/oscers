@@ -57,7 +57,7 @@
       text-align: center;
       margin: 20px;
       transition: background-color 0.3s, color 0.3s;
-      color: inherit;
+      color: inherit; /* Let themes override text color */
     }
 
     /* Navigation, controls, etc. inherit color */
@@ -197,12 +197,11 @@
       100% { top: 100%; opacity: 0; }
     }
 
-    /* Not Affiliated line */
+    /* "Not Affiliated" line updated */
     #notAffiliated {
       margin: 20px 0;
       font-size: 14px;
     }
-    /* Updated text content via direct HTML below. */
 
     /* Banner at the bottom */
     #bottomBanner {
@@ -222,7 +221,7 @@
       border-radius: 8px;
     }
 
-    /* Hash Section */
+    /* Hash Section (Hidden by default, toggled by button) */
     #hashSection {
       margin: 20px auto;
       font-size: 14px;
@@ -231,7 +230,7 @@
       text-align: center;
       word-wrap: break-word;
       color: inherit;
-      display: none; /* hidden by default */
+      display: none;
     }
     #cardHashValue {
       display: block;
@@ -247,8 +246,6 @@
       border: 1px solid #ccc;
       border-radius: 4px;
     }
-
-    /* Make bottom button more legible: distinct background & text color */
     #hashSection button {
       margin-top: 8px;
       background-color: #444;
@@ -262,8 +259,158 @@
       background-color: #666;
     }
 
-    /* Themes (Classic, Modern, Silent, Silver) are the same, omitted for brevity here */
-    /* ... Add your theme classes from the previous code ... */
+    /* Themes: Classic, Modern, Silent, Silver */
+
+    .theme-classic {
+      background-color: #1c1c1c;
+      color: #ffd700;
+    }
+    .theme-classic button {
+      background: linear-gradient(45deg, #ffd700, #e5c100);
+      color: #000;
+      border: 1px solid #999;
+    }
+    .theme-classic #bingo-table {
+      background-color: #222;
+      border-color: #ffd700;
+    }
+    .theme-classic th, .theme-classic td {
+      border-color: #ffd700;
+    }
+    .theme-classic th {
+      background-color: #ffd700;
+      color: #000;
+    }
+    .theme-classic td {
+      background-color: #1c1c1c;
+      color: #fff;
+    }
+    .theme-classic td.free-space {
+      background-color: #ffd700;
+      color: #000;
+    }
+    .theme-classic td.marked {
+      background-color: #ffd700 !important;
+      color: #000 !important;
+      border-color: #ffd700 !important;
+    }
+    #bingoModal.theme-classic #bingoMessage {
+      color: #ffd700;
+      text-shadow: 2px 2px 10px rgba(255,215,0,0.8);
+    }
+
+    .theme-modern {
+      background-color: #2c2c2c;
+      color: #c0c0c0;
+    }
+    .theme-modern button {
+      background: linear-gradient(45deg, #e60000, #c70000);
+      color: #fff;
+      border: 1px solid #900;
+    }
+    .theme-modern #bingo-table {
+      background-color: #3d3d3d;
+      border-color: #c0c0c0;
+    }
+    .theme-modern th, .theme-modern td {
+      border-color: #c0c0c0;
+    }
+    .theme-modern th {
+      background-color: #c0c0c0;
+      color: #000;
+    }
+    .theme-modern td {
+      background-color: #2c2c2c;
+      color: #c0c0c0;
+    }
+    .theme-modern td.free-space {
+      background-color: #c0c0c0;
+      color: #000;
+    }
+    .theme-modern td.marked {
+      background-color: #1a1a1a !important;
+      color: #e60000 !important;
+      border-color: #e60000 !important;
+    }
+    #bingoModal.theme-modern #bingoMessage {
+      color: #e60000;
+      text-shadow: 2px 2px 10px rgba(230,0,0,0.8);
+    }
+
+    .theme-silent {
+      background-color: #f4ecd8;
+      color: #5b4636;
+    }
+    .theme-silent button {
+      background: linear-gradient(45deg, #c49e70, #a57c50);
+      color: #fff;
+      border: 1px solid #654321;
+    }
+    .theme-silent #bingo-table {
+      background-color: #fdf6e3;
+      border-color: #5b4636;
+    }
+    .theme-silent th, .theme-silent td {
+      border-color: #5b4636;
+    }
+    .theme-silent th {
+      background-color: #5b4636;
+      color: #fff;
+    }
+    .theme-silent td {
+      background-color: #fdf6e3;
+      color: #5b4636;
+    }
+    .theme-silent td.free-space {
+      background-color: #5b4636;
+      color: #fff;
+    }
+    .theme-silent td.marked {
+      background-color: #5b4636 !important;
+      color: #fdf6e3 !important;
+      border-color: #5b4636 !important;
+    }
+    #bingoModal.theme-silent #bingoMessage {
+      color: #5b4636;
+      text-shadow: 2px 2px 10px rgba(91,70,54,0.8);
+    }
+
+    .theme-silver {
+      background-color: #fff;
+      color: #333;
+    }
+    .theme-silver button {
+      background: linear-gradient(45deg, #ccc, #aaa);
+      color: #333;
+      border: 1px solid #888;
+    }
+    .theme-silver #bingo-table {
+      background-color: #f7f7f7;
+      border-color: #aaa;
+    }
+    .theme-silver th, .theme-silver td {
+      border-color: #aaa;
+    }
+    .theme-silver th {
+      background-color: #aaa;
+      color: #333;
+    }
+    .theme-silver td {
+      background-color: #fff;
+      color: #333;
+    }
+    .theme-silver td.free-space {
+      background-color: #ccc;
+      color: #333;
+    }
+    .theme-silver td.marked {
+      background-color: #666 !important;
+      color: #ccc !important;
+      border-color: #999 !important;
+    }
+    #bingoModal.theme-silver #bingoMessage {
+      color: #333;
+    }
 
     /* Mobile Optimization */
     @media (max-width: 600px) {
@@ -282,13 +429,13 @@
 </head>
 <body class="theme-classic">
 
-  <!-- Simple Nav Bar at the Top -->
+  <!-- Navigation Bar -->
   <nav id="navBar">
     <a href="index.html">Oscer Bingo</a>
     <a href="runtimes.html">Runtime Challenge</a>
   </nav>
 
-  <!-- Page Header with Logo -->
+  <!-- Page Header with Logo & Title -->
   <div id="pageHeader">
     <div id="logoWrapper">
       <img src="oscar_bingo.png" alt="Oscar Bingo Logo" />
@@ -333,7 +480,7 @@
   <!-- Popcorn Overlay -->
   <div id="popcornOverlay"></div>
 
-  <!-- "Not Affiliated" line updated -->
+  <!-- Updated "Not Affiliated" line -->
   <div id="notAffiliated">Not affiliated with HEI Network or Oscer. Site by @johnwsmith with robot help.</div>
 
   <!-- Banner -->
@@ -344,7 +491,7 @@
   </div>
 
   <!-- Toggle Button to Show/Hide Hash Section -->
-  <button id="toggleHashButton" onclick="toggleHash()">Show/Hide Hash Section</button>
+  <button id="toggleHashButton" onclick="toggleHash()">Show the Hash for this Card</button>
 
   <!-- Hash Section (hidden by default) -->
   <div id="hashSection">
@@ -362,7 +509,7 @@
   <audio id="clickSound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
   <audio id="bingoMp3" src="that_s_a_bingo.mp3" preload="auto"></audio>
 
-  <!-- External Libraries -->
+  <!-- html2canvas + confetti for "Save & Share" -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 
@@ -471,7 +618,6 @@
       currentItems = items;
       buildCard(items);
     }
-
     function buildCard(items) {
       const tbody = document.querySelector("#bingo-table tbody");
       tbody.innerHTML = "";
@@ -502,7 +648,6 @@
         tbody.appendChild(tr);
       }
     }
-
     function loadHashCard() {
       const hashInput = document.getElementById("hashInput").value.trim();
       if (!hashInput) return;
@@ -515,7 +660,6 @@
         alert("Invalid or incomplete hash.");
       }
     }
-
     function checkBingo() {
       const rows = document.querySelectorAll("#bingo-table tbody tr");
       const grid = Array.from(rows, row => Array.from(row.children));
@@ -545,11 +689,9 @@
         triggerBingoCelebration();
       }
     }
-
     function highlightBingo(cells) {
       cells.forEach(td => td.classList.add("bingo"));
     }
-
     function triggerBingoCelebration() {
       const bingoMp3 = document.getElementById("bingoMp3");
       bingoMp3.currentTime = 0;
@@ -564,7 +706,6 @@
         modal.style.display = "none";
       }, 2000);
     }
-
     function triggerPopcornRain() {
       const overlay = document.getElementById("popcornOverlay");
       overlay.innerHTML = "";
@@ -582,6 +723,9 @@
       }, 2500);
     }
 
+    /**************************************************************
+     * 4) Theme Switching
+     **************************************************************/
     function changeTheme(theme) {
       document.body.classList.remove("theme-classic", "theme-modern", "theme-silent", "theme-silver");
       document.getElementById("bingoModal").classList.remove("theme-classic", "theme-modern", "theme-silent", "theme-silver");
@@ -600,6 +744,9 @@
       }
     }
 
+    /**************************************************************
+     * 5) Save & Share
+     **************************************************************/
     function saveAndShare() {
       html2canvas(document.getElementById("bingo-table")).then(canvas => {
         const dataURL = canvas.toDataURL();
@@ -610,6 +757,21 @@
       });
     }
 
+    /**************************************************************
+     * 6) Toggle Hash Section
+     **************************************************************/
+    function toggleHash() {
+      const hashSec = document.getElementById("hashSection");
+      if (hashSec.style.display === "none" || hashSec.style.display === "") {
+        hashSec.style.display = "block";
+      } else {
+        hashSec.style.display = "none";
+      }
+    }
+
+    /**************************************************************
+     * On Page Load
+     **************************************************************/
     document.addEventListener("DOMContentLoaded", () => {
       generateBingoCard();
       changeTheme(document.getElementById("themeSelector").value);
