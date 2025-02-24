@@ -5,6 +5,24 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>OSCER Bingo Card Generator</title>
   <style>
+    /* Navigation Bar */
+    #navBar {
+      background-color: #333;
+      padding: 10px 0;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    #navBar a {
+      color: #fff;
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 18px;
+      text-decoration: none;
+      margin: 0 15px;
+    }
+    #navBar a:hover {
+      text-decoration: underline;
+    }
+
     /* Distinct top bar for the page header */
     #pageHeader {
       background-color: #2e2e2e; /* This bar remains dark gray */
@@ -12,28 +30,19 @@
       text-align: center;
       margin-bottom: 20px;
     }
-
-    /* Container for both PNG and MP4 logos */
+    /* Container for the PNG logo (video removed) */
     #logoWrapper {
       display: block;
       max-width: 80%; /* scale down if needed */
       margin: 0 auto;
     }
-    /* Show both the PNG and MP4, stacked vertically */
     #logoWrapper img {
       width: 100%;
       height: auto;
       display: block;
       margin: 0 auto 20px auto; /* space below the PNG */
     }
-    #logoWrapper video {
-      width: 100%;
-      height: auto;
-      display: block;
-      margin: 0 auto;
-    }
-
-    /* Distinct styling for the page header text (the rest is in the body below) */
+    /* Distinct styling for the page header text */
     #pageHeader h1 {
       font-family: 'Helvetica', Arial, sans-serif;
       font-size: 48px;
@@ -43,22 +52,24 @@
       margin: 0;
       color: #fff; /* White text on dark gray background */
     }
-
+    
     /* Overall body styling */
     body {
       font-family: 'Rockwell', 'Arial', sans-serif;
       text-align: center;
       margin: 20px;
       transition: background-color 0.3s, color 0.3s;
-      color: inherit; /* Let the theme override text color */
+      color: inherit;
     }
-
-    /* The controls, hash section, etc. also inherit the theme color */
+    /* Containers inherit body color */
     #controls, #notAffiliated, #hashSection {
       color: inherit;
     }
-
-    /* Buttons & select elements */
+    
+    /* Controls styling */
+    #controls {
+      margin-bottom: 20px;
+    }
     button {
       padding: 12px 20px;
       font-size: 16px;
@@ -82,7 +93,7 @@
       color: inherit;
       background-color: inherit;
     }
-
+    
     /* Larger, more uniform Bingo table */
     #bingo-table {
       margin: 0 auto; 
@@ -131,7 +142,7 @@
       0% { box-shadow: 0 0 10px rgba(255,215,0,0.5); }
       100% { box-shadow: 0 0 20px rgba(255,215,0,0.9); }
     }
-
+    
     /* Bingo Modal */
     #bingoModal {
       position: fixed;
@@ -167,7 +178,7 @@
       max-width: 200px;
       margin: 0 auto;
     }
-
+    
     /* Popcorn Rain Overlay */
     #popcornOverlay {
       position: fixed;
@@ -188,13 +199,16 @@
       0% { top: -10%; opacity: 1; }
       100% { top: 100%; opacity: 0; }
     }
-
-    /* "Not Affiliated" line */
+    
+    /* "Not affiliated" text updated */
     #notAffiliated {
       margin: 20px 0;
       font-size: 14px;
     }
-
+    #notAffiliated::after {
+      content: "Not affiliated with HEI Network or Oscer. Site by @johnwsmith with robot help.";
+    }
+    
     /* Banner at the bottom */
     #bottomBanner {
       margin: 20px auto;
@@ -212,8 +226,8 @@
       object-fit: cover;
       border-radius: 8px;
     }
-
-    /* Hash UI below the banner */
+    
+    /* Hash Section below the banner */
     #hashSection {
       margin: 20px auto;
       font-size: 14px;
@@ -245,8 +259,8 @@
       border-radius: 4px;
       padding: 4px 8px;
     }
-
-    /* Themes: Classic, Modern, Silent, Silver */
+    
+    /* THEMES */
     .theme-classic {
       background-color: #1c1c1c;
       color: #ffd700;
@@ -283,7 +297,7 @@
       color: #ffd700;
       text-shadow: 2px 2px 10px rgba(255,215,0,0.8);
     }
-
+    
     .theme-modern {
       background-color: #2c2c2c;
       color: #c0c0c0;
@@ -316,7 +330,7 @@
       color: #e60000;
       text-shadow: 2px 2px 10px rgba(230,0,0,0.8);
     }
-
+    
     .theme-silent {
       background-color: #f4ecd8;
       color: #5b4636;
@@ -349,7 +363,7 @@
       color: #5b4636;
       text-shadow: 2px 2px 10px rgba(91,70,54,0.8);
     }
-
+    
     .theme-silver {
       background-color: #fff;
       color: #333;
@@ -381,21 +395,38 @@
     #bingoModal.theme-silver #bingoMessage {
       color: #333;
     }
+    
+    /* Mobile Optimization */
+    @media (max-width: 600px) {
+      th, td {
+        font-size: 14px;
+        padding: 6px;
+        min-width: 60px;
+        min-height: 50px;
+      }
+      button, select {
+        font-size: 14px;
+        padding: 10px;
+      }
+    }
   </style>
 </head>
 <body class="theme-classic">
+  <!-- Navigation Bar -->
+  <nav id="navBar">
+    <a href="index.html">Oscer Bingo</a>
+    <a href="runtimes.html">Runtime Challenge</a>
+  </nav>
 
-  <!-- PAGE HEADER with BOTH PNG and MP4 LOGO -->
+  <!-- Page Header with Logo -->
   <div id="pageHeader">
     <div id="logoWrapper">
-      <!-- PNG Logo -->
       <img src="oscar_bingo.png" alt="Oscar Bingo Logo" />
-
-    
     </div>
+    <h1>OSCER Bingo Card Generator</h1>
   </div>
 
-  <!-- Bingo Controls -->
+  <!-- Controls -->
   <div id="controls">
     <button onclick="generateBingoCard()">Generate New Card</button>
     <button onclick="saveAndShare()">Save & Share</button>
@@ -432,10 +463,10 @@
   <!-- Popcorn Overlay -->
   <div id="popcornOverlay"></div>
 
-  <!-- "Not affiliated..." line -->
-  <div id="notAffiliated">Not affiliated with HEI Network, just a fan.</div>
+  <!-- "Not affiliated" line -->
+  <div id="notAffiliated">Not affiliated with HEI Network or Oscer. Site by @johnwsmith with robot help.</div>
 
-  <!-- Banner at the bottom -->
+  <!-- Banner -->
   <div id="bottomBanner">
     <a href="https://www.heinetwork.tv/tickets/" target="_blank">
       <img src="Oscar-Special-12-2025-Promo-website22SQUARE-2048x878.png" alt="Oscar Special Banner" />
@@ -453,12 +484,12 @@
     <button onclick="loadHashCard()">Load Hash</button>
   </div>
 
-  <!-- Audio for Bingo -->
+  <!-- Audio Elements -->
   <audio id="bingoSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
   <audio id="clickSound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
   <audio id="bingoMp3" src="that_s_a_bingo.mp3" preload="auto"></audio>
 
-  <!-- html2canvas + confetti for "Save & Share" -->
+  <!-- External Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 
@@ -561,7 +592,6 @@
       currentItems = items;
       buildCard(items);
     }
-
     function buildCard(items) {
       const tbody = document.querySelector("#bingo-table tbody");
       tbody.innerHTML = "";
@@ -592,7 +622,6 @@
         tbody.appendChild(tr);
       }
     }
-
     function loadHashCard() {
       const hashInput = document.getElementById("hashInput").value.trim();
       if (!hashInput) return;
@@ -605,13 +634,10 @@
         alert("Invalid or incomplete hash.");
       }
     }
-
     function checkBingo() {
       const rows = document.querySelectorAll("#bingo-table tbody tr");
       const grid = Array.from(rows, row => Array.from(row.children));
       let bingoFound = false;
-
-      // Check rows & columns
       for (let i = 0; i < 5; i++) {
         if (grid[i].every(td => td.classList.contains("marked"))) {
           highlightBingo(grid[i]);
@@ -623,7 +649,6 @@
           bingoFound = true;
         }
       }
-      // Check diagonals
       const diag1 = [0,1,2,3,4].map(i => grid[i][i]);
       const diag2 = [0,1,2,3,4].map(i => grid[i][4 - i]);
       if (diag1.every(td => td.classList.contains("marked"))) {
@@ -634,33 +659,25 @@
         highlightBingo(diag2);
         bingoFound = true;
       }
-
       if (bingoFound) {
         triggerBingoCelebration();
       }
     }
-
     function highlightBingo(cells) {
       cells.forEach(td => td.classList.add("bingo"));
     }
-
     function triggerBingoCelebration() {
       const bingoMp3 = document.getElementById("bingoMp3");
       bingoMp3.currentTime = 0;
       bingoMp3.play();
-
       const fallback = document.getElementById("bingoSound");
       fallback.currentTime = 0;
       fallback.play();
-
       const modal = document.getElementById("bingoModal");
       modal.style.display = "flex";
       triggerPopcornRain();
-      setTimeout(() => {
-        modal.style.display = "none";
-      }, 2000);
+      setTimeout(() => { modal.style.display = "none"; }, 2000);
     }
-
     function triggerPopcornRain() {
       const overlay = document.getElementById("popcornOverlay");
       overlay.innerHTML = "";
@@ -673,15 +690,11 @@
         span.style.animationDelay = Math.random() * 1 + "s";
         overlay.appendChild(span);
       }
-      setTimeout(() => {
-        overlay.innerHTML = "";
-      }, 2500);
+      setTimeout(() => { overlay.innerHTML = ""; }, 2500);
     }
-
     function changeTheme(theme) {
       document.body.classList.remove("theme-classic", "theme-modern", "theme-silent", "theme-silver");
       document.getElementById("bingoModal").classList.remove("theme-classic", "theme-modern", "theme-silent", "theme-silver");
-
       if (theme === "classic") {
         document.body.classList.add("theme-classic");
         document.getElementById("bingoModal").classList.add("theme-classic");
@@ -696,7 +709,6 @@
         document.getElementById("bingoModal").classList.add("theme-silver");
       }
     }
-
     function saveAndShare() {
       html2canvas(document.getElementById("bingo-table")).then(canvas => {
         const dataURL = canvas.toDataURL();
@@ -706,7 +718,6 @@
         link.click();
       });
     }
-
     document.addEventListener("DOMContentLoaded", () => {
       generateBingoCard();
       changeTheme(document.getElementById("themeSelector").value);
