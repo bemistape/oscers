@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Runtime Challenge - v5.0</title>
+  <title>Runtime Challenge - v5.1</title>
   <style>
     /* ---------- GLOBAL / LAYOUT ---------- */
     html, body {
@@ -413,13 +413,6 @@
       font-family: Arial, sans-serif;
       font-size: 24px;
       margin-bottom: 20px;
-      quotes: "“" "”";
-    }
-    #reaction-overlay p:before {
-      content: open-quote;
-    }
-    #reaction-overlay p:after {
-      content: close-quote;
     }
     #reaction-overlay button {
       font-size: 18px;
@@ -509,7 +502,7 @@
       <p>You have a limited time each round and can submit early for a time bonus.</p>
       <p>Use your <strong>Joker</strong> once at the start of the round.</p>
     </div>
-    <!-- New input for player's name -->
+    <!-- Input for player's name -->
     <input id="playerNameInput" type="text" placeholder="Enter 6-letter name" maxlength="6">
     <div class="difficulty-box">
       <label style="font-size:16px; margin-right:10px;">Difficulty:</label>
@@ -518,7 +511,7 @@
       <button class="diff-btn" data-difficulty="hard" id="hard-btn">Hard</button>
     </div>
     <button id="begin-btn" class="game-btn" disabled>Begin</button>
-    <div class="version-number">v4.8</div>
+    <div class="version-number">v5.1</div>
   </div>
   
   <!-- ROUND RECAP OVERLAY -->
@@ -579,7 +572,7 @@
     /*******************************************************
      * GLOBAL STATE & CONFIG
      *******************************************************/
-    // Replace with your deployed Google Apps Script URL for score submission.
+    // Your deployed Google Apps Script URL for score submission:
     const SCORE_URL = "https://script.google.com/macros/s/AKfycbzXDnGCSUQwLBGMmgWCYorc-jY33FaRynqWC7-Wctjs58em5bSA4p5KSYD9qH5X6LI/exec";
     
     const csvUrl = "runtime_source_02222025.csv";
@@ -625,7 +618,7 @@
     let bonusTimeLeft = 10;
     let bonusStarted = false;
     
-    // Global variable for player's name
+    // Player's name
     let playerName = "";
     
     document.addEventListener("DOMContentLoaded", async () => {
@@ -636,7 +629,6 @@
       
       const nameInput = document.getElementById("playerNameInput");
       nameInput.addEventListener("input", function() {
-        // Enable Begin button if a 6-letter name is entered (adjust validation as needed)
         document.getElementById("begin-btn").disabled = (nameInput.value.trim().length !== 6);
       });
       
@@ -729,7 +721,7 @@
       const colClose = headers.indexOf("close");
       const colUnimp = headers.indexOf("unimpressed");
       const colBad = headers.indexOf("bad");
-      for(let i=1; i<rows.length; i++){
+      for(let i = 1; i < rows.length; i++){
         const r = rows[i];
         if(r.length < 4) continue;
         if(r[colPerfect]) perfectReactions.push(r[colPerfect]);
@@ -743,7 +735,7 @@
       let currentLine = [];
       let currentCell = "";
       let inQuotes = false;
-      for(let i=0; i<csv.length; i++){
+      for(let i = 0; i < csv.length; i++){
         const c = csv[i];
         if(c === '"'){
           if(inQuotes && csv[i+1] === '"'){
@@ -785,7 +777,6 @@
       document.getElementById(`${diff}-btn`).classList.add("active");
     }
     function onBeginGame() {
-      // Capture player's name from input
       const nameInput = document.getElementById("playerNameInput");
       playerName = nameInput.value.trim();
       if(playerName.length !== 6){
@@ -887,7 +878,6 @@
       document.getElementById("joker-btn").style.display = jokerUsed ? "none" : "inline-block";
       
       const roundMovies = rounds[currentRoundIndex];
-      // Shuffle movies for random order
       const displayMovies = shuffle([...roundMovies]);
       displayMovies.forEach(m => {
         const card = document.createElement("div");
@@ -895,7 +885,6 @@
         card.setAttribute("data-correct", m.runtime);
         card.movie = m;
         let posterHTML = m.poster ? `<img class="movie-poster" src="${m.poster}" alt="${m.movie_name} poster">` : "";
-        // Omit title text on round display
         card.innerHTML = posterHTML;
         card.addEventListener("click", function(e){
           if(selectedRuntimeCard && !card.querySelector(".runtime-card")){
@@ -911,7 +900,6 @@
         moviesContainer.appendChild(card);
       });
       
-      // Render runtime cards with tap-to-select fallback
       roundMovies.forEach((m, i) => {
         const rc = document.createElement("div");
         rc.classList.add("runtime-card");
@@ -927,7 +915,6 @@
         rc.addEventListener("dragend", e => {
           rc.classList.remove("dragging");
         });
-        // Tap-to-select for mobile
         rc.addEventListener("click", function(e){
           if(selectedRuntimeCard === rc){
             rc.classList.remove("selected");
@@ -1058,7 +1045,6 @@
         roundScore: roundScore
       });
       
-      // Determine reaction based on roundCorrect
       let reactionText = "";
       if(roundCorrect === 5){
         reactionText = randomFrom(perfectReactions);
@@ -1123,7 +1109,7 @@
       snd.play().catch(()=>{});
       const roundMovies = rounds[currentRoundIndex];
       const sorted = [...roundMovies].sort((a, b) => b.runtime - a.runtime);
-      const greenShades = ["#003300", "#006600", "#009900", "#00CC00", "#00FF00"];
+      const greenShades = ["#003300","#006600","#009900","#00CC00","#00FF00"];
       const originals = [];
       sorted.forEach((m, idx) => {
         const card = findMovieCard(m.movie_name);
@@ -1248,8 +1234,8 @@
       const overallBox = document.getElementById("final-overall-box");
       overallBox.innerHTML = `Accuracy: ${accuracy.toFixed(1)}% | Skill: ${skill.toFixed(1)} min`;
       
-      // Automatically submit the score via Google Apps Script
-      submitScore(playerName, new Date().toISOString(), totalScore);
+      // Submit score automatically with playerName, current timestamp, final score, and difficulty
+      submitScore(playerName, new Date().toISOString(), totalScore, difficulty);
       
       const finalCardsContainer = document.getElementById("final-cards-container");
       finalCardsContainer.innerHTML = "";
@@ -1298,8 +1284,8 @@
     }
     
     // Submit score to Google Sheets via Google Apps Script
-    function submitScore(name, timestamp, score) {
-      const data = { name: name, timestamp: timestamp, score: score };
+    function submitScore(name, timestamp, score, difficulty) {
+      const data = { name: name, timestamp: timestamp, score: score, difficulty: difficulty };
       fetch(SCORE_URL, {
         method: "POST",
         headers: {
