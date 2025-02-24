@@ -13,7 +13,6 @@
       background: #000;
       font-family: sans-serif;
     }
-
     /* Container that slowly zooms and pans. */
     #zoom-container {
       position: relative;
@@ -22,7 +21,7 @@
       animation: slowZoom 15s ease-in-out infinite alternate;
       overflow: hidden;
     }
-    /* Keyframes for more pronounced zoom & subtle side pans. */
+    /* Keyframes for pronounced zoom & subtle side pans. */
     @keyframes slowZoom {
       0%   { transform: translate(0,0) scale(0.8); }
       25%  { transform: translate(-3%, 2%) scale(1.2); }
@@ -30,7 +29,6 @@
       75%  { transform: translate(-1%, -1%) scale(1.3); }
       100% { transform: translate(0,0) scale(1.0); }
     }
-
     /* The main container where elements are placed. */
     #container {
       position: absolute;
@@ -39,7 +37,6 @@
       top: 0; 
       left: 0;
     }
-
     /* Movie group container (poster + runtime). */
     .movie-group {
       position: absolute;
@@ -49,9 +46,7 @@
       pointer-events: none;
       opacity: 1;
       transition: opacity 1s ease-out;
-      /* Random scale assigned in JS. */
     }
-
     /* Poster styling with a glow. */
     .poster {
       width: 120px;
@@ -59,8 +54,7 @@
       box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
       transition: transform 1.5s ease-in-out;
     }
-
-    /* Runtime button with a subtle swirl/flicker. */
+    /* Runtime button with a subtle swirl. */
     .runtime-btn {
       margin-top: -5px;
       background: #ff6347;
@@ -76,7 +70,6 @@
       0%, 100% { transform: rotate(0deg); }
       50% { transform: rotate(3deg) scale(1.05); }
     }
-
     /* Flicker / glitch effect for runtime text. */
     .runtime-glitch {
       animation: glitchText 1s steps(2, end) 1;
@@ -86,7 +79,6 @@
       50%  { opacity: 1; }
       100% { opacity: 1; }
     }
-
     /* Emoji styling. */
     .emoji {
       position: absolute;
@@ -94,30 +86,26 @@
       pointer-events: none;
       opacity: 1;
       transition: opacity 1s ease-out;
-      /* Also get a faint glow. */
       text-shadow: 0 0 10px rgba(255,255,255,0.8);
     }
-
     /* Simple styling for trailing “ghosts.” */
     .poster-ghost {
       position: absolute;
       pointer-events: none;
       opacity: 0.6;
       transition: opacity 1s ease-out;
-      z-index: -1; /* behind the main poster */
+      z-index: -1;
     }
   </style>
 </head>
 <body>
-  <!-- Background MIDI audio (autoplay may be blocked by browsers) -->
-  <audio src="Casablanca.mid" autoplay loop>
+  <!-- Background MIDI audio -->
+  <audio id="bg-audio" src="Casablanca.mid" loop>
     Your browser does not support the audio element.
   </audio>
-
   <div id="zoom-container">
     <div id="container"></div>
   </div>
-
   <script>
     // Basic CSV parser (assumes no commas within fields).
     function parseCSV(data) {
@@ -132,9 +120,19 @@
         return obj;
       });
     }
-
-    // Track all movie groups for collision / drifting
+    // Track all movie groups for movement and collision.
     let allGroups = [];
+
+    // Try to resume audio on interaction.
+    const bgAudio = document.getElementById('bg-audio');
+    function tryPlayAudio() {
+      if(bgAudio.paused) {
+        bgAudio.play().catch(e => {
+          // Some browsers require a user interaction.
+          console.log("Audio play failed:", e);
+        });
+      }
+    }
 
     fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vToIbm5XR9mtqOXHYzpF0jIXhGY9WI9m-QQak2KsZFB6CGVnRVRCPL3V6zFVbT6e_jLyGQM1e5XPjcX/pub?gid=534697964&single=true&output=csv')
       .then(resp => resp.text())
@@ -142,16 +140,15 @@
         const movies = parseCSV(data);
         const container = document.getElementById('container');
 
-        // Basic collision avoidance
+        // Basic collision avoidance.
         function avoidCollisions(g) {
-          const threshold = 100; 
+          const threshold = 100;
           allGroups.forEach(other => {
             if(other === g) return;
             const dx = g.x - other.x;
             const dy = g.y - other.y;
             const dist = Math.sqrt(dx*dx + dy*dy);
             if(dist < threshold) {
-              // shift them apart
               const angle = Math.atan2(dy, dx);
               const push = (threshold - dist) / 2;
               g.x += Math.cos(angle) * push;
@@ -162,9 +159,9 @@
           });
         }
 
-        // Occasionally glitch the runtime text
+        // Occasionally glitch the runtime text.
         function glitchRuntime(runtimeElem, originalText) {
-          if(Math.random() < 0.2) { // 20% chance
+          if(Math.random() < 0.2) {
             runtimeElem.classList.add('runtime-glitch');
             runtimeElem.innerText = Math.random() < 0.5 ? '∞ min' : (Math.floor(Math.random()*(-10)) + ' min');
             setTimeout(() => {
@@ -176,7 +173,7 @@
           }
         }
 
-        // Create trailing ghost behind the poster
+        // Create trailing ghost for poster.
         function createGhost(posterSrc, x, y, scale) {
           const ghost = document.createElement('img');
           ghost.src = posterSrc;
@@ -188,8 +185,6 @@
           ghost.style.boxShadow = '0 0 15px rgba(255, 255, 255, 0.7)';
           ghost.style.transform = 'scale(' + scale + ')';
           container.appendChild(ghost);
-
-          // Fade out ghost
           setTimeout(() => {
             ghost.style.opacity = 0;
           }, 50);
@@ -201,47 +196,31 @@
         function createMovieGroup() {
           if(!movies.length) return;
           const movie = movies[Math.floor(Math.random() * movies.length)];
-
-          // Create group object
           let g = {
             el: document.createElement('div'),
             x: Math.random() * (window.innerWidth - 200),
             y: Math.random() * (window.innerHeight - 200),
-            vx: (Math.random() - 0.5) * 1.2, // slow drift
+            vx: (Math.random() - 0.5) * 1.2,
             vy: (Math.random() - 0.5) * 1.2
           };
           g.el.className = 'movie-group';
           container.appendChild(g.el);
-
-          // Poster
           const posterElem = document.createElement('img');
           posterElem.src = movie.poster;
           posterElem.alt = movie.title;
           posterElem.className = 'poster';
           g.el.appendChild(posterElem);
-
-          // Runtime
           const runtimeElem = document.createElement('button');
           runtimeElem.className = 'runtime-btn';
           const runtimeText = movie.runtime + ' min';
           runtimeElem.innerText = runtimeText;
           g.el.appendChild(runtimeElem);
-
-          // Random overall scale for the group
           const scale = (0.7 + Math.random() * 0.8).toFixed(2);
           g.el.style.transform = 'scale(' + scale + ')';
-
-          // Position the group
           g.el.style.left = g.x + 'px';
           g.el.style.top = g.y + 'px';
-
-          // Possibly glitch
           glitchRuntime(runtimeElem, runtimeText);
-
-          // Keep track of this group
           allGroups.push(g);
-
-          // Fade out after some time
           setTimeout(() => {
             g.el.style.opacity = 0;
             setTimeout(() => {
@@ -249,23 +228,19 @@
               const idx = allGroups.indexOf(g);
               if(idx !== -1) allGroups.splice(idx, 1);
             }, 1000);
-          }, 12000); // ~12s on screen
+          }, 12000);
         }
 
-        // Create emojis
         function createEmoji() {
           const emojis = ['🍿','🎬'];
           const e = document.createElement('div');
           e.className = 'emoji';
           e.innerText = emojis[Math.floor(Math.random()*emojis.length)];
           container.appendChild(e);
-
           const ex = Math.random() * (window.innerWidth - 50);
           const ey = Math.random() * (window.innerHeight - 50);
           e.style.left = ex + 'px';
           e.style.top = ey + 'px';
-
-          // Fade after a while
           setTimeout(() => {
             e.style.opacity = 0;
           }, 4000);
@@ -274,10 +249,9 @@
           }, 5000);
         }
 
-        // Movement + collisions + trailing ghost
+        // Movement + collisions + trailing ghost.
         function animate() {
           allGroups.forEach(g => {
-            // Create a trailing ghost occasionally
             if(Math.random() < 0.03) {
               const rect = g.el.getBoundingClientRect();
               createGhost(
@@ -287,32 +261,37 @@
                 parseFloat(g.el.style.transform.replace(/[^\d.]/g,'')) || 1
               );
             }
-
-            // Update position
             g.x += g.vx;
             g.y += g.vy;
-            // Bounce off edges
             if(g.x < 0 || g.x > window.innerWidth - 150) g.vx *= -1;
             if(g.y < 0 || g.y > window.innerHeight - 150) g.vy *= -1;
-
-            // Collisions
             avoidCollisions(g);
-
-            // Apply new position
             g.el.style.left = g.x + 'px';
             g.el.style.top = g.y + 'px';
           });
           requestAnimationFrame(animate);
         }
-
-        // Timers for repeated creation
         setInterval(createMovieGroup, 1000);
         setInterval(createEmoji, 2000);
-
-        // Kick off animation
         animate();
       })
       .catch(err => console.error(err));
+
+    // On click, push movie groups away and trigger audio.
+    document.addEventListener('click', function(e) {
+      tryPlayAudio();
+      const clickX = e.clientX;
+      const clickY = e.clientY;
+      allGroups.forEach(g => {
+        const dx = g.x - clickX;
+        const dy = g.y - clickY;
+        const distance = Math.sqrt(dx*dx + dy*dy) || 1;
+        // Push strength inversely proportional to distance.
+        const strength = 20;
+        g.vx += (dx/distance) * strength;
+        g.vy += (dy/distance) * strength;
+      });
+    });
   </script>
 </body>
 </html>
