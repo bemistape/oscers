@@ -5,67 +5,113 @@
   <title>Runtime Dream</title>
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
+      margin: 0; padding: 0; overflow: hidden;
+      width: 100%; height: 100%;
       background: #000;
-      width: 100%;
-      height: 100%;
       font-family: sans-serif;
     }
-    #container {
+    #zoom-container {
       position: relative;
       width: 100%;
       height: 100%;
+      /* Slow zoom in/out */
+      animation: slowZoom 15s ease-in-out infinite alternate;
+      overflow: hidden;
     }
-    /* Common styling for posters, runtime buttons, and emojis */
-    .movie-group, .emoji {
+    /* Keyframes for slow zoom */
+    @keyframes slowZoom {
+      0%   { transform: scale(1); }
+      100% { transform: scale(1.1); }
+    }
+
+    #container {
       position: absolute;
+      width: 100%; height: 100%;
+      top: 0; left: 0;
+    }
+
+    /* Basic styling for movie groups */
+    .movie-group {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       pointer-events: none;
+      /* Start fully visible; we’ll handle fade manually */
       opacity: 1;
+      /* Random color/filter transformations added via JS */
+      transition: filter 2s linear, opacity 1s ease-out;
     }
-    /* Poster image */
+
     .poster {
-      display: block;
-      width: 150px;
+      width: 120px;
       border: 3px solid #fff;
+      transition: transform 1.5s ease-in-out;
     }
-    /* Runtime button styling */
+
+    /* The runtime button with “time warp” swirl effect */
     .runtime-btn {
+      margin-top: -5px;
       background: #ff6347;
       color: #fff;
       border: none;
       padding: 5px 10px;
-      font-size: 0.9em;
+      font-size: 0.8rem;
       border-radius: 5px;
-      position: absolute;
-      top: calc(100% - 30px);
-      left: 0;
-      width: 100%;
+      position: relative;
+      animation: timeWarp 4s ease-in-out infinite;
+      pointer-events: none;
     }
+    /* Simple wave (swirl) effect on runtime text */
+    @keyframes timeWarp {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(3deg) scale(1.05); }
+    }
+
+    /* Flicker / glitch effect for runtime text */
+    .runtime-glitch {
+      animation: glitchText 1s steps(2, end) 1;
+    }
+    @keyframes glitchText {
+      0% { opacity: 0; }
+      50% { opacity: 1; }
+      100% { opacity: 1; }
+    }
+
     /* Emoji styling */
     .emoji {
+      position: absolute;
       font-size: 2rem;
+      pointer-events: none;
+      opacity: 1;
+      transition: opacity 1s ease-out;
     }
-    /* Cloud-like floating animation (applied continuously) */
-    @keyframes floatCloud {
-      0% { transform: translate(0,0); }
-      50% { transform: translate(10px, -10px); }
-      100% { transform: translate(0,0); }
-    }
-    .float {
-      animation: floatCloud 10s infinite ease-in-out;
-    }
-    /* Streak effect for moving elements */
-    .streak {
-      filter: blur(3px);
+
+    /* Fragment “shards” from posters on fade-out */
+    .poster-shard {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      overflow: hidden;
+      background-repeat: no-repeat;
+      pointer-events: none;
+      opacity: 1;
+      transition: opacity 1s ease-out;
     }
   </style>
 </head>
 <body>
-  <div id="container"></div>
+  <!-- Background MIDI audio -->
+  <audio src="Casablanca.mid" autoplay loop>
+    Your browser does not support the audio element.
+  </audio>
+
+  <div id="zoom-container">
+    <div id="container"></div>
+  </div>
+
   <script>
-    // Basic CSV parser (assumes no commas inside fields)
+    // Simple CSV parser (no commas in fields assumed)
     function parseCSV(data) {
       const lines = data.trim().split('\n');
       const header = lines.shift().split(',');
@@ -79,130 +125,193 @@
       });
     }
 
+    // Global arrays to track movies, their DOM elements, and basic positions for collisions
+    let allGroups = [];
+
     fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vToIbm5XR9mtqOXHYzpF0jIXhGY9WI9m-QQak2KsZFB6CGVnRVRCPL3V6zFVbT6e_jLyGQM1e5XPjcX/pub?gid=534697964&single=true&output=csv')
-      .then(response => response.text())
+      .then(resp => resp.text())
       .then(data => {
         const movies = parseCSV(data);
         const container = document.getElementById('container');
 
+        // Create a random color/filter effect
+        function randomFilter() {
+          const hue = Math.floor(Math.random() * 360);
+          const sat = 50 + Math.floor(Math.random() * 50);
+          const bright = 70 + Math.floor(Math.random() * 30);
+          return `hue-rotate(${hue}deg) saturate(${sat}%) brightness(${bright}%)`;
+        }
+
+        // Create fragmentation shards for fade-out
+        function fragmentPoster(posterElem, x, y) {
+          const shardCount = 6; // arbitrary
+          for(let i=0; i<shardCount; i++){
+            const shard = document.createElement('div');
+            shard.className = 'poster-shard';
+            // Each shard is 40x40, so if the poster is 120 wide, we can cover 3 shards across, 4 down, etc.
+            // We'll place them around the original poster position, with random offsets
+            const offsetX = (Math.random() - 0.5) * 80; // random drift
+            const offsetY = (Math.random() - 0.5) * 80;
+            shard.style.left = (x + offsetX) + 'px';
+            shard.style.top = (y + offsetY) + 'px';
+            shard.style.backgroundImage = `url(${posterElem.src})`;
+            shard.style.backgroundSize = `120px auto`;
+            // Clip a random portion of the poster
+            const bx = Math.random() * 80;
+            const by = Math.random() * 80;
+            shard.style.backgroundPosition = `-${bx}px -${by}px`;
+            container.appendChild(shard);
+
+            // Animate shards away
+            setTimeout(() => {
+              shard.style.opacity = 0;
+            }, 50);
+            setTimeout(() => {
+              if(shard.parentNode) shard.parentNode.removeChild(shard);
+            }, 1050);
+          }
+        }
+
+        // Create chaotic collisions: store positions, do basic overlap checks, shift if needed
+        function avoidCollisions(g) {
+          const threshold = 100; // approximate bounding box size
+          allGroups.forEach(other => {
+            if(other === g) return;
+            const dx = g.x - other.x;
+            const dy = g.y - other.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if(dist < threshold) {
+              // shift them apart
+              const angle = Math.atan2(dy, dx);
+              const push = (threshold - dist) / 2;
+              g.x += Math.cos(angle) * push;
+              g.y += Math.sin(angle) * push;
+              other.x -= Math.cos(angle) * push;
+              other.y -= Math.sin(angle) * push;
+            }
+          });
+        }
+
+        // Randomly glitch the runtime text
+        function glitchRuntime(runtimeElem, originalText) {
+          if(Math.random() < 0.2) { // 20% chance to glitch
+            runtimeElem.classList.add('runtime-glitch');
+            const oldText = runtimeElem.innerText;
+            // Randomly show weird text
+            runtimeElem.innerText = Math.random() < 0.5 ? '∞ min' : (Math.floor(Math.random()*(-10)) + ' min');
+            setTimeout(() => {
+              runtimeElem.innerText = originalText;
+            }, 500);
+            setTimeout(() => {
+              runtimeElem.classList.remove('runtime-glitch');
+            }, 1000);
+          }
+        }
+
         function createMovieGroup() {
-          if (!movies.length) return;
+          if(!movies.length) return;
           const movie = movies[Math.floor(Math.random() * movies.length)];
 
-          // Random starting positions for poster and runtime button
-          const posterX = Math.random() * 80 + 10;
-          const posterY = Math.random() * 80 + 10;
-          const runtimeX = Math.random() * 80 + 10;
-          const runtimeY = Math.random() * 80 + 10;
+          // group object
+          let g = {
+            el: document.createElement('div'),
+            x: Math.random() * (window.innerWidth - 200),
+            y: Math.random() * (window.innerHeight - 200),
+            vx: (Math.random() - 0.5) * 1.2, // slow drift
+            vy: (Math.random() - 0.5) * 1.2,
+          };
+          g.el.className = 'movie-group';
+          container.appendChild(g.el);
 
-          // Create a group container for the movie elements
-          const group = document.createElement('div');
-          group.className = 'movie-group float streak';
-          // Starting position (we'll use the poster's position initially)
-          group.style.left = posterX + '%';
-          group.style.top = posterY + '%';
-          // Each group gets a random final scale between 0.7 and 1.3
-          const finalScale = (0.7 + Math.random() * 0.6).toFixed(2);
-
-          // Create poster element
+          // Poster
           const posterElem = document.createElement('img');
           posterElem.src = movie.poster;
           posterElem.alt = movie.title;
           posterElem.className = 'poster';
-          // Position inside group: we'll position runtime separately
-          group.appendChild(posterElem);
+          g.el.appendChild(posterElem);
 
-          // Create runtime button element
+          // Runtime
           const runtimeElem = document.createElement('button');
           runtimeElem.className = 'runtime-btn';
-          runtimeElem.innerText = movie.runtime + ' min';
-          // Position runtime element below the poster
-          group.appendChild(runtimeElem);
+          const runtimeText = movie.runtime + ' min';
+          runtimeElem.innerText = runtimeText;
+          g.el.appendChild(runtimeElem);
 
-          // Append group to container
-          container.appendChild(group);
+          // Apply a random filter for the weird color shift
+          g.el.style.filter = randomFilter();
 
-          // Determine midpoint for the group by averaging poster and runtime start positions
-          const joinX = (posterX + runtimeX) / 2;
-          const joinY = (posterY + runtimeY) / 2;
+          // Position the group
+          g.el.style.left = g.x + 'px';
+          g.el.style.top = g.y + 'px';
 
-          // Animation steps:
-          // 1. After 1s, animate group to move from initial (posterX, posterY) to join (joinX, joinY) over 2s.
-          // 2. Then over 3s, slowly drift to a new random nearby offset.
-          // 3. Finally, fade out over 1.5s and remove.
+          // Occasionally glitch
+          glitchRuntime(runtimeElem, runtimeText);
+
+          // Store in global array
+          allGroups.push(g);
+
+          // Fade out after some time
           setTimeout(() => {
-            group.style.transition = 'left 2s ease-out, top 2s ease-out';
-            group.style.left = joinX + '%';
-            group.style.top = joinY + '%';
-          }, 1000);
-
-          setTimeout(() => {
-            // Determine a slight drift offset (up to ±5%)
-            const driftX = joinX + (Math.random() * 10 - 5);
-            const driftY = joinY + (Math.random() * 10 - 5);
-            group.style.transition = 'left 3s linear, top 3s linear';
-            group.style.left = driftX + '%';
-            group.style.top = driftY + '%';
-          }, 3000);
-
-          // At the same time, remove the streak (blur) effect and apply the final scale.
-          setTimeout(() => {
-            group.classList.remove('streak');
-            group.style.transition = 'transform 1s ease-out';
-            group.style.transform = 'scale(' + finalScale + ')';
-          }, 3000);
-
-          // Fade out after slow crawl finishes
-          setTimeout(() => {
-            group.style.transition = 'opacity 1.5s ease-out';
-            group.style.opacity = 0;
-          }, 6000);
-
-          // Finally, remove the element from the DOM
-          setTimeout(() => {
-            if (group.parentNode === container) container.removeChild(group);
-          }, 7500);
+            // Fragmentation
+            const rect = posterElem.getBoundingClientRect();
+            fragmentPoster(posterElem, rect.left, rect.top);
+            g.el.style.opacity = 0;
+            setTimeout(() => {
+              if(g.el.parentNode) g.el.parentNode.removeChild(g.el);
+              const idx = allGroups.indexOf(g);
+              if(idx !== -1) allGroups.splice(idx, 1);
+            }, 1000);
+          }, 12000); // keep it on screen for ~12s
         }
 
-        // Create emoji elements
+        // Create emojis too
         function createEmoji() {
-          const emojis = ['🍿', '🎬'];
-          const emoji = emojis[Math.floor(Math.random() * emojis.length)];
-          const emojiElem = document.createElement('div');
-          emojiElem.className = 'emoji float streak';
-          emojiElem.innerText = emoji;
-          // Random starting position
-          const startX = Math.random() * 80 + 10;
-          const startY = Math.random() * 80 + 10;
-          emojiElem.style.left = startX + '%';
-          emojiElem.style.top = startY + '%';
-          container.appendChild(emojiElem);
+          const emojis = ['🍿','🎬'];
+          const e = document.createElement('div');
+          e.className = 'emoji';
+          e.innerText = emojis[Math.floor(Math.random()*emojis.length)];
+          container.appendChild(e);
 
-          // Slow drift for emoji as well
-          setTimeout(() => {
-            const driftX = startX + (Math.random() * 10 - 5);
-            const driftY = startY + (Math.random() * 10 - 5);
-            emojiElem.style.transition = 'left 3s linear, top 3s linear';
-            emojiElem.style.left = driftX + '%';
-            emojiElem.style.top = driftY + '%';
-            emojiElem.classList.remove('streak');
-          }, 1000);
+          const ex = Math.random() * (window.innerWidth - 50);
+          const ey = Math.random() * (window.innerHeight - 50);
+          e.style.left = ex + 'px';
+          e.style.top = ey + 'px';
 
-          // Fade out
+          // Fade after a while
           setTimeout(() => {
-            emojiElem.style.transition = 'opacity 1.5s ease-out';
-            emojiElem.style.opacity = 0;
+            e.style.opacity = 0;
           }, 4000);
           setTimeout(() => {
-            if (emojiElem.parentNode === container) container.removeChild(emojiElem);
-          }, 5500);
+            if(e.parentNode) e.parentNode.removeChild(e);
+          }, 5000);
         }
 
-        // Increase density by reducing intervals
-        setInterval(createMovieGroup, 600);
-        setInterval(createEmoji, 1200);
+        // Basic movement loop for collisions & drifting
+        function animate() {
+          allGroups.forEach(g => {
+            g.x += g.vx;
+            g.y += g.vy;
+            // bounce off edges
+            if(g.x < 0 || g.x > window.innerWidth - 150) g.vx *= -1;
+            if(g.y < 0 || g.y > window.innerHeight - 150) g.vy *= -1;
+            // attempt collisions
+            avoidCollisions(g);
+
+            // apply updated position
+            g.el.style.left = g.x + 'px';
+            g.el.style.top = g.y + 'px';
+          });
+          requestAnimationFrame(animate);
+        }
+
+        // Start intervals
+        setInterval(createMovieGroup, 1000);
+        setInterval(createEmoji, 2000);
+
+        // Kick off movement
+        animate();
       })
-      .catch(err => console.error('Error loading CSV:', err));
+      .catch(err => console.error(err));
   </script>
 </body>
 </html>
