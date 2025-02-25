@@ -1,7 +1,7 @@
 /*******************************************************
  * GLOBAL STATE & CONFIG
  *******************************************************/
-// Use your actual Apps Script URL:
+// Replace with your actual Apps Script URL:
 const SCORE_URL = "https://script.google.com/macros/s/AKfycbzXDnGCSUQwLBGMmgWCYorc-jY33FaRynqWC7-Wctjs58em5bSA4p5KSYD9qH5X6LI/exec";
 
 const csvUrl = "runtime_source_02222025.csv";
@@ -36,22 +36,30 @@ let timeLeft = 20;
 let roundTimer = null;
 let canDrag = false;
 
-let selectedRuntimeCard = null;  // For mobile tap-to-select
+// For mobile fallback: selected runtime card
+let selectedRuntimeCard = null;
+
+// Bonus
 let bonusMovies = [];
 let bonusUsed = false;
 let bonusTimer = null;
 let bonusTimeLeft = 10;
 let bonusStarted = false;
 
+// Player name
 let playerName = "";
+
+// Reaction text appended into the recap overlay
 let pendingReaction = "";
 
 document.addEventListener("DOMContentLoaded", async () => {
+  // Difficulty selection
   document.getElementById("easy-btn").addEventListener("click", () => setDifficulty("easy"));
   document.getElementById("medium-btn").addEventListener("click", () => setDifficulty("medium"));
   document.getElementById("hard-btn").addEventListener("click", () => setDifficulty("hard"));
   setDifficulty("easy");
 
+  // Name input
   const nameInput = document.getElementById("playerNameInput");
   nameInput.addEventListener("input", () => {
     document.getElementById("begin-btn").disabled = (nameInput.value.trim().length !== 6);
@@ -88,22 +96,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("intro-container").style.display = "flex";
   });
 
-  // "Submit Score" button on final screen
+  // Score submission on final screen
   document.getElementById("submit-score-btn").addEventListener("click", () => {
     submitScore(playerName, new Date().toISOString(), totalScore, difficulty);
   });
 
-  // Round Recap closes => also close Reaction => next round
+  // Round recap close => nextRoundAfterRecap
   document.getElementById("round-recap-close-btn").addEventListener("click", () => {
     document.getElementById("round-recap-overlay").style.display = "none";
-    document.getElementById("reaction-overlay").style.display = "none";
-    nextRoundAfterReaction();
+    nextRoundAfterRecap();
   });
 });
 
 /*******************************************************
  * CSV LOADING
  *******************************************************/
+// We assume your CSV now has a column "id" as well, so we can store it for Joker usage
 async function fetchMainCSV() {
   const resp = await fetch(csvUrl);
   let data = await resp.text();
@@ -113,17 +121,21 @@ async function fetchMainCSV() {
 function parseMainCSV(csvData){
   const lines = csvData.trim().split(/\r?\n/);
   const headers = lines[0].split(",");
-  const colMovieName = headers.indexOf("movie_name");
-  const colRuntime = headers.indexOf("runtime");
+  // Suppose your CSV columns are: id, movie_name, runtime, difficulty, group, poster, overview
+  // If not, adjust accordingly
+  const colId         = headers.indexOf("id");
+  const colMovieName  = headers.indexOf("movie_name");
+  const colRuntime    = headers.indexOf("runtime");
   const colDifficulty = headers.indexOf("difficulty");
-  const colGroup = headers.indexOf("group");
-  const colPoster = headers.indexOf("poster");
-  const colOverview = headers.indexOf("overview");
+  const colGroup      = headers.indexOf("group");
+  const colPoster     = headers.indexOf("poster");
+  const colOverview   = headers.indexOf("overview");
 
-  for(let i=1;i<lines.length;i++){
+  for(let i=1; i<lines.length; i++){
     const rowCells = lines[i].split(",");
-    if(rowCells.length<6) continue;
+    if(rowCells.length < 7) continue;
     let movie = {};
+    movie.id = rowCells[colId]?.trim() || ""; // e.g. "unforgiven92"
     movie.movie_name = rowCells[colMovieName]?.trim() || "";
     movie.runtime = parseInt(rowCells[colRuntime] || "0",10);
     movie.difficulty = rowCells[colDifficulty]?.trim().toLowerCase() || "";
@@ -134,6 +146,7 @@ function parseMainCSV(csvData){
     allMovies.push(movie);
   }
 }
+
 async function fetchReactionsCSV(){
   const resp = await fetch(reactionsUrl);
   let data = await resp.text();
@@ -144,26 +157,26 @@ function parseReactionsCSV(csvData){
   const rows = parseCSVWithQuotes(csvData);
   const headers = rows[0];
   const colPerfect = headers.indexOf("perfect");
-  const colClose = headers.indexOf("close");
-  const colUnimp = headers.indexOf("unimpressed");
-  const colBad = headers.indexOf("bad");
+  const colClose   = headers.indexOf("close");
+  const colUnimp   = headers.indexOf("unimpressed");
+  const colBad     = headers.indexOf("bad");
 
   for(let i=1; i<rows.length; i++){
     const r = rows[i];
     if(r.length<4) continue;
     if(r[colPerfect]) perfectReactions.push(r[colPerfect]);
-    if(r[colClose]) closeReactions.push(r[colClose]);
-    if(r[colUnimp]) unimpressedReactions.push(r[colUnimp]);
-    if(r[colBad]) badReactions.push(r[colBad]);
+    if(r[colClose])   closeReactions.push(r[colClose]);
+    if(r[colUnimp])   unimpressedReactions.push(r[colUnimp]);
+    if(r[colBad])     badReactions.push(r[colBad]);
   }
 }
 function parseCSVWithQuotes(csv){
-  const lines = [];
-  let currentLine = [];
-  let currentCell = "";
-  let inQuotes = false;
-  for(let i=0;i<csv.length;i++){
-    const c = csv[i];
+  const lines=[];
+  let currentLine=[];
+  let currentCell="";
+  let inQuotes=false;
+  for(let i=0; i<csv.length; i++){
+    const c=csv[i];
     if(c==='"'){
       if(inQuotes && csv[i+1]==='"'){
         currentCell+='"';
@@ -247,7 +260,7 @@ function buildRounds(){
     }
   });
   for(let g in groups){
-    groups[g]=shuffle(groups[g]);
+    shuffle(groups[g]);
   }
   const potentialRoundsCount=Math.min(
     groups["A"].length,
@@ -275,7 +288,7 @@ function buildRounds(){
  *******************************************************/
 function startRound(){
   if(currentRoundIndex>=5){
-    // Done with 5 rounds, show bonus
+    // Done with 5 rounds
     document.getElementById("game-container").style.display="none";
     document.getElementById("bonus-container").style.display="flex";
     document.getElementById("bonus-intro").style.display="block";
@@ -309,10 +322,14 @@ function renderRound(){
     const card=document.createElement("div");
     card.classList.add("movie-card");
     card.setAttribute("data-correct",m.runtime);
+    // Use the movie's ID
+    card.setAttribute("data-id", m.id);
     card.movie=m;
+
     let posterHTML=m.poster?`<img class="movie-poster" src="${m.poster}" alt="${m.movie_name} poster">`:"";
     card.innerHTML=posterHTML;
-    // Tap-to-place
+
+    // Tap to place runtime
     card.addEventListener("click",()=>{
       if(selectedRuntimeCard && !card.querySelector(".runtime-card")){
         card.appendChild(selectedRuntimeCard);
@@ -334,16 +351,17 @@ function renderRound(){
     rc.setAttribute("data-runtime",m.runtime.toString());
     rc.innerText=m.runtime+" min";
     rc.setAttribute("draggable","true");
-    rc.addEventListener("dragstart",e=>{
-      if(!canDrag){e.preventDefault();return;}
+
+    rc.addEventListener("dragstart", e=>{
+      if(!canDrag){ e.preventDefault(); return; }
       rc.classList.add("dragging");
-      e.dataTransfer.setData("text/plain",rc.getAttribute("data-unique"));
+      e.dataTransfer.setData("text/plain", rc.getAttribute("data-unique"));
     });
-    rc.addEventListener("dragend",()=>{
+    rc.addEventListener("dragend", ()=> {
       rc.classList.remove("dragging");
     });
-    // Tap-to-select
-    rc.addEventListener("click",()=>{
+    // Tap to select
+    rc.addEventListener("click", ()=>{
       if(selectedRuntimeCard===rc){
         rc.classList.remove("selected");
         selectedRuntimeCard=null;
@@ -362,6 +380,7 @@ function setupTimer(){
   styleTimerBox(timeLeft);
   const timerVal=document.getElementById("timer-value");
   timerVal.innerText=timeLeft;
+
   roundTimer=setInterval(()=>{
     timeLeft--;
     timerVal.innerText=timeLeft;
@@ -394,9 +413,11 @@ function dropHandler(e,movieObj,movieCard){
   const uniqueId=e.dataTransfer.getData("text/plain");
   const dragged=document.querySelector(`.runtime-card[data-unique="${uniqueId}"]`);
   if(!dragged)return;
+
   const rc=document.getElementById("runtimes-container");
   const existing=movieCard.querySelector(".runtime-card");
   if(existing) rc.appendChild(existing);
+
   movieCard.appendChild(dragged);
   movieCard.classList.add("placed");
   movieObj._assignedRuntime=parseInt(dragged.getAttribute("data-runtime"),10);
@@ -413,7 +434,7 @@ function onSubmitRound(){
   let sumActual=0;
 
   const cards=document.getElementById("movies-container").children;
-  for(let i=0;i<cards.length;i++){
+  for(let i=0; i<cards.length; i++){
     const card=cards[i];
     const correctRuntime=parseInt(card.getAttribute("data-correct"),10);
     sumActual+=correctRuntime;
@@ -426,18 +447,18 @@ function onSubmitRound(){
         card.classList.add("correct");
       } else {
         card.classList.add("incorrect");
-        showCorrectLine(card,correctRuntime);
+        showCorrectLine(card, correctRuntime);
       }
     } else {
       card.classList.add("incorrect");
-      showCorrectLine(card,correctRuntime);
+      showCorrectLine(card, correctRuntime);
     }
   }
 
   const leftoverBonus=timeLeft*10;
   roundMovies.forEach(m=>{
     if(m._assignedRuntime!=null){
-      roundDiff+=Math.abs(m._assignedRuntime-m.runtime);
+      roundDiff+=Math.abs(m._assignedRuntime - m.runtime);
     }
   });
 
@@ -459,40 +480,42 @@ function onSubmitRound(){
 
   roundScores.push({
     roundIndex: currentRoundIndex+1,
-    correct:roundCorrect,
-    diff:roundDiff,
-    answered:answeredCount,
+    correct: roundCorrect,
+    diff: roundDiff,
+    answered: answeredCount,
     leftoverBonus,
     fractionBonus,
     roundScore
   });
 
-  // pick reaction
+  // pick reaction text
+  let reactionText="";
   if(roundCorrect===5){
-    pendingReaction=randomFrom(perfectReactions);
+    reactionText=randomFrom(perfectReactions);
   } else if(roundCorrect===4){
-    pendingReaction=randomFrom(closeReactions);
+    reactionText=randomFrom(closeReactions);
   } else if(roundCorrect===3||roundCorrect===2){
-    pendingReaction=randomFrom(unimpressedReactions);
+    reactionText=randomFrom(unimpressedReactions);
   } else {
-    pendingReaction=randomFrom(badReactions);
+    reactionText=randomFrom(badReactions);
   }
+  pendingReaction=reactionText;
 
-  showRoundRecapOverlay(roundCorrect,answeredCount,leftoverBonus,fractionBonus,roundScore);
-  // Immediately also show the Reaction overlay
-  showReactionOverlay(pendingReaction);
+  showRoundRecapOverlay(roundCorrect,answeredCount,leftoverBonus,fractionBonus,roundScore, reactionText);
 }
-function showCorrectLine(card,correctRuntime){
+function showCorrectLine(card, correctRuntime){
   const line=document.createElement("div");
   line.style.fontSize="12px";
   line.style.marginTop="5px";
   line.innerText=`Correct: ${correctRuntime} min`;
   card.appendChild(line);
 }
-function showRoundRecapOverlay(roundCorrect,answeredCount,leftoverBonus,fractionBonus,roundScore){
+function showRoundRecapOverlay(roundCorrect, answeredCount, leftoverBonus, fractionBonus, roundScore, reactionText){
   const overlay=document.getElementById("round-recap-overlay");
   const title=document.getElementById("round-recap-title");
   const details=document.getElementById("round-recap-details");
+  const reactionP=document.getElementById("round-recap-reaction");
+
   title.innerText=`Round ${currentRoundIndex+1} Recap`;
   details.innerHTML=`
     Correct: <strong>${roundCorrect}</strong> / 5<br>
@@ -500,16 +523,12 @@ function showRoundRecapOverlay(roundCorrect,answeredCount,leftoverBonus,fraction
     Accuracy bonus: <strong>+${fractionBonus.toFixed(0)}</strong><br>
     Round Score: <strong>${roundScore.toFixed(0)}</strong>
   `;
+  reactionP.innerText = reactionText;
+
   overlay.style.display="block";
 }
-function showReactionOverlay(quoteText){
-  const overlay=document.getElementById("reaction-overlay");
-  document.getElementById("reaction-quote").innerText=quoteText;
-  overlay.style.display="block";
-}
-function nextRoundAfterReaction(){
+function nextRoundAfterRecap(){
   document.getElementById("round-recap-overlay").style.display="none";
-  document.getElementById("reaction-overlay").style.display="none";
   document.getElementById("submit-btn").style.display="block";
   currentRoundIndex++;
   startRound();
@@ -518,6 +537,7 @@ function nextRoundAfterReaction(){
 /*******************************************************
  * JOKER
  *******************************************************/
+// We'll look up by data-id
 function useJoker(){
   if(jokerUsed)return;
   jokerUsed=true;
@@ -528,17 +548,18 @@ function useJoker(){
   snd.play().catch(()=>{});
 
   const roundMovies=rounds[currentRoundIndex];
+  // Sort from largest runtime to smallest
   const sorted=[...roundMovies].sort((a,b)=>b.runtime-a.runtime);
 
   console.log("Using Joker on round:", currentRoundIndex+1, sorted.map(m=>m.movie_name));
-
   const greenShades=["#003300","#006600","#009900","#00CC00","#00FF00"];
   const originals=[];
+
   sorted.forEach((m,idx)=>{
-    console.log("Looking for card:", m.movie_name);
-    const card=findMovieCard(m.movie_name);
+    // find the card by data-id
+    const card=document.querySelector(`.movie-card[data-id="${m.id}"]`);
     if(!card){
-      console.warn("Could not find card for:", m.movie_name);
+      console.warn("Joker: could not find a card for movie ID:", m.id, m.movie_name);
       return;
     }
     originals.push({ card, bg:card.style.backgroundColor, bc:card.style.borderColor });
@@ -726,8 +747,8 @@ function submitScore(name, timestamp, score, difficulty){
   console.log("Submitting score data:", data);
 
   fetch(SCORE_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
     body: JSON.stringify(data)
   })
   .then(resp => resp.json())
@@ -735,8 +756,8 @@ function submitScore(name, timestamp, score, difficulty){
     console.log("Score submitted:", result);
     alert("Score submitted successfully!");
   })
-  .catch(err => {
-    console.error("Error submitting score:", err);
+  .catch(err=>{
+    console.error("Error submitting score:",err);
     alert("Error submitting score. Check console for details.");
   });
 }
@@ -817,19 +838,12 @@ function renderPopcorn(accuracyPercent){
   }
   return html+" ";
 }
-function findMovieCard(name){
-  const cards=document.querySelectorAll("#movies-container .movie-card");
-  const normName=name.trim().toLowerCase();
-  for(let c of cards){
-    const poster=c.querySelector("img.movie-poster");
-    if(poster){
-      let altText=poster.alt||"";
-      altText=altText.replace(/\s*poster$/i,"").trim().toLowerCase();
-      altText=altText.replace(/\(\d{4}\)$/,"").trim();
-      if(altText===normName) return c;
-    }
-  }
-  return null;
+function showCorrectLine(card, correctRuntime){
+  const line=document.createElement("div");
+  line.style.fontSize="12px";
+  line.style.marginTop="5px";
+  line.innerText=`Correct: ${correctRuntime} min`;
+  card.appendChild(line);
 }
 function updateGameStatsBox(){
   const statsBox=document.getElementById("this-game-stats");
