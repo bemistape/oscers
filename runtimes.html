@@ -31,6 +31,60 @@
     </div>
     <button id="begin-btn" class="game-btn" disabled>Begin</button>
     <div class="version-number">v6.0</div>
+
+<!-- Difficulty buttons -->
+<div class="difficulty-box">
+  <label style="font-size:16px; margin-right:10px;">Difficulty:</label>
+  <button class="diff-btn" data-difficulty="easy" id="easy-btn">Easy</button>
+  <button class="diff-btn" data-difficulty="medium" id="medium-btn">Medium</button>
+  <button class="diff-btn" data-difficulty="hard" id="hard-btn">Hard</button>
+</div>
+
+<!-- NEW: Scoreboard Container (initially hidden) -->
+<div id="scoreboard-container" style="display:none; margin-top: 20px;">
+  <div id="scoreboard-easy">
+    <h2>Easy Scores</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Name</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div id="scoreboard-medium">
+    <h2>Medium Scores</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Name</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div id="scoreboard-hard">
+    <h2>Hard Scores</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Name</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+
+    
   </div>
 
   <!-- ROUND RECAP OVERLAY (SCORE + REACTION) -->
