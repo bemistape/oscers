@@ -739,22 +739,24 @@ function showFinalScreen(){
 /*******************************************************
  * SCORE SUBMISSION
  *******************************************************/
+
 function submitScore(name, timestamp, score, difficulty) {
-  // Create an object of the data
-  const data = { name, timestamp, difficulty, score };
+  // Build a query string
+  const params = new URLSearchParams({
+    name,
+    timestamp,
+    difficulty,
+    score
+  }).toString();
+  
+  // finalUrl will look like:
+  // "https://script.google.com/macros/s/AKfycb.../exec?name=ABCDEF&timestamp=...&score=12345&difficulty=Hard"
+  const finalUrl = "https://script.google.com/macros/s/AKfycbzDDZY1hmirb5jRlz0-uBiufVp-d4VCrE7_JmZvDERrfop2SbgMu0f2_p6rRtaE8Ds/exec" + "?" + params;
 
-  // Convert that object to URL-encoded form
-  const params = new URLSearchParams(data).toString();
-  // e.g. "name=ABCDEF&timestamp=2025-02-24T22%3A09%3A00Z&difficulty=easy&score=12345"
-
-  fetch(SCORE_URL, {
-    method: "POST",
-    // If you wish, you can still do mode: "cors", but the key is the simple content-type:
-    mode: "cors",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: params
+  // Make a GET request
+  fetch(finalUrl, {
+    method: "GET",
+    mode: "cors"
   })
     .then(resp => resp.json())
     .then(result => {
@@ -766,6 +768,7 @@ function submitScore(name, timestamp, score, difficulty) {
       alert("Error submitting score. Check console for details.");
     });
 }
+
 
 /*******************************************************
  * SHARE & COPY
