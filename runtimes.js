@@ -5,6 +5,7 @@ const SCORE_URL = "https://script.google.com/macros/s/AKfycbzXDnGCSUQwLBGMmgWCYo
 const csvUrl = "runtime_source_02222025.csv";
 const reactionsUrl = "reactions.csv";
 
+// -- Game variables
 let difficulty;
 let allMovies = [];
 let filteredMovies = [];
@@ -35,12 +36,14 @@ let roundTimer = null;
 let canDrag = false;
 let selectedRuntimeCard = null;
 
+// Bonus
 let bonusMovies = [];
 let bonusUsed = false;
 let bonusTimer = null;
 let bonusTimeLeft = 10;
 let bonusStarted = false;
 
+// Player name
 let playerName = "";
 let pendingReaction = "";
 
@@ -74,6 +77,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     beginBtn.innerText = "Error loading data";
   }
 
+  // Set up main button listeners
   beginBtn.addEventListener("click", onBeginGame);
   document.getElementById("joker-btn").addEventListener("click", () => {
     if (!jokerUsed) useJoker();
@@ -100,7 +104,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 /*******************************************************
- * CSV LOADING FUNCTIONS
+ * CSV LOADING (GAME DATA)
  *******************************************************/
 async function fetchMainCSV() {
   const resp = await fetch(csvUrl);
@@ -193,7 +197,7 @@ function parseCSVWithQuotes(csv) {
 }
 
 /*******************************************************
- * DIFFICULTY & SETUP FUNCTIONS
+ * DIFFICULTY & GAME SETUP
  *******************************************************/
 function setDifficulty(diff) {
   difficulty = diff;
@@ -276,6 +280,7 @@ function buildRounds() {
  *******************************************************/
 function startRound() {
   if (currentRoundIndex >= 5) {
+    // After 5 rounds, show bonus
     document.getElementById("game-container").style.display = "none";
     document.getElementById("bonus-container").style.display = "flex";
     document.getElementById("bonus-intro").style.display = "block";
@@ -315,6 +320,7 @@ function renderRound() {
     let posterHTML = m.poster ? `<img class="movie-poster" src="${m.poster}" alt="${m.movie_name} poster">` : "";
     card.innerHTML = posterHTML;
 
+    // Mobile/touch fallback: click to place selected runtime
     card.addEventListener("click", () => {
       if (selectedRuntimeCard && !card.querySelector(".runtime-card")) {
         card.appendChild(selectedRuntimeCard);
@@ -345,6 +351,7 @@ function renderRound() {
     rc.addEventListener("dragend", () => {
       rc.classList.remove("dragging");
     });
+    // Tap to select
     rc.addEventListener("click", () => {
       if (selectedRuntimeCard === rc) {
         rc.classList.remove("selected");
@@ -518,7 +525,7 @@ function nextRoundAfterRecap() {
 }
 
 /*******************************************************
- * JOKER FUNCTION
+ * JOKER
  *******************************************************/
 function useJoker() {
   if (jokerUsed) return;
@@ -555,7 +562,7 @@ function useJoker() {
 }
 
 /*******************************************************
- * BONUS ROUND FUNCTIONS
+ * BONUS ROUND
  *******************************************************/
 function startBonusActual() {
   if (bonusStarted) return;
@@ -656,7 +663,7 @@ function onFinishBonus() {
 }
 
 /*******************************************************
- * FINAL SCREEN FUNCTIONS
+ * FINAL SCREEN
  *******************************************************/
 function showFinalScreen() {
   document.getElementById("final-container").style.display = "flex";
@@ -718,12 +725,13 @@ function showFinalScreen() {
 }
 
 /*******************************************************
- * SCORE SUBMISSION FUNCTION
+ * SCORE SUBMISSION
  *******************************************************/
 function submitScore(name, timestamp, score, difficulty) {
   if (!difficulty) difficulty = "unknown";
   const data = { name, timestamp, score, difficulty };
   console.log("Submitting score data:", data);
+
   // Using GET request for score submission
   const params = new URLSearchParams(data).toString();
   const finalUrl = SCORE_URL + "?" + params;
@@ -743,7 +751,7 @@ function submitScore(name, timestamp, score, difficulty) {
 }
 
 /*******************************************************
- * SHARE & COPY FUNCTIONS
+ * SHARE & COPY
  *******************************************************/
 function shareOnTwitter() {
   const accuracy = (totalCorrect / 25) * 100;
@@ -774,7 +782,7 @@ Think you can beat me?`;
 }
 
 /*******************************************************
- * UTILS FUNCTIONS
+ * UTILS
  *******************************************************/
 function fadeOutCards(cb) {
   const mc = document.getElementById("movies-container");
@@ -831,60 +839,85 @@ function randomFrom(arr) {
 }
 
 /*******************************************************
- * SCOREBOARD FUNCTIONS
+ * SCOREBOARD: 9-OR-10-COLUMN CSV
  *******************************************************/
 async function loadScoreboard() {
   try {
-    // Fetch the CSV scoreboard file
-    const resp = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vTWibg0AkJw2Zyys7ei_tE-GjryZKA9Qowj615YGiyJRGR2yYNguRArqyG1DgbW363axOxlLxfvv7ql/pub?gid=2146518763&single=true&output=csv");
+    // 1) Fetch your published CSV
+    const resp = await fetch("YOUR_PUBLISHED_SCOREBOARD_CSV_LINK");
     const data = await resp.text();
 
-    // Parse the CSV lines (assuming no commas in the values)
-    const rows = data.split(/\r?\n/).filter(line => line.trim() !== "");
-    if (rows.length < 2) return; // no data
+    // 2) Split into rows
+    const rows = data.split(/\r?\n/).map(r => r.trim()).filter(r => r);
+    if (rows.length < 2) {
+      console.warn("No scoreboard data found or empty CSV.");
+      return;
+    }
 
-    // Assume header row is:
-    // "Easy Name,Easy Score,Easy Date,Medium Name,Medium Score,Medium Date,Hard Name,Hard Score,Hard Date"
-    // We'll use:
-    // Easy: index 0 (name) and index 1 (score)
-    // Medium: index 3 (name) and index 4 (score)
-    // Hard: index 6 (name) and index 7 (score)
+    // We'll store them by difficulty
     let easyScores = [];
     let mediumScores = [];
     let hardScores = [];
 
+    // 3) For each row (skip header)
     for (let i = 1; i < rows.length; i++) {
       let cells = rows[i].split(",");
+      // Expect at least 9 or 10 columns
       if (cells.length < 9) continue;
-      cells = cells.map(cell => cell.trim());
 
-      let easyScore = parseFloat(cells[1]);
+      // Trim each cell
+      cells = cells.map(c => c.trim());
+
+      // Indices based on your screenshot:
+      //  0: Easy Name
+      //  1: Easy Score
+      //  2: Easy Date
+      //  3: Medium Name
+      //  4: (Blank)
+      //  5: Medium Score
+      //  6: Medium Date
+      //  7: Hard Name
+      //  8: Hard Score
+      //  9: Hard Date (optional)
+      const easyName    = cells[0];
+      const easyScore   = parseFloat(cells[1]);
+      // const easyDate = cells[2]; // if you need it
+      const mediumName  = cells[3];
+      // skip cells[4] (blank)
+      const mediumScore = parseFloat(cells[5]);
+      // const mediumDate = cells[6]; // if needed
+      const hardName    = cells[7];
+      const hardScore   = parseFloat(cells[8]);
+      // const hardDate  = cells[9]; // if needed
+
+      // 4) Push into arrays if valid
       if (!isNaN(easyScore)) {
-        easyScores.push({ name: cells[0], score: easyScore });
+        easyScores.push({ name: easyName, score: easyScore });
       }
-      let mediumScore = parseFloat(cells[4]);
       if (!isNaN(mediumScore)) {
-        mediumScores.push({ name: cells[3], score: mediumScore });
+        mediumScores.push({ name: mediumName, score: mediumScore });
       }
-      let hardScore = parseFloat(cells[7]);
       if (!isNaN(hardScore)) {
-        hardScores.push({ name: cells[6], score: hardScore });
+        hardScores.push({ name: hardName, score: hardScore });
       }
     }
 
+    // 5) Sort descending
     easyScores.sort((a, b) => b.score - a.score);
     mediumScores.sort((a, b) => b.score - a.score);
     hardScores.sort((a, b) => b.score - a.score);
 
+    // 6) Keep top 10
     easyScores = easyScores.slice(0, 10);
     mediumScores = mediumScores.slice(0, 10);
     hardScores = hardScores.slice(0, 10);
 
+    // 7) Render
     renderScoreboard("scoreboard-easy", easyScores);
     renderScoreboard("scoreboard-medium", mediumScores);
     renderScoreboard("scoreboard-hard", hardScores);
 
-    // Remove loading message
+    // Remove "Loading scoreboard..." if present
     const loadingEl = document.getElementById("scoreboard-loading");
     if (loadingEl) loadingEl.remove();
   } catch (err) {
@@ -894,7 +927,9 @@ async function loadScoreboard() {
 
 function renderScoreboard(elementId, scores) {
   const tbody = document.querySelector(`#${elementId} table tbody`);
+  if (!tbody) return;
   tbody.innerHTML = "";
+
   scores.forEach((entry, index) => {
     const tr = document.createElement("tr");
 
