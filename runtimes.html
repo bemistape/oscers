@@ -24,66 +24,63 @@
     </div>
     <input id="playerNameInput" type="text" placeholder="Enter 6-letter name" maxlength="6">
     
-<!-- Difficulty buttons -->
-<div class="difficulty-box">
-  <label style="font-size:16px; margin-right:10px;">Difficulty:</label>
-  <button class="diff-btn" data-difficulty="easy" id="easy-btn">Easy</button>
-  <button class="diff-btn" data-difficulty="medium" id="medium-btn">Medium</button>
-  <button class="diff-btn" data-difficulty="hard" id="hard-btn">Hard</button>
-</div>
-
-    <button id="begin-btn" class="game-btn" disabled>Begin</button>
-
-
-<!-- NEW: Scoreboard Container (visible with a placeholder) -->
-<div id="scoreboard-container" style="margin-top: 20px;">
-  <p id="scoreboard-loading">Loading scoreboard...</p>
-  <div id="scoreboard-easy">
-    <h2>Easy Scores</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Rank</th>
-          <th>Name</th>
-          <th>Score</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-  <div id="scoreboard-medium">
-    <h2>Medium Scores</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Rank</th>
-          <th>Name</th>
-          <th>Score</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-  <div id="scoreboard-hard">
-    <h2>Hard Scores</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Rank</th>
-          <th>Name</th>
-          <th>Score</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-</div>
-
-
-
-
-
+    <!-- Difficulty buttons -->
+    <div class="difficulty-box">
+      <label style="font-size:16px; margin-right:10px;">Difficulty:</label>
+      <button class="diff-btn" data-difficulty="easy" id="easy-btn">Easy</button>
+      <button class="diff-btn" data-difficulty="medium" id="medium-btn">Medium</button>
+      <button class="diff-btn" data-difficulty="hard" id="hard-btn">Hard</button>
+    </div>
     
+    <!-- Begin Button -->
+    <button id="begin-btn" class="game-btn" disabled>Begin</button>
+    
+    <!-- Scoreboard Container (visible from the start) -->
+    <div id="scoreboard-container" style="margin-top: 20px;">
+      <p id="scoreboard-loading">Loading scoreboard...</p>
+      <div id="scoreboard-easy">
+        <h2>Easy Scores</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Name</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div id="scoreboard-medium">
+        <h2>Medium Scores</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Name</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div id="scoreboard-hard">
+        <h2>Hard Scores</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Name</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    
+    <div class="version-number">v6.0</div>
+  </div>
 
   <!-- ROUND RECAP OVERLAY (SCORE + REACTION) -->
   <div id="round-recap-overlay">
