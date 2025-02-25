@@ -69,21 +69,28 @@ document.addEventListener("DOMContentLoaded", async () => {
   beginBtn.disabled = true;
   beginBtn.innerText = "Loading...";
 
-  try {
+ try {
     await fetchMainCSV();
     await fetchReactionsCSV();
-    beginBtn.disabled = false;
-    beginBtn.innerText = "Begin";
-  } catch(e) {
+    document.getElementById("begin-btn").disabled = false;
+    document.getElementById("begin-btn").innerText = "Begin";
+  } catch (e) {
     console.error("Error loading data:", e);
-    beginBtn.innerText = "Error loading data";
+    document.getElementById("begin-btn").innerText = "Error loading data";
   }
+  
+  // Call scoreboard loader
+  loadScoreboard();
+  
+  // Other event listeners…
+  document.getElementById("begin-btn").addEventListener("click", onBeginGame);
+}); 
+  
+  
 
-  beginBtn.addEventListener("click", onBeginGame);
 
-  document.getElementById("joker-btn").addEventListener("click", () => {
-    if (!jokerUsed) useJoker();
-  });
+
+
   document.getElementById("submit-btn").addEventListener("click", onSubmitRound);
 
   document.getElementById("bonus-begin-btn").addEventListener("click", startBonusActual);
@@ -865,6 +872,8 @@ function randomFrom(arr){
   return arr[Math.floor(Math.random()*arr.length)];
 }
 
+
+
 async function loadScoreboard() {
   try {
     // Fetch the CSV scoreboard file
@@ -948,4 +957,7 @@ function renderScoreboard(elementId, scores) {
     tbody.appendChild(tr);
   });
 }
+
+
+
 
