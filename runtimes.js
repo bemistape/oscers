@@ -911,6 +911,10 @@ async function loadScoreboard() {
       let hardScore = parseFloat(cells[7]);
       if (!isNaN(hardScore)) {
         hardScores.push({ name: cells[6], score: hardScore });
+      
+     document.getElementById("scoreboard-loading").remove();
+ 
+      
       }
     }
 
