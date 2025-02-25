@@ -844,7 +844,7 @@ function randomFrom(arr) {
 async function loadScoreboard() {
   try {
     // 1) Fetch your published CSV
-    const resp = await fetch("YOUR_PUBLISHED_SCOREBOARD_CSV_LINK");
+    const resp = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vTWibg0AkJw2Zyys7ei_tE-GjryZKA9Qowj615YGiyJRGR2yYNguRArqyG1DgbW363axOxlLxfvv7ql/pub?gid=2146518763&single=true&output=csv");
     const data = await resp.text();
 
     // 2) Split into rows
