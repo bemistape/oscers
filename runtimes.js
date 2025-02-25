@@ -739,27 +739,32 @@ function showFinalScreen(){
 /*******************************************************
  * SCORE SUBMISSION
  *******************************************************/
-function submitScore(name, timestamp, score, difficulty){
-  if(!difficulty) difficulty="unknown";
-  const data={ name, timestamp, score, difficulty };
-  console.log("Submitting score data:", data);
+function submitScore(name, timestamp, score, difficulty) {
+  // Create an object of the data
+  const data = { name, timestamp, difficulty, score };
 
-  // Explicitly set mode:"cors" to ensure the browser uses CORS
+  // Convert that object to URL-encoded form
+  const params = new URLSearchParams(data).toString();
+  // e.g. "name=ABCDEF&timestamp=2025-02-24T22%3A09%3A00Z&difficulty=easy&score=12345"
+
   fetch(SCORE_URL, {
-    method:"POST",
-    mode:"cors",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify(data)
+    method: "POST",
+    // If you wish, you can still do mode: "cors", but the key is the simple content-type:
+    mode: "cors",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: params
   })
-  .then(resp => resp.json())
-  .then(result => {
-    console.log("Score submitted:", result);
-    alert("Score submitted successfully!");
-  })
-  .catch(err=>{
-    console.error("Error submitting score:",err);
-    alert("Error submitting score. Check console for details.");
-  });
+    .then(resp => resp.json())
+    .then(result => {
+      console.log("Score submitted:", result);
+      alert("Score submitted successfully!");
+    })
+    .catch(err => {
+      console.error("Error submitting score:", err);
+      alert("Error submitting score. Check console for details.");
+    });
 }
 
 /*******************************************************
