@@ -751,7 +751,7 @@ function submitScore(name, timestamp, score, difficulty) {
   
   // finalUrl will look like:
   // "https://script.google.com/macros/s/AKfycb.../exec?name=ABCDEF&timestamp=...&score=12345&difficulty=Hard"
-  const finalUrl = "https://script.google.com/macros/s/AKfycbzDDZY1hmirb5jRlz0-uBiufVp-d4VCrE7_JmZvDERrfop2SbgMu0f2_p6rRtaE8Ds/exec" + "?" + params;
+  const finalUrl = "https://script.google.com/macros/s/AKfycbwS1HltAxSch0cJ3ON44hL2OhFzJ9rAwtDZ3MRKJUn1KnGQAfWY_2d785F0RV2MZt8/exec" + "?" + params;
 
   // Make a GET request
   fetch(finalUrl, {
