@@ -405,15 +405,16 @@ button {
   margin-top: 5px;
 }
 
-/* ---------- REACTION OVERLAY ---------- */
+/* ---------- REACTION OVERLAY (near bottom center) ---------- */
 #reaction-overlay {
   display: none;
   position: fixed;
-  top: 30%;
+  /* anchor near bottom center so it doesn't overlap the recap at the top */
+  bottom: 80px;
   left: 50%;
-  transform: translate(-50%, -30%);
+  transform: translateX(-50%);
   background: rgba(0, 0, 0, 0.95);
-  padding: 30px;
+  padding: 20px;
   border: 3px solid #00FFFF;
   border-radius: 10px;
   text-align: center;
