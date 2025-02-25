@@ -461,3 +461,25 @@ button {
     width: 100px;
   }
 }
+
+/* Scoreboard container styling */
+#scoreboard-container {
+  text-align: center; /* optional, if you want them centered */
+  margin-top: 20px;
+}
+#scoreboard-container table {
+  margin: 0 auto 20px; /* center the table and add bottom spacing */
+  border-collapse: collapse;
+  min-width: 200px; /* ensure some minimum width */
+}
+#scoreboard-container th,
+#scoreboard-container td {
+  border: 1px solid #fff; /* white border */
+  padding: 8px 12px;
+  font-size: 14px;
+}
+#scoreboard-container th {
+  background: #222;
+  color: #FFD700; /* or white, if you prefer */
+}
+
