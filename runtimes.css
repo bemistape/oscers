@@ -405,7 +405,7 @@ button {
   margin-top: 5px;
 }
 
-/* ---------- REACTION OVERLAY (near bottom center) ---------- */
+/* ---------- REACTION OVERLAY ---------- */
 #reaction-overlay {
   display: none;
   position: fixed;
@@ -427,17 +427,7 @@ button {
   font-size: 24px;
   margin-bottom: 20px;
 }
-#reaction-overlay button {
-  font-size: 18px;
-  padding: 8px 16px;
-  background: #FFD700;
-  color: black;
-  border: none;
-  transition: background 0.2s;
-}
-#reaction-overlay button:hover {
-  background: #FFC700;
-}
+/* no close button for reaction overlay now */
 
 /* ---------- MINI-RECAP (per-round) ---------- */
 #round-recap-overlay {
