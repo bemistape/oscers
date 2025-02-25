@@ -1,11 +1,16 @@
 /*******************************************************
  * GLOBAL STATE & CONFIG
  *******************************************************/
-const SCORE_URL = "https://script.google.com/macros/s/AKfycbzXDnGCSUQwLBGMmgWCYorc-jY33FaRynqWC7-Wctjs58em5bSA4p5KSYD9qH5X6LI/exec";
-const csvUrl = "runtime_source_02222025.csv";
-const reactionsUrl = "reactions.csv";
+const SCORE_URL = "https://script.google.com/macros/s/AKfycbxICGc7IpIpQiAVj_hpjlRBnh0Pmz7F-oc2HWvHIIco1ZNZFogAYeXP9K0RUr8pbDU/exec";
+const csvUrl = "runtime_source_02222025.csv"; // Your main game CSV
+const reactionsUrl = "reactions.csv";         // Reactions CSV
 
-// -- Game variables
+// Scoreboard CSV link: must match your 9-column sheet
+const SCOREBOARD_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWibg0AkJw2Zyys7ei_tE-GjryZKA9Qowj615YGiyJRGR2yYNguRArqyG1DgbW363axOxlLxfvv7ql/pub?gid=2146518763&single=true&output=csv";
+
+/*******************************************************
+ * GAME STATE
+ *******************************************************/
 let difficulty;
 let allMovies = [];
 let filteredMovies = [];
@@ -43,12 +48,12 @@ let bonusTimer = null;
 let bonusTimeLeft = 10;
 let bonusStarted = false;
 
-// Player name
+// Player
 let playerName = "";
 let pendingReaction = "";
 
 /*******************************************************
- * INITIALIZATION
+ * ON DOM READY
  *******************************************************/
 document.addEventListener("DOMContentLoaded", async () => {
   // Difficulty selection
@@ -68,8 +73,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   beginBtn.innerText = "Loading...";
 
   try {
+    // Load main CSV + reactions for the game
     await fetchMainCSV();
     await fetchReactionsCSV();
+
     beginBtn.disabled = false;
     beginBtn.innerText = "Begin";
   } catch (e) {
@@ -77,7 +84,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     beginBtn.innerText = "Error loading data";
   }
 
-  // Set up main button listeners
+  // Set up buttons
   beginBtn.addEventListener("click", onBeginGame);
   document.getElementById("joker-btn").addEventListener("click", () => {
     if (!jokerUsed) useJoker();
@@ -99,12 +106,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     nextRoundAfterRecap();
   });
 
-  // Load the scoreboard data immediately
+  // Finally, load scoreboard data
   loadScoreboard();
 });
 
 /*******************************************************
- * CSV LOADING (GAME DATA)
+ * MAIN CSV + REACTIONS
  *******************************************************/
 async function fetchMainCSV() {
   const resp = await fetch(csvUrl);
@@ -201,7 +208,7 @@ function parseCSVWithQuotes(csv) {
  *******************************************************/
 function setDifficulty(diff) {
   difficulty = diff;
-  ["easy-btn", "medium-btn", "hard-btn"].forEach(id => {
+  ["easy-btn","medium-btn","hard-btn"].forEach(id => {
     document.getElementById(id).classList.remove("active");
   });
   document.getElementById(`${diff}-btn`).classList.add("active");
@@ -236,7 +243,7 @@ function setupGame() {
   if (filteredMovies.length < 5) {
     filteredMovies = allMovies.slice();
   }
-  roundTimers = TIMERS[difficulty] || [20, 20, 20, 20, 20];
+  roundTimers = TIMERS[difficulty] || [20,20,20,20,20];
   buildRounds();
   startRound();
 }
@@ -280,7 +287,7 @@ function buildRounds() {
  *******************************************************/
 function startRound() {
   if (currentRoundIndex >= 5) {
-    // After 5 rounds, show bonus
+    // Show Bonus
     document.getElementById("game-container").style.display = "none";
     document.getElementById("bonus-container").style.display = "flex";
     document.getElementById("bonus-intro").style.display = "block";
@@ -320,7 +327,7 @@ function renderRound() {
     let posterHTML = m.poster ? `<img class="movie-poster" src="${m.poster}" alt="${m.movie_name} poster">` : "";
     card.innerHTML = posterHTML;
 
-    // Mobile/touch fallback: click to place selected runtime
+    // Tap for mobile fallback
     card.addEventListener("click", () => {
       if (selectedRuntimeCard && !card.querySelector(".runtime-card")) {
         card.appendChild(selectedRuntimeCard);
@@ -545,7 +552,7 @@ function useJoker() {
   sorted.forEach((m, idx) => {
     const card = document.querySelector(`.movie-card[data-id="${m.id}"]`);
     if (!card) {
-      console.warn("Joker: could not find a card for movie ID:", m.id, m.movie_name);
+      console.warn("Joker: could not find card for movie ID:", m.id, m.movie_name);
       return;
     }
     originals.push({ card, bg: card.style.backgroundColor, bc: card.style.borderColor });
@@ -839,58 +846,60 @@ function randomFrom(arr) {
 }
 
 /*******************************************************
- * SCOREBOARD: 9-OR-10-COLUMN CSV
+ * SCOREBOARD (9 COLUMNS)
  *******************************************************/
 async function loadScoreboard() {
   try {
-    // 1) Fetch your published CSV
-    const resp = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vTWibg0AkJw2Zyys7ei_tE-GjryZKA9Qowj615YGiyJRGR2yYNguRArqyG1DgbW363axOxlLxfvv7ql/pub?gid=2146518763&single=true&output=csv");
+    console.log("Fetching scoreboard CSV:", SCOREBOARD_CSV_URL);
+    const resp = await fetch(SCOREBOARD_CSV_URL);
     const data = await resp.text();
+    
+    console.log("Raw scoreboard CSV length:", data.length);
+    // For debugging, you can uncomment:
+    // console.log("First 200 chars:\n", data.slice(0, 200));
 
-    // 2) Split into rows
     const rows = data.split(/\r?\n/).map(r => r.trim()).filter(r => r);
+    console.log("Number of scoreboard rows (including header):", rows.length);
+
     if (rows.length < 2) {
       console.warn("No scoreboard data found or empty CSV.");
       return;
     }
 
-    // We'll store them by difficulty
     let easyScores = [];
     let mediumScores = [];
     let hardScores = [];
 
-    // 3) For each row (skip header)
+    // Each row has 9 columns:
+    // 0: Easy Name
+    // 1: Easy Score
+    // 2: Easy Date
+    // 3: Medium Name
+    // 4: Medium Score
+    // 5: Medium Date
+    // 6: Hard Name
+    // 7: Hard Score
+    // 8: Hard Date
     for (let i = 1; i < rows.length; i++) {
       let cells = rows[i].split(",");
-      // Expect at least 9 or 10 columns
-      if (cells.length < 9) continue;
-
-      // Trim each cell
+      if (cells.length < 9) {
+        console.warn(`Skipping row ${i+1}, fewer than 9 columns:`, cells);
+        continue;
+      }
       cells = cells.map(c => c.trim());
 
-      // Indices based on your screenshot:
-      //  0: Easy Name
-      //  1: Easy Score
-      //  2: Easy Date
-      //  3: Medium Name
-      //  4: (Blank)
-      //  5: Medium Score
-      //  6: Medium Date
-      //  7: Hard Name
-      //  8: Hard Score
-      //  9: Hard Date (optional)
       const easyName    = cells[0];
       const easyScore   = parseFloat(cells[1]);
-      // const easyDate = cells[2]; // if you need it
-      const mediumName  = cells[3];
-      // skip cells[4] (blank)
-      const mediumScore = parseFloat(cells[5]);
-      // const mediumDate = cells[6]; // if needed
-      const hardName    = cells[7];
-      const hardScore   = parseFloat(cells[8]);
-      // const hardDate  = cells[9]; // if needed
+      // const easyDate  = cells[2] (unused)
 
-      // 4) Push into arrays if valid
+      const mediumName  = cells[3];
+      const mediumScore = parseFloat(cells[4]);
+      // const mediumDate = cells[5] (unused)
+
+      const hardName    = cells[6];
+      const hardScore   = parseFloat(cells[7]);
+      // const hardDate  = cells[8] (unused)
+
       if (!isNaN(easyScore)) {
         easyScores.push({ name: easyName, score: easyScore });
       }
@@ -902,17 +911,17 @@ async function loadScoreboard() {
       }
     }
 
-    // 5) Sort descending
-    easyScores.sort((a, b) => b.score - a.score);
-    mediumScores.sort((a, b) => b.score - a.score);
-    hardScores.sort((a, b) => b.score - a.score);
+    // Sort descending
+    easyScores.sort((a,b) => b.score - a.score);
+    mediumScores.sort((a,b) => b.score - a.score);
+    hardScores.sort((a,b) => b.score - a.score);
 
-    // 6) Keep top 10
+    // Top 10
     easyScores = easyScores.slice(0, 10);
     mediumScores = mediumScores.slice(0, 10);
     hardScores = hardScores.slice(0, 10);
 
-    // 7) Render
+    // Render tables
     renderScoreboard("scoreboard-easy", easyScores);
     renderScoreboard("scoreboard-medium", mediumScores);
     renderScoreboard("scoreboard-hard", hardScores);
