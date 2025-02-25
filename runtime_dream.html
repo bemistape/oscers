@@ -5,39 +5,40 @@
   <title>Runtime Dream</title>
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      width: 100%;
-      height: 100%;
+      margin: 0; padding: 0; overflow: hidden;
+      width: 100%; height: 100%;
       background: #000;
       font-family: sans-serif;
     }
-    /* Container that slowly zooms and pans. */
+    /* The container that will have its transform updated by JS */
     #zoom-container {
       position: relative;
       width: 100%;
       height: 100%;
-      animation: slowZoom 15s ease-in-out infinite alternate;
       overflow: hidden;
+      transition: transform 8s ease-in-out;
     }
-    /* Keyframes for pronounced zoom & subtle side pans. */
-    @keyframes slowZoom {
-      0%   { transform: translate(0,0) scale(0.8); }
-      25%  { transform: translate(-3%, 2%) scale(1.2); }
-      50%  { transform: translate(2%, -3%) scale(0.9); }
-      75%  { transform: translate(-1%, -1%) scale(1.3); }
-      100% { transform: translate(0,0) scale(1.0); }
+    /* Audio toggle button */
+    #audio-toggle {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid #fff;
+      color: #fff;
+      padding: 5px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      z-index: 1000;
+      user-select: none;
     }
-    /* The main container where elements are placed. */
+    /* Main container for elements */
     #container {
       position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0; 
-      left: 0;
+      width: 100%; height: 100%;
+      top: 0; left: 0;
     }
-    /* Movie group container (poster + runtime). */
+    /* Movie group container (poster + runtime) */
     .movie-group {
       position: absolute;
       display: flex;
@@ -47,14 +48,14 @@
       opacity: 1;
       transition: opacity 1s ease-out;
     }
-    /* Poster styling with a glow. */
+    /* Poster styling with glow */
     .poster {
       width: 120px;
       border: 3px solid #fff;
       box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
       transition: transform 1.5s ease-in-out;
     }
-    /* Runtime button with a subtle swirl. */
+    /* Runtime button with subtle swirl */
     .runtime-btn {
       margin-top: -5px;
       background: #ff6347;
@@ -70,7 +71,7 @@
       0%, 100% { transform: rotate(0deg); }
       50% { transform: rotate(3deg) scale(1.05); }
     }
-    /* Flicker / glitch effect for runtime text. */
+    /* Flicker / glitch effect for runtime text */
     .runtime-glitch {
       animation: glitchText 1s steps(2, end) 1;
     }
@@ -79,7 +80,7 @@
       50%  { opacity: 1; }
       100% { opacity: 1; }
     }
-    /* Emoji styling. */
+    /* Emoji styling */
     .emoji {
       position: absolute;
       font-size: 2rem;
@@ -88,7 +89,16 @@
       transition: opacity 1s ease-out;
       text-shadow: 0 0 10px rgba(255,255,255,0.8);
     }
-    /* Simple styling for trailing “ghosts.” */
+    /* Cloud-like drifting for movie groups */
+    @keyframes cloudFloat {
+      0% { transform: translate(0, 0); }
+      50% { transform: translate(5px, -5px); }
+      100% { transform: translate(0, 0); }
+    }
+    .cloud {
+      animation: cloudFloat 10s ease-in-out infinite;
+    }
+    /* Simple styling for trailing "ghosts" */
     .poster-ghost {
       position: absolute;
       pointer-events: none;
@@ -99,6 +109,8 @@
   </style>
 </head>
 <body>
+  <!-- Audio toggle button -->
+  <div id="audio-toggle">🔊</div>
   <!-- Background MIDI audio -->
   <audio id="bg-audio" src="Casablanca.mid" loop>
     Your browser does not support the audio element.
@@ -107,7 +119,7 @@
     <div id="container"></div>
   </div>
   <script>
-    // Basic CSV parser (assumes no commas within fields).
+    // Basic CSV parser (assumes no commas in fields)
     function parseCSV(data) {
       const lines = data.trim().split('\n');
       const header = lines.shift().split(',');
@@ -120,27 +132,54 @@
         return obj;
       });
     }
-    // Track all movie groups for movement and collision.
+
+    // Global array to track movie groups.
     let allGroups = [];
 
-    // Try to resume audio on interaction.
+    // Audio toggle button
+    const audioToggle = document.getElementById('audio-toggle');
     const bgAudio = document.getElementById('bg-audio');
-    function tryPlayAudio() {
-      if(bgAudio.paused) {
-        bgAudio.play().catch(e => {
-          // Some browsers require a user interaction.
-          console.log("Audio play failed:", e);
-        });
+    let audioOn = false;
+    audioToggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      audioOn = !audioOn;
+      if(audioOn) {
+        bgAudio.play().catch(err => console.log("Play error:", err));
+        audioToggle.innerText = "🔊";
+      } else {
+        bgAudio.pause();
+        audioToggle.innerText = "🔇";
       }
-    }
+    });
 
+    // Update #zoom-container transform randomly every 8 seconds.
+    const zoomContainer = document.getElementById('zoom-container');
+    function updateZoom() {
+      // Random scale between 0.8 and 1.3, random translation (-5% to 5%), random rotation (-5deg to 5deg)
+      const scale = (0.8 + Math.random() * 0.5).toFixed(2);
+      const translateX = (Math.random() * 10 - 5).toFixed(2);
+      const translateY = (Math.random() * 10 - 5).toFixed(2);
+      const rotate = (Math.random() * 10 - 5).toFixed(2);
+      zoomContainer.style.transform = `translate(${translateX}%, ${translateY}%) scale(${scale}) rotate(${rotate}deg)`;
+    }
+    updateZoom();
+    setInterval(updateZoom, 8000);
+
+    // Try to resume audio on any click
+    document.addEventListener('click', () => {
+      if(audioOn && bgAudio.paused) {
+        bgAudio.play().catch(err => console.log("Play error:", err));
+      }
+    });
+
+    // Fetch CSV
     fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vToIbm5XR9mtqOXHYzpF0jIXhGY9WI9m-QQak2KsZFB6CGVnRVRCPL3V6zFVbT6e_jLyGQM1e5XPjcX/pub?gid=534697964&single=true&output=csv')
       .then(resp => resp.text())
       .then(data => {
         const movies = parseCSV(data);
         const container = document.getElementById('container');
 
-        // Basic collision avoidance.
+        // Collision avoidance
         function avoidCollisions(g) {
           const threshold = 100;
           allGroups.forEach(other => {
@@ -159,21 +198,17 @@
           });
         }
 
-        // Occasionally glitch the runtime text.
+        // Occasional runtime glitch
         function glitchRuntime(runtimeElem, originalText) {
           if(Math.random() < 0.2) {
             runtimeElem.classList.add('runtime-glitch');
             runtimeElem.innerText = Math.random() < 0.5 ? '∞ min' : (Math.floor(Math.random()*(-10)) + ' min');
-            setTimeout(() => {
-              runtimeElem.innerText = originalText;
-            }, 500);
-            setTimeout(() => {
-              runtimeElem.classList.remove('runtime-glitch');
-            }, 1000);
+            setTimeout(() => { runtimeElem.innerText = originalText; }, 500);
+            setTimeout(() => { runtimeElem.classList.remove('runtime-glitch'); }, 1000);
           }
         }
 
-        // Create trailing ghost for poster.
+        // Create trailing ghost for poster (optional trail effect)
         function createGhost(posterSrc, x, y, scale) {
           const ghost = document.createElement('img');
           ghost.src = posterSrc;
@@ -185,12 +220,8 @@
           ghost.style.boxShadow = '0 0 15px rgba(255, 255, 255, 0.7)';
           ghost.style.transform = 'scale(' + scale + ')';
           container.appendChild(ghost);
-          setTimeout(() => {
-            ghost.style.opacity = 0;
-          }, 50);
-          setTimeout(() => {
-            if(ghost.parentNode) ghost.parentNode.removeChild(ghost);
-          }, 1050);
+          setTimeout(() => { ghost.style.opacity = 0; }, 50);
+          setTimeout(() => { if(ghost.parentNode) ghost.parentNode.removeChild(ghost); }, 1050);
         }
 
         function createMovieGroup() {
@@ -203,24 +234,30 @@
             vx: (Math.random() - 0.5) * 1.2,
             vy: (Math.random() - 0.5) * 1.2
           };
-          g.el.className = 'movie-group';
+          g.el.className = 'movie-group cloud';
           container.appendChild(g.el);
+
           const posterElem = document.createElement('img');
           posterElem.src = movie.poster;
           posterElem.alt = movie.title;
           posterElem.className = 'poster';
           g.el.appendChild(posterElem);
+
           const runtimeElem = document.createElement('button');
           runtimeElem.className = 'runtime-btn';
           const runtimeText = movie.runtime + ' min';
           runtimeElem.innerText = runtimeText;
           g.el.appendChild(runtimeElem);
+
+          // Random overall scale for the group.
           const scale = (0.7 + Math.random() * 0.8).toFixed(2);
           g.el.style.transform = 'scale(' + scale + ')';
           g.el.style.left = g.x + 'px';
           g.el.style.top = g.y + 'px';
+
           glitchRuntime(runtimeElem, runtimeText);
           allGroups.push(g);
+
           setTimeout(() => {
             g.el.style.opacity = 0;
             setTimeout(() => {
@@ -241,15 +278,11 @@
           const ey = Math.random() * (window.innerHeight - 50);
           e.style.left = ex + 'px';
           e.style.top = ey + 'px';
-          setTimeout(() => {
-            e.style.opacity = 0;
-          }, 4000);
-          setTimeout(() => {
-            if(e.parentNode) e.parentNode.removeChild(e);
-          }, 5000);
+          setTimeout(() => { e.style.opacity = 0; }, 4000);
+          setTimeout(() => { if(e.parentNode) e.parentNode.removeChild(e); }, 5000);
         }
 
-        // Movement + collisions + trailing ghost.
+        // Movement, collisions, and ghost trails.
         function animate() {
           allGroups.forEach(g => {
             if(Math.random() < 0.03) {
@@ -276,17 +309,15 @@
         animate();
       })
       .catch(err => console.error(err));
-
-    // On click, push movie groups away and trigger audio.
+    
+    // On click, push movie groups away.
     document.addEventListener('click', function(e) {
-      tryPlayAudio();
       const clickX = e.clientX;
       const clickY = e.clientY;
       allGroups.forEach(g => {
         const dx = g.x - clickX;
         const dy = g.y - clickY;
         const distance = Math.sqrt(dx*dx + dy*dy) || 1;
-        // Push strength inversely proportional to distance.
         const strength = 20;
         g.vx += (dx/distance) * strength;
         g.vy += (dy/distance) * strength;
