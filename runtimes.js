@@ -2,7 +2,7 @@
  * GLOBAL STATE & CONFIG
  *******************************************************/
 // Replace with your actual Apps Script URL:
-const SCORE_URL = "https://script.google.com/macros/s/AKfycbweBRZMVLUa5QmPwJ3y6bgYmrLT5RvEJ51f2-pA8-GwdVVicwyLbO8dMW51EUJ0T78/exec";
+const SCORE_URL = "https://script.google.com/macros/s/AKfycbxW58AuFb7_RWfizbRIYZ2hQ9R71q8d2-yPh7Gv4fr-c9NP8J3v_cjWv_osVXObJiQ/exec";
 
 const csvUrl = "runtime_source_02222025.csv";
 const reactionsUrl = "reactions.csv";
