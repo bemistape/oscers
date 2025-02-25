@@ -405,31 +405,7 @@ button {
   margin-top: 5px;
 }
 
-/* ---------- REACTION OVERLAY ---------- */
-#reaction-overlay {
-  display: none;
-  position: fixed;
-  /* anchor near bottom center so it doesn't overlap the recap at the top */
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.95);
-  padding: 20px;
-  border: 3px solid #00FFFF;
-  border-radius: 10px;
-  text-align: center;
-  z-index: 99999;
-  width: 80%;
-  max-width: 400px;
-}
-#reaction-overlay p {
-  font-family: Arial, sans-serif;
-  font-size: 24px;
-  margin-bottom: 20px;
-}
-/* no close button for reaction overlay now */
-
-/* ---------- MINI-RECAP (per-round) ---------- */
+/* ---------- ROUND RECAP OVERLAY (SCORE + REACTION) ---------- */
 #round-recap-overlay {
   display: none;
   position: absolute;
