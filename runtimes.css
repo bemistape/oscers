@@ -1,0 +1,496 @@
+/* ---------- NAVIGATION BAR ---------- */
+#navBar {
+  background-color: #333;
+  padding: 10px 0;
+  text-align: center;
+  margin-bottom: 10px;
+}
+#navBar a {
+  color: #fff;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 18px;
+  text-decoration: none;
+  margin: 0 15px;
+}
+#navBar a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- GLOBAL / LAYOUT ---------- */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: black;
+  color: white;
+  font-family: Rockwell, serif;
+}
+.page-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+  text-align: center;
+}
+h1, h2, h3, p {
+  margin: 0 0 10px 0;
+}
+button {
+  cursor: pointer;
+}
+.version-number {
+  text-align: center;
+  font-size: 10px;
+  opacity: 0.7;
+  margin-top: 20px;
+}
+
+/* ---------- INPUT STYLES ---------- */
+#playerNameInput {
+  font-size: 18px;
+  padding: 8px;
+  margin-bottom: 20px;
+  width: 200px;
+  text-align: center;
+}
+
+/* ---------- BUTTON STYLES ---------- */
+.game-btn {
+  font-size: 22px;
+  padding: 12px 30px;
+  margin: 10px 5px;
+  background: #FFD700;
+  color: black;
+  border: none;
+  transition: background 0.2s;
+}
+.game-btn:hover {
+  background: #FFC700;
+}
+
+.diff-btn {
+  background: #222;
+  border: 2px solid #FFD700;
+  color: white;
+  font-size: 16px;
+  padding: 8px 16px;
+  margin: 5px;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.diff-btn:hover {
+  background: #333;
+}
+.diff-btn.active {
+  background: #FFD700;
+  color: black;
+  border-color: #FFD700;
+}
+
+/* ---------- MAIN CONTAINERS ---------- */
+#intro-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+#game-container,
+#bonus-container,
+#final-container {
+  display: none;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* ---------- INTRO PAGE ---------- */
+#intro-container .intro-rules {
+  max-width: 600px;
+  font-size: 16px;
+  line-height: 1.4;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.difficulty-box { margin-bottom: 20px; }
+
+/* ---------- GAME PAGE ---------- */
+#timer-box {
+  margin: 10px auto;
+  width: 160px;
+  height: 160px;
+  background-color: #222;
+  border-radius: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+  border: 2px solid #444;
+  transition: all 0.2s ease;
+  position: relative;
+}
+#round-label {
+  font-size: 16px;
+  opacity: 0.9;
+  margin-bottom: 0px;
+}
+#timer-value {
+  font-size: 64px;
+}
+#joker-btn {
+  position: absolute;
+  bottom: 8px;
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  font-size: 24px;
+  background: #222;
+  border: 2px solid #FFD700;
+  color: white;
+  z-index: 3;
+}
+#joker-btn:hover {
+  background: #333;
+}
+
+#runtimes-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+#movies-container {
+  display: grid;
+  grid-template-columns: repeat(5, 160px);
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+  width: 100%;
+}
+#submit-btn {
+  margin-top: 20px;
+}
+
+.movie-card {
+  width: 160px;
+  border: 2px solid white;
+  padding: 10px;
+  background-color: #000;
+  border-radius: 15px;
+  text-align: center;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  transition: background-color 0.2s, border-color 0.2s;
+  cursor: default;
+}
+.movie-card:hover {
+  background-color: #111;
+}
+.movie-poster {
+  width: 140px;
+  height: auto;
+  margin-bottom: 5px;
+  border-radius: 6px;
+}
+.placed {
+  border-color: #FFD700 !important;
+  background-color: #111;
+}
+.runtime-card {
+  width: 80px;
+  height: 50px;
+  border-radius: 25px;
+  background-color: #FFD700;
+  color: black;
+  font-weight: bold;
+  border: 2px solid #FFD700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 5px;
+  cursor: grab;
+  animation: float-run 3s ease-in-out infinite alternate;
+  font-size: 14px;
+}
+.runtime-card.dragging {
+  outline: 3px solid #fffd00;
+  box-shadow: 0 0 10px #fffd00;
+}
+.runtime-card.selected {
+  outline: 3px solid #fffd00;
+  box-shadow: 0 0 10px #fffd00;
+}
+@keyframes float-run {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-5px); }
+}
+.correct {
+  background-color: #003300 !important;
+  border-color: #00FF00 !important;
+  animation: bounce-correct 0.5s;
+}
+.incorrect {
+  background-color: #330000 !important;
+  border-color: #FF0000 !important;
+  animation: shake-red 0.5s;
+}
+@keyframes bounce-correct {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.1); }
+  50% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+@keyframes shake-red {
+  20% { transform: translateX(-3px); }
+  40% { transform: translateX(3px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+.stats-box {
+  border: 1px solid #666;
+  padding: 10px;
+  margin: 10px auto;
+  width: fit-content;
+  min-width: 200px;
+}
+.stats-box.empty { display: none; }
+
+.glow-anim {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+@keyframes glow {
+  0% { box-shadow: 0 0 5px #FFD700; }
+  100% { box-shadow: 0 0 20px #FFD700; }
+}
+
+/* ---------- BONUS ROUND (Grid) ---------- */
+#bonus-container {
+  text-align: center;
+}
+#bonus-floating-container {
+  display: none;
+  grid-template-columns: repeat(5, 140px);
+  gap: 10px;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto 20px auto;
+  justify-content: center;
+}
+#bonus-timer-box {
+  margin: 10px auto;
+  width: 120px;
+  height: 120px;
+  background-color: #222;
+  border-radius: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  font-weight: bold;
+  color: white;
+  border: 2px solid #444;
+  transition: all 0.2s ease;
+  margin-bottom: 20px;
+}
+.floating-card {
+  width: 140px;
+  border: 2px solid white;
+  border-radius: 10px;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  cursor: pointer;
+  text-align: center;
+}
+.floating-card:hover {
+  background: #111;
+}
+.bonus-poster {
+  width: 120px;
+  border-radius: 6px;
+  margin-bottom: 5px;
+}
+.bonus-runtime {
+  font-size: 12px;
+  margin-top: 3px;
+  display: none;
+}
+
+/* ---------- FINAL PAGE ---------- */
+#final-container {
+  text-align: center;
+}
+#final-scores {
+  margin-bottom: 20px;
+  font-size: 28px;
+  font-weight: bold;
+}
+#final-overall-box {
+  border: 1px solid #FFD700;
+  padding: 10px;
+  margin: 10px auto;
+  width: fit-content;
+}
+.final-buttons {
+  margin-bottom: 20px;
+}
+.final-round-wrapper {
+  border: 2px solid #666;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 20px;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+  background: #111;
+}
+.final-round-heading {
+  font-size: 20px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  font-weight: bold;
+  text-align: center;
+}
+.final-round-row {
+  display: grid; 
+  grid-template-columns: repeat(5, 160px);
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 15px;
+  width: 100%;
+}
+.final-card {
+  border-radius: 10px;
+  border: 2px solid #666;
+  padding: 10px;
+  text-align: center;
+  background: #000;
+  margin: 5px;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+.final-card.correct {
+  background-color: #003300;
+  border-color: #0f0;
+}
+.final-card.incorrect {
+  background-color: #330000;
+  border-color: #f00;
+}
+.final-card .movie-title {
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+.final-card .movie-poster {
+  width: 140px;
+  border-radius: 6px;
+  margin-bottom: 5px;
+}
+.round-breakdown-info {
+  text-align: center;
+  margin-top: 5px;
+}
+
+/* ---------- REACTION OVERLAY ---------- */
+#reaction-overlay {
+  display: none;
+  position: fixed;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -30%);
+  background: rgba(0, 0, 0, 0.95);
+  padding: 30px;
+  border: 3px solid #00FFFF;
+  border-radius: 10px;
+  text-align: center;
+  z-index: 99999;
+  width: 80%;
+  max-width: 400px;
+}
+#reaction-overlay p {
+  font-family: Arial, sans-serif;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+#reaction-overlay button {
+  font-size: 18px;
+  padding: 8px 16px;
+  background: #FFD700;
+  color: black;
+  border: none;
+  transition: background 0.2s;
+}
+#reaction-overlay button:hover {
+  background: #FFC700;
+}
+
+/* ---------- MINI-RECAP (per-round) ---------- */
+#round-recap-overlay {
+  display: none;
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.9);
+  padding: 20px;
+  border: 3px solid #FFD700;
+  border-radius: 10px;
+  text-align: center;
+  z-index: 9999;
+  width: 300px;
+}
+#round-recap-overlay h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+#round-recap-overlay p {
+  margin-bottom: 10px;
+}
+
+/* ---------- MEDIA QUERIES for MOBILE ---------- */
+@media (max-width: 600px) {
+  #movies-container {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+  .movie-card {
+    width: auto;
+    min-width: 120px;
+  }
+  .movie-poster {
+    width: 100px;
+  }
+  #bonus-floating-container {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+  .floating-card {
+    width: auto;
+    min-width: 100px;
+  }
+  .bonus-poster {
+    width: 80px;
+  }
+  .final-round-row {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+  .final-card {
+    width: auto;
+    min-width: 120px;
+  }
+  .final-card .movie-poster {
+    width: 100px;
+  }
+}
