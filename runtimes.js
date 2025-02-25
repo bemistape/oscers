@@ -111,7 +111,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 /*******************************************************
  * CSV LOADING
  *******************************************************/
-// We assume your CSV now has a column "id" as well, so we can store it for Joker usage
 async function fetchMainCSV() {
   const resp = await fetch(csvUrl);
   let data = await resp.text();
@@ -537,7 +536,6 @@ function nextRoundAfterRecap(){
 /*******************************************************
  * JOKER
  *******************************************************/
-// We'll look up by data-id
 function useJoker(){
   if(jokerUsed)return;
   jokerUsed=true;
@@ -746,8 +744,10 @@ function submitScore(name, timestamp, score, difficulty){
   const data={ name, timestamp, score, difficulty };
   console.log("Submitting score data:", data);
 
+  // Explicitly set mode:"cors" to ensure the browser uses CORS
   fetch(SCORE_URL, {
     method:"POST",
+    mode:"cors",
     headers:{"Content-Type":"application/json"},
     body: JSON.stringify(data)
   })
