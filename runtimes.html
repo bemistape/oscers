@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Runtime Challenge</title>
+  <title>Runtime Challenge v5.4</title>
   <!-- Link to your external CSS -->
   <link rel="stylesheet" href="runtimes.css">
 </head>
 <body>
-  <!-- Navigation Bar -->
+  <!-- NAVIGATION BAR -->
   <nav id="navBar">
     <a href="index.html">Oscer Bingo</a>
     <a href="runtimes.html">Runtime Challenge</a>
@@ -31,7 +31,7 @@
       <button class="diff-btn" data-difficulty="hard" id="hard-btn">Hard</button>
     </div>
     <button id="begin-btn" class="game-btn" disabled>Begin</button>
-    <div class="version-number">v5.3</div>
+    <div class="version-number">v5.4</div>
   </div>
 
   <!-- ROUND RECAP OVERLAY -->
@@ -88,6 +88,14 @@
       <div id="final-cards-container"></div>
     </div>
   </div>
+
+  <!-- SOUND EFFECTS -->
+  <audio id="ding-sound" src="data:audio/wav;base64,UklGRgAAAABXQVZFZm10IBIAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="></audio>
+  <audio id="buzz-sound" src="data:audio/wav;base64,UklGRgAAAABXQVZFZm10IBIAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="></audio>
+  <!-- AUDIO FOR JOKER -->
+  <audio id="joker-sound" preload="auto">
+    <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=" type="audio/wav">
+  </audio>
 
   <!-- Link to external JS at bottom -->
   <script src="runtimes.js"></script>
