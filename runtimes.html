@@ -2,8 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Runtime Challenge - v5.1</title>
+  <title>Runtime Challenge - v5.2</title>
   <style>
+    /* ---------- NAVIGATION BAR ---------- */
+    #navBar {
+      background-color: #333;
+      padding: 10px 0;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    #navBar a {
+      color: #fff;
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 18px;
+      text-decoration: none;
+      margin: 0 15px;
+    }
+    #navBar a:hover {
+      text-decoration: underline;
+    }
+
     /* ---------- GLOBAL / LAYOUT ---------- */
     html, body {
       margin: 0;
@@ -58,6 +76,7 @@
     .game-btn:hover {
       background: #FFC700;
     }
+    
     .diff-btn {
       background: #222;
       border: 2px solid #FFD700;
@@ -485,14 +504,13 @@
   </style>
 </head>
 <body>
-  <!-- SOUND EFFECTS -->
-  <audio id="ding-sound" src="data:audio/wav;base64,UklGRgAAAABXQVZFZm10IBIAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="></audio>
-  <audio id="buzz-sound" src="data:audio/wav;base64,UklGRgAAAABXQVZFZm10IBIAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="></audio>
-  <!-- AUDIO FOR JOKER -->
-  <audio id="joker-sound" preload="auto">
-    <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=" type="audio/wav">
-  </audio>
-  
+  <!-- NAVIGATION BAR -->
+  <nav id="navBar">
+    <a href="index.html">Oscer Bingo</a>
+    <a href="runtimes.html">Runtime Challenge</a>
+    <a href="runtime_dream.html">Runtime Dream</a>
+  </nav>
+
   <!-- INTRO SCREEN -->
   <div id="intro-container" class="page-container">
     <h1>Runtime Challenge</h1>
@@ -511,22 +529,22 @@
       <button class="diff-btn" data-difficulty="hard" id="hard-btn">Hard</button>
     </div>
     <button id="begin-btn" class="game-btn" disabled>Begin</button>
-    <div class="version-number">v5.1</div>
+    <div class="version-number">v5.2</div>
   </div>
-  
+
   <!-- ROUND RECAP OVERLAY -->
   <div id="round-recap-overlay">
     <h3 id="round-recap-title"></h3>
     <p id="round-recap-details"></p>
     <button id="round-recap-close-btn" class="game-btn" style="font-size:16px; padding:6px 12px;">OK</button>
   </div>
-  
+
   <!-- REACTION OVERLAY -->
   <div id="reaction-overlay">
     <p id="reaction-quote"></p>
     <button id="reaction-close-btn" class="game-btn">OK</button>
   </div>
-  
+
   <!-- GAME SCREEN -->
   <div id="game-container" class="page-container">
     <div id="timer-box">
@@ -539,7 +557,7 @@
     <button id="submit-btn" class="game-btn" title="Submit early to earn extra time bonus!">Submit</button>
     <div id="this-game-stats" class="stats-box empty"></div>
   </div>
-  
+
   <!-- BONUS ROUND (Grid Layout) -->
   <div id="bonus-container" class="page-container">
     <div id="bonus-intro" style="max-width:600px; margin-bottom:20px;">
@@ -553,7 +571,7 @@
     <button id="bonus-continue-btn" class="game-btn" style="display:none;">Continue</button>
     <div id="bonus-result"></div>
   </div>
-  
+
   <!-- FINAL SCREEN -->
   <div id="final-container" class="page-container">
     <div id="final-scores"></div>
@@ -562,32 +580,34 @@
       <button id="share-twitter-btn" class="game-btn">Share on Twitter</button>
       <button id="copy-recap-btn" class="game-btn">Copy Recap</button>
       <button id="play-again-btn" class="game-btn">Play Again?</button>
+      <!-- NEW: Submit Score Button -->
+      <button id="submit-score-btn" class="game-btn">Submit Score</button>
     </div>
     <div id="details-container">
       <div id="final-cards-container"></div>
     </div>
   </div>
-  
+
   <script>
     /*******************************************************
      * GLOBAL STATE & CONFIG
      *******************************************************/
-    // Your deployed Google Apps Script URL for score submission:
+    // Use your provided web app URL for score submission:
     const SCORE_URL = "https://script.google.com/macros/s/AKfycbzXDnGCSUQwLBGMmgWCYorc-jY33FaRynqWC7-Wctjs58em5bSA4p5KSYD9qH5X6LI/exec";
-    
+
     const csvUrl = "runtime_source_02222025.csv";
     const reactionsUrl = "reactions.csv";
-    
+
     let difficulty;
     let allMovies = [];
     let filteredMovies = [];
-    
+
     // Reaction arrays
     let perfectReactions = [];
     let closeReactions = [];
     let unimpressedReactions = [];
     let badReactions = [];
-    
+
     const TIMERS = {
       easy:   [30, 30, 30, 30, 30],
       medium: [30, 25, 20, 15, 15],
@@ -596,46 +616,49 @@
     let roundTimers = [];
     let rounds = [];
     let currentRoundIndex = 0;
-    
+
     let totalCorrect = 0;
     let totalDifference = 0;
     let totalAnswered = 0;
     let totalScore = 0;
     let roundScores = [];
-    
+
     let jokerUsed = false;
     let timeLeft = 20;
     let roundTimer = null;
     let canDrag = false;
-    
+
     // For mobile fallback: selected runtime card
     let selectedRuntimeCard = null;
-    
+
     // Bonus
     let bonusMovies = [];
     let bonusUsed = false;
     let bonusTimer = null;
     let bonusTimeLeft = 10;
     let bonusStarted = false;
-    
-    // Player's name
+
+    // Global variable for player's name
     let playerName = "";
-    
+    // We'll store the reaction text in a variable for the next round
+    let pendingReaction = "";
+
     document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById("easy-btn").addEventListener("click", () => setDifficulty("easy"));
       document.getElementById("medium-btn").addEventListener("click", () => setDifficulty("medium"));
       document.getElementById("hard-btn").addEventListener("click", () => setDifficulty("hard"));
       setDifficulty("easy");
-      
+
       const nameInput = document.getElementById("playerNameInput");
       nameInput.addEventListener("input", function() {
+        // Enable Begin button if a 6-letter name is entered
         document.getElementById("begin-btn").disabled = (nameInput.value.trim().length !== 6);
       });
-      
+
       const beginBtn = document.getElementById("begin-btn");
       beginBtn.disabled = true;
       beginBtn.innerText = "Loading...";
-      
+
       try {
         await fetchMainCSV();
         await fetchReactionsCSV();
@@ -645,35 +668,50 @@
         console.error("Error loading data:", e);
         beginBtn.innerText = "Error loading data";
       }
-      
+
       beginBtn.addEventListener("click", onBeginGame);
-      
+
       document.getElementById("joker-btn").addEventListener("click", () => {
         if (!jokerUsed) useJoker();
       });
       document.getElementById("submit-btn").addEventListener("click", onSubmitRound);
-      
+
       document.getElementById("bonus-begin-btn").addEventListener("click", startBonusActual);
       document.getElementById("bonus-continue-btn").addEventListener("click", onFinishBonus);
-      
+
       document.getElementById("share-twitter-btn").addEventListener("click", shareOnTwitter);
       document.getElementById("copy-recap-btn").addEventListener("click", copyRecap);
       document.getElementById("play-again-btn").addEventListener("click", () => {
         document.getElementById("final-container").style.display = "none";
         document.getElementById("intro-container").style.display = "flex";
       });
-      
+
+      // NEW: Submit Score button on final screen
+      document.getElementById("submit-score-btn").addEventListener("click", () => {
+        submitScore(playerName, new Date().toISOString(), totalScore, difficulty);
+      });
+
+      // Round recap
       document.getElementById("round-recap-close-btn").addEventListener("click", () => {
-        document.getElementById("round-recap-overlay").style.display = "none";
+        // Hide both popups
+        hideAllPopups();
+        // Then show the reaction
         showReactionOverlay(pendingReaction);
       });
-      
+
+      // Reaction close
       document.getElementById("reaction-close-btn").addEventListener("click", () => {
-        document.getElementById("reaction-overlay").style.display = "none";
+        hideAllPopups();
         nextRoundAfterReaction();
       });
     });
-    
+
+    // Hide both popups if either is closed
+    function hideAllPopups(){
+      document.getElementById("round-recap-overlay").style.display = "none";
+      document.getElementById("reaction-overlay").style.display = "none";
+    }
+
     /*******************************************************
      * CSV LOADING (Main + Reactions)
      *******************************************************/
@@ -692,7 +730,7 @@
       const colGroup = headers.indexOf("group");
       const colPoster = headers.indexOf("poster");
       const colOverview = headers.indexOf("overview");
-      
+
       for (let i = 1; i < lines.length; i++) {
         const rowCells = lines[i].split(",");
         if (rowCells.length < 6) continue;
@@ -707,7 +745,7 @@
         allMovies.push(movie);
       }
     }
-    
+
     async function fetchReactionsCSV(){
       const resp = await fetch(reactionsUrl);
       let data = await resp.text();
@@ -721,7 +759,7 @@
       const colClose = headers.indexOf("close");
       const colUnimp = headers.indexOf("unimpressed");
       const colBad = headers.indexOf("bad");
-      for(let i = 1; i < rows.length; i++){
+      for(let i=1; i<rows.length; i++){
         const r = rows[i];
         if(r.length < 4) continue;
         if(r[colPerfect]) perfectReactions.push(r[colPerfect]);
@@ -735,7 +773,7 @@
       let currentLine = [];
       let currentCell = "";
       let inQuotes = false;
-      for(let i = 0; i < csv.length; i++){
+      for(let i=0; i<csv.length; i++){
         const c = csv[i];
         if(c === '"'){
           if(inQuotes && csv[i+1] === '"'){
@@ -765,13 +803,13 @@
       }
       return lines;
     }
-    
+
     /*******************************************************
      * DIFFICULTY / SETUP
      *******************************************************/
     function setDifficulty(diff) {
       difficulty = diff;
-      ["easy-btn", "medium-btn", "hard-btn"].forEach(id => {
+      ["easy-btn","medium-btn","hard-btn"].forEach(id => {
         document.getElementById(id).classList.remove("active");
       });
       document.getElementById(`${diff}-btn`).classList.add("active");
@@ -798,10 +836,10 @@
       bonusUsed = false;
       bonusStarted = false;
       selectedRuntimeCard = null;
-      
+
       document.getElementById("bonus-container").style.display = "none";
       document.getElementById("final-container").style.display = "none";
-      
+
       filterByDifficulty();
       if(filteredMovies.length < 5){
         filteredMovies = allMovies.slice();
@@ -844,7 +882,7 @@
       }
       console.log("Rounds built:", rounds);
     }
-    
+
     /*******************************************************
      * ROUND LOGIC
      *******************************************************/
@@ -867,17 +905,18 @@
       timeLeft = roundTimers[currentRoundIndex] || 20;
       setupTimer();
       updateGameStatsBox();
-      
+
       document.getElementById("round-label").innerText = `Round ${currentRoundIndex+1}`;
-      
+
       const moviesContainer = document.getElementById("movies-container");
       const runtimesContainer = document.getElementById("runtimes-container");
       moviesContainer.innerHTML = "";
       runtimesContainer.innerHTML = "";
-      
+
       document.getElementById("joker-btn").style.display = jokerUsed ? "none" : "inline-block";
-      
+
       const roundMovies = rounds[currentRoundIndex];
+      // Shuffle display order
       const displayMovies = shuffle([...roundMovies]);
       displayMovies.forEach(m => {
         const card = document.createElement("div");
@@ -885,6 +924,7 @@
         card.setAttribute("data-correct", m.runtime);
         card.movie = m;
         let posterHTML = m.poster ? `<img class="movie-poster" src="${m.poster}" alt="${m.movie_name} poster">` : "";
+        // Omit title text for round display
         card.innerHTML = posterHTML;
         card.addEventListener("click", function(e){
           if(selectedRuntimeCard && !card.querySelector(".runtime-card")){
@@ -899,7 +939,7 @@
         card.addEventListener("drop", e => dropHandler(e, m, card));
         moviesContainer.appendChild(card);
       });
-      
+
       roundMovies.forEach((m, i) => {
         const rc = document.createElement("div");
         rc.classList.add("runtime-card");
@@ -931,13 +971,13 @@
       });
       canDrag = true;
     }
-    
+
     function setupTimer(){
       clearInterval(roundTimer);
       styleTimerBox(timeLeft);
       const timerVal = document.getElementById("timer-value");
       timerVal.innerText = timeLeft;
-      
+
       roundTimer = setInterval(() => {
         timeLeft--;
         timerVal.innerText = timeLeft;
@@ -964,7 +1004,7 @@
         timerBox.style.borderColor = "#444";
       }
     }
-    
+
     function dropHandler(e, movieObj, movieCard){
       if(!canDrag)return;
       e.preventDefault();
@@ -978,18 +1018,18 @@
       movieCard.classList.add("placed");
       movieObj._assignedRuntime = parseInt(dragged.getAttribute("data-runtime"), 10);
     }
-    
+
     function onSubmitRound(){
       clearInterval(roundTimer);
       canDrag = false;
       document.getElementById("submit-btn").style.display = "none";
-      
+
       const roundMovies = rounds[currentRoundIndex];
       let roundCorrect = 0;
       let roundDiff = 0;
       let answeredCount = 0;
       let sumActual = 0;
-      
+
       const cards = document.getElementById("movies-container").children;
       for(let i = 0; i < cards.length; i++){
         const card = cards[i];
@@ -1011,14 +1051,14 @@
           showCorrectLine(card, correctRuntime);
         }
       }
-      
+
       const leftoverBonus = timeLeft * 10;
       roundMovies.forEach(m => {
         if(m._assignedRuntime != null){
           roundDiff += Math.abs(m._assignedRuntime - m.runtime);
         }
       });
-      
+
       let fractionBonus = 0;
       if(answeredCount === 5){
         const avgActual = sumActual / 5;
@@ -1026,15 +1066,15 @@
         const fraction = avgDiff / avgActual;
         fractionBonus = (1000 * roundCorrect) * Math.pow((1 - fraction), 2);
       }
-      
+
       const baseScore = roundCorrect * 1000;
       const roundScore = baseScore + leftoverBonus + fractionBonus;
-      
+
       totalCorrect += roundCorrect;
       totalDifference += roundDiff;
       totalAnswered += answeredCount;
       totalScore += roundScore;
-      
+
       roundScores.push({
         roundIndex: currentRoundIndex+1,
         correct: roundCorrect,
@@ -1044,24 +1084,21 @@
         fractionBonus: fractionBonus,
         roundScore: roundScore
       });
-      
-      let reactionText = "";
+
+      // Reaction logic
       if(roundCorrect === 5){
-        reactionText = randomFrom(perfectReactions);
+        pendingReaction = randomFrom(perfectReactions);
       } else if(roundCorrect === 4){
-        reactionText = randomFrom(closeReactions);
+        pendingReaction = randomFrom(closeReactions);
       } else if(roundCorrect === 3 || roundCorrect === 2){
-        reactionText = randomFrom(unimpressedReactions);
+        pendingReaction = randomFrom(unimpressedReactions);
       } else {
-        reactionText = randomFrom(badReactions);
+        pendingReaction = randomFrom(badReactions);
       }
-      
+
       showRoundRecapOverlay(roundCorrect, answeredCount, leftoverBonus, fractionBonus, roundScore);
-      setTimeout(() => {
-        showReactionOverlay(reactionText);
-      }, 500);
     }
-    
+
     function showCorrectLine(card, correctRuntime){
       const line = document.createElement("div");
       line.style.fontSize = "12px";
@@ -1069,7 +1106,7 @@
       line.innerText = `Correct: ${correctRuntime} min`;
       card.appendChild(line);
     }
-    
+
     function showRoundRecapOverlay(roundCorrect, answeredCount, leftoverBonus, fractionBonus, roundScore){
       const overlay = document.getElementById("round-recap-overlay");
       const title = document.getElementById("round-recap-title");
@@ -1083,20 +1120,27 @@
       `;
       overlay.style.display = "block";
     }
-    
+
+    // showReactionOverlay is triggered after the recap overlay is closed
     function showReactionOverlay(quoteText){
       const overlay = document.getElementById("reaction-overlay");
       document.getElementById("reaction-quote").innerText = quoteText;
       overlay.style.display = "block";
     }
-    
-    function nextRoundAfterReaction(){
+
+    // hideAllPopups is called when either popup is closed
+    function hideAllPopups(){
+      document.getElementById("round-recap-overlay").style.display = "none";
       document.getElementById("reaction-overlay").style.display = "none";
+    }
+
+    function nextRoundAfterReaction(){
+      hideAllPopups();
       document.getElementById("submit-btn").style.display = "block";
       currentRoundIndex++;
       startRound();
     }
-    
+
     /*******************************************************
      * JOKER: REVEAL RELATIVE RUNTIMES
      *******************************************************/
@@ -1125,7 +1169,7 @@
         });
       }, 5000);
     }
-    
+
     /*******************************************************
      * BONUS ROUND
      *******************************************************/
@@ -1222,9 +1266,9 @@
       document.getElementById("bonus-container").style.display = "none";
       showFinalScreen();
     }
-    
+
     /*******************************************************
-     * FINAL SCREEN & SCORE SUBMISSION
+     * FINAL SCREEN
      *******************************************************/
     function showFinalScreen(){
       document.getElementById("final-container").style.display = "flex";
@@ -1233,10 +1277,7 @@
       document.getElementById("final-scores").innerText = `Final Score: ${Math.round(totalScore)}`;
       const overallBox = document.getElementById("final-overall-box");
       overallBox.innerHTML = `Accuracy: ${accuracy.toFixed(1)}% | Skill: ${skill.toFixed(1)} min`;
-      
-      // Submit score automatically with playerName, current timestamp, final score, and difficulty
-      submitScore(playerName, new Date().toISOString(), totalScore, difficulty);
-      
+
       const finalCardsContainer = document.getElementById("final-cards-container");
       finalCardsContainer.innerHTML = "";
       rounds.forEach((round, idx) => {
@@ -1248,7 +1289,7 @@
         wrapper.appendChild(heading);
         const rowDiv = document.createElement("div");
         rowDiv.classList.add("final-round-row");
-        round.forEach(movie=>{
+        round.forEach(movie => {
           const actual = movie.runtime;
           const assigned = (movie._assignedRuntime !== null) ? movie._assignedRuntime : "-";
           const isCorrect = (assigned === actual);
@@ -1282,9 +1323,12 @@
         finalCardsContainer.appendChild(wrapper);
       });
     }
-    
-    // Submit score to Google Sheets via Google Apps Script
+
+    /*******************************************************
+     * SCORE SUBMISSION (triggered by the "Submit Score" button)
+     *******************************************************/
     function submitScore(name, timestamp, score, difficulty) {
+      if(!difficulty) difficulty = "unknown";
       const data = { name: name, timestamp: timestamp, score: score, difficulty: difficulty };
       fetch(SCORE_URL, {
         method: "POST",
@@ -1296,12 +1340,14 @@
       .then(response => response.json())
       .then(result => {
         console.log("Score submitted:", result);
+        alert("Score submitted successfully!");
       })
       .catch(error => {
         console.error("Error submitting score:", error);
+        alert("Error submitting score. See console for details.");
       });
     }
-    
+
     /*******************************************************
      * SHARE & COPY
      *******************************************************/
@@ -1332,7 +1378,7 @@ Think you can beat me?`;
         alert("Failed to copy recap. Your browser may not allow clipboard writes.");
       });
     }
-    
+
     /*******************************************************
      * UTILS
      *******************************************************/
