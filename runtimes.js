@@ -864,3 +864,88 @@ function randomFrom(arr){
   if(!arr||arr.length===0)return"";
   return arr[Math.floor(Math.random()*arr.length)];
 }
+
+async function loadScoreboard() {
+  try {
+    // Fetch the CSV scoreboard file
+    const resp = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vTWibg0AkJw2Zyys7ei_tE-GjryZKA9Qowj615YGiyJRGR2yYNguRArqyG1DgbW363axOxlLxfvv7ql/pub?gid=2146518763&single=true&output=csv");
+    const data = await resp.text();
+
+    // Parse the CSV lines (assuming no commas in the values)
+    const rows = data.split(/\r?\n/).filter(line => line.trim() !== "");
+    if (rows.length < 2) return; // no data
+
+    // Assume header row is:
+    // "Easy Name,Easy Score,Easy Date,Medium Name,Medium Score,Medium Date,Hard Name,Hard Score,Hard Date"
+    // We'll use:
+    // Easy: index 0 (name) and index 1 (score)
+    // Medium: index 3 (name) and index 4 (score)
+    // Hard: index 6 (name) and index 7 (score)
+    let easyScores = [];
+    let mediumScores = [];
+    let hardScores = [];
+
+    for (let i = 1; i < rows.length; i++) {
+      let cells = rows[i].split(",");
+      if (cells.length < 9) continue; // skip incomplete rows
+      cells = cells.map(cell => cell.trim());
+      
+      // Parse each difficulty's score (convert to number)
+      let easyScore = parseFloat(cells[1]);
+      if (!isNaN(easyScore)) {
+        easyScores.push({ name: cells[0], score: easyScore });
+      }
+      let mediumScore = parseFloat(cells[4]);
+      if (!isNaN(mediumScore)) {
+        mediumScores.push({ name: cells[3], score: mediumScore });
+      }
+      let hardScore = parseFloat(cells[7]);
+      if (!isNaN(hardScore)) {
+        hardScores.push({ name: cells[6], score: hardScore });
+      }
+    }
+
+    // Sort scores descending (highest first)
+    easyScores.sort((a, b) => b.score - a.score);
+    mediumScores.sort((a, b) => b.score - a.score);
+    hardScores.sort((a, b) => b.score - a.score);
+
+    // Keep only the top 10 entries for each difficulty
+    easyScores = easyScores.slice(0, 10);
+    mediumScores = mediumScores.slice(0, 10);
+    hardScores = hardScores.slice(0, 10);
+
+    // Render each scoreboard
+    renderScoreboard("scoreboard-easy", easyScores);
+    renderScoreboard("scoreboard-medium", mediumScores);
+    renderScoreboard("scoreboard-hard", hardScores);
+
+    // Show the scoreboard container now that data is loaded
+    document.getElementById("scoreboard-container").style.display = "block";
+  } catch (err) {
+    console.error("Error loading scoreboard:", err);
+  }
+}
+
+function renderScoreboard(elementId, scores) {
+  const tbody = document.querySelector(`#${elementId} table tbody`);
+  tbody.innerHTML = ""; // Clear previous content, if any
+  scores.forEach((entry, index) => {
+    const tr = document.createElement("tr");
+
+    const rankTd = document.createElement("td");
+    rankTd.innerText = index + 1;
+
+    const nameTd = document.createElement("td");
+    nameTd.innerText = entry.name;
+
+    const scoreTd = document.createElement("td");
+    scoreTd.innerText = entry.score;
+
+    tr.appendChild(rankTd);
+    tr.appendChild(nameTd);
+    tr.appendChild(scoreTd);
+    tbody.appendChild(tr);
+  });
+}
+
