@@ -6,9 +6,9 @@ const csvUrl = "runtime_source_02222025.csv";
 const reactionsUrl = "reactions.csv";
 
 // Airtable credentials
-const AIRTABLE_API_TOKEN = "patOq3ZLWnPBw54z9.612d6c936097d6a23fd1dd06f9a68ca1e1ab4ccad99a5eb6770eca4af2d74396";  // <-- PUT YOUR ACTUAL TOKEN HERE
-const AIRTABLE_BASE_ID = "appDwKDKdB22NsFkb"; // from your base
-const AIRTABLE_TABLE_ID = "tblADki2GveNohUdD"; // from your table
+const AIRTABLE_API_TOKEN = "patOq3ZLWnPBw54z9.612d6c936097d6a23fd1dd06f9a68ca1e1ab4ccad99a5eb6770eca4af2d74396";
+const AIRTABLE_BASE_ID = "appDwKDKdB22NsFkb";
+const AIRTABLE_TABLE_ID = "tblADki2GveNohUdD";
 // Endpoint to read/write records
 const AIRTABLE_TABLE_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}`;
 
@@ -103,12 +103,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("bonus-begin-btn").addEventListener("click", startBonusActual);
   document.getElementById("bonus-continue-btn").addEventListener("click", onFinishBonus);
 
+  // Share + Copy
   document.getElementById("share-twitter-btn").addEventListener("click", shareOnTwitter);
   document.getElementById("copy-recap-btn").addEventListener("click", copyRecap);
+
+  // Play again
   document.getElementById("play-again-btn").addEventListener("click", () => {
     document.getElementById("final-container").style.display = "none";
     document.getElementById("intro-container").style.display = "flex";
   });
+
+  // Round recap close
   document.getElementById("round-recap-close-btn").addEventListener("click", () => {
     document.getElementById("round-recap-overlay").style.display = "none";
     nextRoundAfterRecap();
