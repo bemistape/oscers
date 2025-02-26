@@ -359,7 +359,7 @@ function renderRound() {
     rc.classList.add("runtime-card");
     rc.setAttribute("data-unique", `rt-${currentRoundIndex}-${i}`);
     rc.setAttribute("data-runtime", m.runtime.toString());
-    rc.innerText = formatScore(m.runtime); // show no decimals + commas
+    rc.innerText = formatScore(m.runtime) + " min";
     rc.setAttribute("draggable", "true");
 
     rc.addEventListener("dragstart", e => {
