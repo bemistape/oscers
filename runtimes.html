@@ -119,25 +119,29 @@
   </div>
 
   <!-- FINAL SCREEN -->
- <div id="final-container" class="page-container">
-  <div id="final-scores"></div>
-  <div id="final-overall-box"></div>
-  
-  <!-- SCOREBOARD MOVED UP HERE -->
-  <div id="final-difficulty-scoreboard" style="margin-top:30px;">
-    <h3 id="final-diff-heading"></h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Rank</th>
-          <th>Name</th>
-          <th>Score</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+  <div id="final-container" class="page-container">
+    <div id="final-scores"></div>
+    <div id="final-overall-box"></div>
 
+    <!-- Difficulty-specific scoreboard for final -->
+    <div id="final-difficulty-scoreboard" style="margin-top:30px;">
+      <h3 id="final-diff-heading"></h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Name</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Round-by-round breakdown -->
+    <div id="details-container">
+      <div id="final-cards-container"></div>
+    </div>
 
     <div class="final-buttons" style="margin-top:20px;">
       <button id="share-twitter-btn" class="game-btn">Share on Twitter</button>
@@ -154,13 +158,11 @@
     <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=" type="audio/wav">
   </audio>
 
-  <script src="runtimes.js"></script>
-
-
-</body>
-
+  <!-- FOOTER -->
   <footer style="text-align: center; font-size: 0.8em; color: #aaa; margin-top: 20px;">
-  Not affiliated with HEI Network or Oscer. Site by @johnwsmith with robot help.
-</footer>
+    Not affiliated with HEI Network or Oscer. Site by @johnwsmith with robot help.
+  </footer>
 
+  <script src="runtimes.js"></script>
+</body>
 </html>
