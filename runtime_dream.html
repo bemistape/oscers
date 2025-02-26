@@ -136,21 +136,30 @@
     // Global array to track movie groups.
     let allGroups = [];
 
-    // Audio toggle button
-    const audioToggle = document.getElementById('audio-toggle');
-    const bgAudio = document.getElementById('bg-audio');
-    let audioOn = false;
-    audioToggle.addEventListener('click', function(e) {
-      e.stopPropagation();
-      audioOn = !audioOn;
-      if(audioOn) {
-        bgAudio.play().catch(err => console.log("Play error:", err));
-        audioToggle.innerText = "🔊";
-      } else {
-        bgAudio.pause();
-        audioToggle.innerText = "🔇";
-      }
-    });
+  // Updated audio toggle button logic
+const audioToggle = document.getElementById('audio-toggle');
+const bgAudio = document.getElementById('bg-audio');
+let audioOn = true; // Set initial state to true
+
+// Auto-play the audio when the page loads
+window.addEventListener('load', () => {
+  bgAudio.play().catch(err => console.log("Play error:", err));
+});
+
+// Toggle audio on button click
+audioToggle.addEventListener('click', function(e) {
+  e.stopPropagation();
+  audioOn = !audioOn;
+  if(audioOn) {
+    bgAudio.play().catch(err => console.log("Play error:", err));
+    audioToggle.innerText = "🔊";
+  } else {
+    bgAudio.pause();
+    audioToggle.innerText = "🔇";
+  }
+});
+
+
 
     // Update #zoom-container transform randomly every 8 seconds.
     const zoomContainer = document.getElementById('zoom-container');
@@ -165,12 +174,12 @@
     updateZoom();
     setInterval(updateZoom, 8000);
 
-    // Try to resume audio on any click
-    document.addEventListener('click', () => {
-      if(audioOn && bgAudio.paused) {
-        bgAudio.play().catch(err => console.log("Play error:", err));
-      }
-    });
+// Try to resume audio on any click
+document.addEventListener('click', () => {
+  if(audioOn && bgAudio.paused) {
+    bgAudio.play().catch(err => console.log("Play error:", err));
+  }
+});
 
     // Fetch CSV
     fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vToIbm5XR9mtqOXHYzpF0jIXhGY9WI9m-QQak2KsZFB6CGVnRVRCPL3V6zFVbT6e_jLyGQM1e5XPjcX/pub?gid=534697964&single=true&output=csv')
