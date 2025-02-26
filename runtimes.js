@@ -1,7 +1,7 @@
 /*******************************************************
  * GLOBAL STATE & CONFIG
  *******************************************************/
-const SCORE_URL = "https://script.google.com/macros/s/AKfycbz_IFcohif6qAKZwZSiZVRt1A-jItYAYXA-sdV1lV_RaHJIHJeJffpXtuaw0bcEEg/exec";
+const SCORE_URL = "https://script.google.com/macros/s/AKfycbwAbpEzmmlVxf7MvbC-BJZthl4qTUquTyWfGvDp-bmD4jNvOV_8Egov73LleoJOJnA/exec";
 const csvUrl = "runtime_source_02222025.csv"; // Your main game CSV
 const reactionsUrl = "reactions.csv";         // Reactions CSV
 
