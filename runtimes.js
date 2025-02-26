@@ -1030,20 +1030,32 @@ function randomFrom(arr) {
 }
 
 /*******************************************************
- * SHARE ON TWITTER
+ * SHARE & COPY
  *******************************************************/
-
-
-function shareOnTwitter() {
-  const accuracy = (totalCorrect / 25) * 100;
-  const skill = totalAnswered ? (totalDifference / totalAnswered) : 0;
-  const popcorn = getPopcornString(accuracy);
-  const text = `Runtime Challenge Recap:
+function shareOnTwitter(){
+  const accuracy=(totalCorrect/25)*100;
+  const skill=totalAnswered?(totalDifference/totalAnswered):0;
+  const popcorn=getPopcornString(accuracy);
+  const text=`Runtime Challenge Recap:
 Score: ${Math.round(totalScore)}
 Accuracy: ${popcorn} (${accuracy.toFixed(1)}%)
 Skill: ${skill.toFixed(1)}
 Think you can beat me?`;
-  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-  window.open(url, "_blank");
+  const url=`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+  window.open(url,"_blank");
 }
-
+function copyRecap(){
+  const accuracy=(totalCorrect/25)*100;
+  const skill=totalAnswered?(totalDifference/totalAnswered):0;
+  const popcorn=getPopcornString(accuracy);
+  const text=`Runtime Challenge Recap:
+Score: ${Math.round(totalScore)}
+Accuracy: ${popcorn} (${accuracy.toFixed(1)}%)
+Skill: ${skill.toFixed(1)}
+Think you can beat me?`;
+  navigator.clipboard.writeText(text).then(()=>{
+    alert("Recap copied to clipboard!");
+  }).catch(()=>{
+    alert("Failed to copy recap. Your browser may not allow clipboard writes.");
+  });
+}
