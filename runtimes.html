@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Runtime Challenge v6.0</title>
+  <title>Runtime Challenge v7.0</title>
   <link rel="stylesheet" href="runtimes.css">
 </head>
 <body>
@@ -79,7 +79,7 @@
       </div>
     </div>
     
-    <div class="version-number">v6.0</div>
+    <div class="version-number">v7.0</div>
   </div>
 
   <!-- ROUND RECAP OVERLAY (SCORE + REACTION) -->
@@ -122,14 +122,28 @@
   <div id="final-container" class="page-container">
     <div id="final-scores"></div>
     <div id="final-overall-box"></div>
-    <div class="final-buttons">
+    <div id="details-container">
+      <div id="final-cards-container"></div>
+    </div>
+    <!-- Difficulty-specific scoreboard for final -->
+    <div id="final-difficulty-scoreboard" style="margin-top:30px;">
+      <h3 id="final-diff-heading"></h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Name</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="final-buttons" style="margin-top:20px;">
       <button id="share-twitter-btn" class="game-btn">Share on Twitter</button>
       <button id="copy-recap-btn" class="game-btn">Copy Recap</button>
       <button id="play-again-btn" class="game-btn">Play Again?</button>
-      <button id="submit-score-btn" class="game-btn">Submit Score</button>
-    </div>
-    <div id="details-container">
-      <div id="final-cards-container"></div>
     </div>
   </div>
 
