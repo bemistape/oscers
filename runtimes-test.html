@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Runtime Challenge</title>
+  <link rel="stylesheet" href="runtimes.css">
+</head>
+
+
+
+  
+<body>
+  <!-- NAVIGATION BAR -->
+  <nav id="navBar">
+    <a href="index.html">Oscer Bingo</a>
+    <a href="Oscer_Bingo_Oscar_2025.pdf">Download Bingo Cards</a>
+    <a href="runtimes.html">Runtime Challenge</a>
+    <a href="runtime_dream.html">Runtime Dream</a>
+  </nav>
+
+  <!-- INTRO SCREEN -->
+  <div id="intro-container" class="page-container">
+          <img src="oscer_hero.png" alt="Oscer" />
+
+    <h1>Film Buff Runtime Challenge</h1>
+    <div class="intro-rules">
+      <p>Hey guys! In this game, you'll be given <strong>5 movies</strong> per round.</p>
+      <p>Drag (or tap) the <strong>Runtime card</strong> to the movie you think it belongs to.</p>
+      <p>You'll have a limited time each round (depending on your Difficulty level), but you can submit early for a time bonus.</p>
+      <p>You get one <strong>Joker</strong> that you can use at the start of the round. It'll light the titles up – the brightest is the shortest. But think fast, because once the Joker strikes, he's outta there.</p>
+    </div>
+    <input id="playerNameInput" type="text" placeholder="Enter 6-letter name" maxlength="6">
+    
+    <!-- Difficulty buttons -->
+    <div class="difficulty-box">
+      <label style="font-size:16px; margin-right:10px;">Difficulty:</label>
+      <button class="diff-btn" data-difficulty="easy" id="easy-btn">Easy</button>
+      <button class="diff-btn" data-difficulty="medium" id="medium-btn">Medium</button>
+      <button class="diff-btn" data-difficulty="hard" id="hard-btn">Hard</button>
+    </div>
+    
+    <!-- Begin Button -->
+    <button id="begin-btn" class="game-btn" disabled>Begin</button>
+    
+    <!-- Scoreboard Container (visible from the start) -->
+    <div id="scoreboard-container" style="margin-top: 20px;">
+      <p id="scoreboard-loading">Loading scoreboard...</p>
+      <div id="scoreboard-easy">
+        <h2>Easy Scores</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Name</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div id="scoreboard-medium">
+        <h2>Medium Scores</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Name</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div id="scoreboard-hard">
+        <h2>Hard Scores</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Name</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    
+    <div class="version-number">v7.0</div>
+  </div>
+
+  <!-- ROUND RECAP OVERLAY (SCORE + REACTION) -->
+  <div id="round-recap-overlay">
+    <h3 id="round-recap-title"></h3>
+    <p id="round-recap-details"></p>
+    <!-- Reaction text is appended here -->
+    <p id="round-recap-reaction" style="font-style:italic; margin-top:10px;"></p>
+    <button id="round-recap-close-btn" class="game-btn" style="font-size:16px; padding:6px 12px;">OK</button>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="game-container" class="page-container">
+    <div id="timer-box">
+      <div id="round-label">Round 1</div>
+      <div id="timer-value">20</div>
+      <button id="joker-btn" class="glow-anim" title="Reveal relative runtimes briefly">🤡</button>
+    </div>
+    <div id="runtimes-container" class="cards-container"></div>
+    <div id="movies-container" class="cards-container"></div>
+    <button id="submit-btn" class="game-btn" title="Submit early to earn extra time bonus!">Submit</button>
+    <div id="this-game-stats" class="stats-box empty"></div>
+  </div>
+
+  <!-- BONUS ROUND (Grid Layout) -->
+  <div id="bonus-container" class="page-container">
+    <div id="bonus-intro" style="max-width:600px; margin-bottom:20px;">
+      <p><strong>Bonus Round!</strong> Select which movie has the longest runtime for +1000 points. 
+         You only have a short amount of time, so choose quickly!</p>
+      <button id="bonus-begin-btn" class="game-btn">Begin</button>
+    </div>
+    <div id="bonus-timer-box" style="display:none;"><span id="bonus-timer-value">10</span></div>
+    <h3 id="bonus-message"></h3>
+    <div id="bonus-floating-container"></div>
+    <button id="bonus-continue-btn" class="game-btn" style="display:none;">Continue</button>
+    <div id="bonus-result"></div>
+  </div>
+
+  <!-- FINAL SCREEN -->
+  <div id="final-container" class="page-container">
+    <div id="final-scores"></div>
+    <div id="final-overall-box"></div>
+
+    <!-- Difficulty-specific scoreboard for final -->
+    <div id="final-difficulty-scoreboard" style="margin-top:30px;">
+      <h3 id="final-diff-heading"></h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Name</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Round-by-round breakdown -->
+    <div id="details-container">
+      <div id="final-cards-container"></div>
+    </div>
+
+    <div class="final-buttons" style="margin-top:20px;">
+      <button id="share-twitter-btn" class="game-btn">Share on Twitter?</button>
+      <button id="copy-recap-btn" class="game-btn">Copy Recap</button>
+      <button id="play-again-btn" class="game-btn">Play Again?</button>
+    </div>
+  </div>
+
+  <!-- SOUND EFFECTS -->
+  <audio id="ding-sound" src="data:audio/wav;base64,UklGRgAAAABXQVZFZm10IBIAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="></audio>
+  <audio id="buzz-sound" src="data:audio/wav;base64,UklGRgAAAABXQVZFZm10IBIAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="></audio>
+  <!-- AUDIO FOR JOKER -->
+  <audio id="joker-sound" preload="auto">
+    <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=" type="audio/wav">
+  </audio>
+
+  <!-- FOOTER -->
+  <footer style="text-align: center; font-size: 0.8em; color: #aaa; margin-top: 20px;">
+    Not affiliated with HEI Network or Oscer. Site by @johnwsmith with robot help.
+  </footer>
+
+  <script src="runtimes.js"></script>
+</body>
+</html>
