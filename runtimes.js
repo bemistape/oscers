@@ -1028,3 +1028,22 @@ function randomFrom(arr) {
   if (!arr || arr.length === 0) return "";
   return arr[Math.floor(Math.random() * arr.length)];
 }
+
+/*******************************************************
+ * SHARE ON TWITTER
+ *******************************************************/
+
+
+function shareOnTwitter() {
+  const accuracy = (totalCorrect / 25) * 100;
+  const skill = totalAnswered ? (totalDifference / totalAnswered) : 0;
+  const popcorn = getPopcornString(accuracy);
+  const text = `Runtime Challenge Recap:
+Score: ${Math.round(totalScore)}
+Accuracy: ${popcorn} (${accuracy.toFixed(1)}%)
+Skill: ${skill.toFixed(1)}
+Think you can beat me?`;
+  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+  window.open(url, "_blank");
+}
+
