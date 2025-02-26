@@ -112,7 +112,7 @@
   <!-- Audio toggle button -->
   <div id="audio-toggle">🔊</div>
   <!-- Background MIDI audio -->
-  <audio id="bg-audio" src="Casablanca.mid" loop>
+  <audio id="bg-audio" src="stooges.mp3" loop>
     Your browser does not support the audio element.
   </audio>
   <div id="zoom-container">
@@ -157,8 +157,8 @@
     function updateZoom() {
       // Random scale between 0.8 and 1.3, random translation (-5% to 5%), random rotation (-5deg to 5deg)
       const scale = (0.8 + Math.random() * 0.5).toFixed(2);
-      const translateX = (Math.random() * 10 - 5).toFixed(2);
-      const translateY = (Math.random() * 10 - 5).toFixed(2);
+      const translateX = (Math.random() * 33 - 5).toFixed(2);
+      const translateY = (Math.random() * 22 - 5).toFixed(2);
       const rotate = (Math.random() * 10 - 5).toFixed(2);
       zoomContainer.style.transform = `translate(${translateX}%, ${translateY}%) scale(${scale}) rotate(${rotate}deg)`;
     }
