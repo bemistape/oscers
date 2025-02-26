@@ -17,7 +17,6 @@ let scoreboardEasy = [];
 let scoreboardMedium = [];
 let scoreboardHard = [];
 
-
 /*******************************************************
  * GAME STATE
  *******************************************************/
@@ -360,7 +359,7 @@ function renderRound() {
     rc.classList.add("runtime-card");
     rc.setAttribute("data-unique", `rt-${currentRoundIndex}-${i}`);
     rc.setAttribute("data-runtime", m.runtime.toString());
-    rc.innerText = m.runtime + " min";
+    rc.innerText = formatScore(m.runtime); // show no decimals + commas
     rc.setAttribute("draggable", "true");
 
     rc.addEventListener("dragstart", e => {
@@ -517,7 +516,7 @@ function showCorrectLine(card, correctRuntime) {
   const line = document.createElement("div");
   line.style.fontSize = "12px";
   line.style.marginTop = "5px";
-  line.innerText = `Correct: ${correctRuntime} min`;
+  line.innerText = `Correct: ${formatScore(correctRuntime)} min`;
   card.appendChild(line);
 }
 function showRoundRecapOverlay(roundCorrect, answeredCount, leftoverBonus, fractionBonus, roundScore, reactionText) {
@@ -531,7 +530,7 @@ function showRoundRecapOverlay(roundCorrect, answeredCount, leftoverBonus, fract
     Correct: <strong>${roundCorrect}</strong> / 5<br>
     Time bonus: <strong>+${leftoverBonus.toFixed(0)}</strong><br>
     Accuracy bonus: <strong>+${fractionBonus.toFixed(0)}</strong><br>
-    Round Score: <strong>${roundScore.toFixed(0)}</strong>
+    Round Score: <strong>${formatScore(roundScore)}</strong>
   `;
   reactionP.innerText = reactionText;
 
@@ -612,7 +611,7 @@ function startBonusRound() {
     }
     const runtimeLine = document.createElement("div");
     runtimeLine.classList.add("bonus-runtime");
-    runtimeLine.innerText = `${m.runtime} min`;
+    runtimeLine.innerText = `${formatScore(m.runtime)} min`;
     card.appendChild(runtimeLine);
 
     card.addEventListener("click", () => pickBonusMovie(m, card));
@@ -667,7 +666,7 @@ function pickBonusMovie(chosenMovie, chosenCard) {
     totalScore += 1000;
     document.getElementById("bonus-message").innerText = "Correct! +1000 points.";
   } else {
-    document.getElementById("bonus-message").innerText = `Sorry, it was ${maxMovie.movie_name} (${maxRuntime} min).`;
+    document.getElementById("bonus-message").innerText = `Sorry, it was ${maxMovie.movie_name} (${formatScore(maxRuntime)} min).`;
   }
   // Reveal all runtimes
   const allCards = document.querySelectorAll("#bonus-floating-container .floating-card");
@@ -694,12 +693,12 @@ function showFinalScreen() {
   // 1) Show final total
   const accuracy = (totalCorrect / 25) * 100;
   const skill = totalAnswered ? (totalDifference / totalAnswered) : 0;
-  document.getElementById("final-scores").innerText = `Final Score: ${Math.round(totalScore)}`;
+  document.getElementById("final-scores").innerText = `Final Score: ${formatScore(totalScore)}`;
 
   const overallBox = document.getElementById("final-overall-box");
   overallBox.innerHTML = `Accuracy: ${accuracy.toFixed(1)}% | Skill: ${skill.toFixed(1)} min`;
 
-  // 2) Show scoreboard for the difficulty at the TOP of the final page
+  // 2) Show scoreboard for the difficulty at the TOP
   renderFinalDifficultyScoreboard();
 
   // 3) Then show final round-by-round breakdown
@@ -727,11 +726,13 @@ function showFinalScreen() {
         card.classList.add(isCorrect ? "correct" : "incorrect");
       }
       let posterHTML = movie.poster ? `<img class="movie-poster" src="${movie.poster}" alt="${movie.movie_name} poster">` : "";
+      const displayedActual = (assigned === "-") ? formatScore(actual) : formatScore(actual);
+      const displayedAssigned = (assigned === "-") ? "-" : formatScore(assigned);
       card.innerHTML = `
         ${posterHTML}
         <div class="movie-title">${movie.movie_name}</div>
-        <div>Actual: ${movie.runtime} min</div>
-        <div>Your Pick: ${assigned === "-" ? "-" : assigned + " min"}</div>
+        <div>Actual: ${displayedActual} min</div>
+        <div>Your Pick: ${displayedAssigned === "-" ? "-" : displayedAssigned + " min"}</div>
       `;
       rowDiv.appendChild(card);
     });
@@ -745,7 +746,7 @@ function showFinalScreen() {
         ${roundInfo.correct}/5 correct<br>
         Time bonus: +${(roundInfo.leftoverBonus || 0).toFixed(0)}<br>
         Accuracy bonus: +${(roundInfo.fractionBonus || 0).toFixed(0)}<br>
-        Round Score: ${roundInfo.roundScore.toFixed(0)}
+        Round Score: ${formatScore(roundInfo.roundScore)}
       `;
       wrapper.appendChild(infoDiv);
     }
@@ -790,7 +791,6 @@ function submitScoreToAirtableQuietly() {
   .then(resp => resp.json())
   .then(data => {
     console.log("Airtable quiet POST response:", data);
-    // If error, likely 401 or 403 -> token/base ID issue
   })
   .catch(err => {
     console.error("Error quietly submitting score to Airtable:", err);
@@ -963,6 +963,11 @@ function renderFinalDifficultyScoreboard() {
 /*******************************************************
  * UTILS
  *******************************************************/
+// Format number as no decimals + commas
+function formatScore(num) {
+  return Math.round(num).toLocaleString();
+}
+
 function deduplicateNameScore(arr) {
   // Remove duplicates with same name+score
   const seen = new Set();
@@ -996,7 +1001,7 @@ function fadeInCards() {
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+    [array[i],array[j]] = [array[j],array[i]];
   }
   return array;
 }
@@ -1036,7 +1041,7 @@ function shareOnTwitter(){
   const skill=totalAnswered?(totalDifference/totalAnswered):0;
   const popcorn=getPopcornString(accuracy);
   const text=`Runtime Challenge Recap:
-Score: ${Math.round(totalScore)}
+Score: ${formatScore(totalScore)}
 Accuracy: ${popcorn} (${accuracy.toFixed(1)}%)
 Skill: ${skill.toFixed(1)}
 Think you can beat me?`;
@@ -1048,7 +1053,7 @@ function copyRecap(){
   const skill=totalAnswered?(totalDifference/totalAnswered):0;
   const popcorn=getPopcornString(accuracy);
   const text=`Runtime Challenge Recap:
-Score: ${Math.round(totalScore)}
+Score: ${formatScore(totalScore)}
 Accuracy: ${popcorn} (${accuracy.toFixed(1)}%)
 Skill: ${skill.toFixed(1)}
 Think you can beat me?`;
@@ -1058,8 +1063,3 @@ Think you can beat me?`;
     alert("Failed to copy recap. Your browser may not allow clipboard writes.");
   });
 }
-
-function formatScore(num) {
-  return Math.round(num).toLocaleString();
-}
-
