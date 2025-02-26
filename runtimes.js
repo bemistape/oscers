@@ -7,7 +7,7 @@ const csvUrl = "runtime_source_02222025.csv";
 const reactionsUrl = "reactions.csv";
 
 // 2) Airtable credentials & endpoints
-const AIRTABLE_API_TOKEN = "patO3ZLWnPBw54z9.612d6c936097d6a23fd1dd06f9a68ca1e1ab4ccad99a5eb6770eca4af2d74396";
+const AIRTABLE_API_TOKEN = "patOq3ZLWnPBw54z9.612d6c936097d6a23fd1dd06f9a68ca1e1ab4ccad99a5eb6770eca4af2d74396";
 const AIRTABLE_BASE_ID = "appDwKDKdB22NsFkb";
 const AIRTABLE_TABLE_ID = "tblADki2GveNohUdD";
 // If you have a specific view ID you want to filter by, you can append ?view=viwiuSoH95w01Kk7c to the GET URL
