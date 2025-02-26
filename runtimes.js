@@ -17,6 +17,7 @@ let scoreboardEasy = [];
 let scoreboardMedium = [];
 let scoreboardHard = [];
 
+
 /*******************************************************
  * GAME STATE
  *******************************************************/
@@ -880,7 +881,7 @@ function renderScoreboard(elementId, scores) {
     nameTd.innerText = entry.name;
 
     const scoreTd = document.createElement("td");
-    scoreTd.innerText = entry.score;
+    scoreTd.innerText = formatScore(entry.score);
 
     tr.appendChild(rankTd);
     tr.appendChild(nameTd);
@@ -942,7 +943,7 @@ function renderFinalDifficultyScoreboard() {
     nameTd.innerText = entry.name;
 
     const scoreTd = document.createElement("td");
-    scoreTd.innerText = entry.score;
+    scoreTd.innerText = formatScore(entry.score);
 
     tr.appendChild(rankTd);
     tr.appendChild(nameTd);
@@ -1057,3 +1058,8 @@ Think you can beat me?`;
     alert("Failed to copy recap. Your browser may not allow clipboard writes.");
   });
 }
+
+function formatScore(num) {
+  return Math.round(num).toLocaleString();
+}
+
