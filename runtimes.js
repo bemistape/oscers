@@ -676,7 +676,7 @@ function pickBonusMovie(chosenMovie, chosenCard) {
   });
   document.getElementById("bonus-continue-btn").style.display = "inline-block";
 
-  // ***** SUBMIT SCORE HERE (no popup) *****
+  // Submit score quietly
   submitScoreToAirtableQuietly();
 }
 function onFinishBonus() {
@@ -690,7 +690,7 @@ function onFinishBonus() {
 function showFinalScreen() {
   document.getElementById("final-container").style.display = "flex";
 
-  // Show final total
+  // 1) Show final total
   const accuracy = (totalCorrect / 25) * 100;
   const skill = totalAnswered ? (totalDifference / totalAnswered) : 0;
   document.getElementById("final-scores").innerText = `Final Score: ${Math.round(totalScore)}`;
@@ -698,7 +698,10 @@ function showFinalScreen() {
   const overallBox = document.getElementById("final-overall-box");
   overallBox.innerHTML = `Accuracy: ${accuracy.toFixed(1)}% | Skill: ${skill.toFixed(1)} min`;
 
-  // Show final round-by-round breakdown
+  // 2) Show scoreboard for the difficulty at the TOP of the final page
+  renderFinalDifficultyScoreboard();
+
+  // 3) Then show final round-by-round breakdown
   const finalCardsContainer = document.getElementById("final-cards-container");
   finalCardsContainer.innerHTML = "";
   rounds.forEach((round, idx) => {
@@ -747,18 +750,13 @@ function showFinalScreen() {
     }
     finalCardsContainer.appendChild(wrapper);
   });
-
-  // Show scoreboard for the difficulty just played
-  renderFinalDifficultyScoreboard();
 }
 
 /*******************************************************
  * SCORE SUBMISSION (Airtable)
  *******************************************************/
 function submitScoreToAirtableQuietly() {
-  // Called after bonus round is picked
-  // We have final totalScore, totalCorrect, totalAnswered, totalDifference, etc.
-  // We'll also store 'accuracy' and 'skill'
+  // Called after bonus pick
   const accuracy = (totalCorrect / 25) * 100;
   const skill = totalAnswered ? (totalDifference / totalAnswered) : 0;
   const now = new Date().toISOString();
@@ -778,6 +776,8 @@ function submitScoreToAirtableQuietly() {
     ]
   };
 
+  console.log("Posting to Airtable:", postBody);
+
   fetch(AIRTABLE_TABLE_URL, {
     method: "POST",
     headers: {
@@ -789,7 +789,7 @@ function submitScoreToAirtableQuietly() {
   .then(resp => resp.json())
   .then(data => {
     console.log("Airtable quiet POST response:", data);
-    // No popup. If error, it just logs.
+    // If error, likely 401 or 403 -> token/base ID issue
   })
   .catch(err => {
     console.error("Error quietly submitting score to Airtable:", err);
@@ -837,7 +837,7 @@ async function loadScoreboardFromAirtable() {
     mediumScores.sort((a,b) => b.score - a.score);
     hardScores.sort((a,b) => b.score - a.score);
 
-    // Deduplicate (Name+Score) so we only show unique combos
+    // Deduplicate
     easyScores = deduplicateNameScore(easyScores);
     mediumScores = deduplicateNameScore(mediumScores);
     hardScores = deduplicateNameScore(hardScores);
@@ -847,7 +847,7 @@ async function loadScoreboardFromAirtable() {
     mediumScores = mediumScores.slice(0, 10);
     hardScores = hardScores.slice(0, 10);
 
-    // Store globally for final usage
+    // Store globally
     scoreboardEasy = easyScores;
     scoreboardMedium = mediumScores;
     scoreboardHard = hardScores;
@@ -905,14 +905,12 @@ function renderFinalDifficultyScoreboard() {
     arr = [...scoreboardHard];
   }
 
-  // Insert the player's final score into that array
-  // (since we might have just posted it quietly)
-  // We'll do the same deduplicate approach
+  // Insert player's final score
   const finalScore = parseFloat(totalScore);
   const playerEntry = { name: playerName, score: finalScore };
   arr.push(playerEntry);
 
-  // Re-sort
+  // Sort + deduplicate
   arr.sort((a,b) => b.score - a.score);
   arr = deduplicateNameScore(arr);
 
@@ -920,19 +918,16 @@ function renderFinalDifficultyScoreboard() {
   const playerIndex = arr.findIndex(e => e.name === playerName && e.score === finalScore);
   const rank = playerIndex >= 0 ? (playerIndex + 1) : arr.length + 1;
 
-  // If rank <= 10, show top 10; else show top 10 plus the player
+  // If rank <= 10, show top 10; else top 10 + player's row
   let displayArr = arr.slice(0, 10);
   let isInTop10 = (playerIndex < 10 && playerIndex >= 0);
-
-  if (!isInTop10) {
-    // We'll show top 10 plus the player's row
-    // But only if player isn't already in top 10
+  if (!isInTop10 && playerIndex >= 0) {
     displayArr.push(arr[playerIndex]);
   }
 
-  // Render the table
+  // Render
   const headingEl = document.getElementById("final-diff-heading");
-  headingEl.innerText = `Final ${diff.charAt(0).toUpperCase() + diff.slice(1)} Scoreboard`;
+  headingEl.innerText = `${diff.charAt(0).toUpperCase() + diff.slice(1)} Top Scores`;
 
   const tableBody = document.querySelector("#final-difficulty-scoreboard table tbody");
   tableBody.innerHTML = "";
@@ -941,7 +936,7 @@ function renderFinalDifficultyScoreboard() {
     const tr = document.createElement("tr");
 
     const rankTd = document.createElement("td");
-    rankTd.innerText = (idx + 1);
+    rankTd.innerText = idx + 1;
 
     const nameTd = document.createElement("td");
     nameTd.innerText = entry.name;
@@ -953,7 +948,7 @@ function renderFinalDifficultyScoreboard() {
     tr.appendChild(nameTd);
     tr.appendChild(scoreTd);
 
-    // Highlight the player's row
+    // highlight the player's row
     if (entry.name === playerName && entry.score === finalScore) {
       tr.style.backgroundColor = "#444";
       tr.style.color = "#FFD700";
@@ -961,8 +956,6 @@ function renderFinalDifficultyScoreboard() {
     tableBody.appendChild(tr);
   });
 
-  // Optionally show a message if rank > 10
-  // Or show rank somewhere if desired
   console.log(`Player rank in ${diff} scoreboard: ${rank}`);
 }
 
