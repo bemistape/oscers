@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <title>Runtime Dream</title>
+  <link rel="stylesheet" href="site.css">
   <style>
     html, body {
       margin: 0; padding: 0; overflow: hidden;
       width: 100%; height: 100%;
       background: #000;
-      font-family: sans-serif;
+      font-family: var(--font-body), sans-serif;
     }
     /* The container that will have its transform updated by JS */
     #zoom-container {
@@ -21,7 +22,7 @@
     /* Audio toggle button */
     #audio-toggle {
       position: fixed;
-      top: 10px;
+      top: 70px;
       right: 10px;
       background: rgba(255, 255, 255, 0.2);
       border: 1px solid #fff;
@@ -106,9 +107,27 @@
       transition: opacity 1s ease-out;
       z-index: -1;
     }
+    .dream-footer {
+      position: fixed;
+      bottom: 12px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.6);
+      z-index: 900;
+      pointer-events: none;
+    }
   </style>
 </head>
-<body>
+<body class="dream-page">
+  <nav class="site-nav" aria-label="Primary">
+    <a href="index.html">Home</a>
+    <a href="bingo.html">Oscer Bingo</a>
+    <a href="runtimes.html">Runtime Challenge</a>
+    <a href="runtime_dream.html">Runtime Dream</a>
+    <a class="nav-cta" href="Oscer_Bingo_Oscar_2025.pdf">Download Cards</a>
+  </nav>
   <!-- Audio toggle button -->
   <div id="audio-toggle">🔊</div>
   <!-- Background MIDI audio -->
@@ -333,10 +352,6 @@ document.addEventListener('click', () => {
       });
     });
   </script>
+  <footer class="dream-footer">Not affiliated with HEI Network or Oscer. Site by @johnwsmith with robot help.</footer>
 </body>
-
-  <footer style="text-align: center; font-size: 0.8em; color: #aaa; margin-top: 20px;">
-  Not affiliated with HEI Network or Oscer. Site by @johnwsmith with robot help.
-</footer>
-
 </html>

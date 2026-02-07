@@ -1,0 +1,425 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+:root {
+  --font-display: "Cinzel", "Times New Roman", serif;
+  --font-body: "Source Sans 3", "Trebuchet MS", sans-serif;
+  --font-mono: "IBM Plex Mono", "Courier New", monospace;
+  --ink: #f7efd9;
+  --paper: #0b0a08;
+  --gold: #d4af37;
+  --gold-deep: #b5851a;
+  --crimson: #b21f1f;
+  --nav-bg: rgba(8, 7, 6, 0.94);
+  --nav-border: rgba(212, 175, 55, 0.18);
+  --nav-text: #f7efd9;
+  --nav-hover: #d4af37;
+  --card-bg: #15110d;
+  --shadow-soft: 0 30px 60px rgba(0, 0, 0, 0.45);
+  --shadow-tight: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 22px;
+  background: var(--nav-bg);
+  border-bottom: 1px solid var(--nav-border);
+  backdrop-filter: blur(8px);
+  font-family: var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.78rem;
+}
+
+.site-nav a {
+  color: var(--nav-text);
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 999px;
+  transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.site-nav a:hover {
+  color: var(--nav-hover);
+  background: rgba(212, 175, 55, 0.12);
+  transform: translateY(-1px);
+}
+
+.site-nav .nav-cta {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.landing {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 12% 20%, rgba(212, 175, 55, 0.22), transparent 45%),
+    radial-gradient(circle at 85% 10%, rgba(178, 31, 31, 0.18), transparent 42%),
+    radial-gradient(circle at 70% 80%, rgba(212, 175, 55, 0.12), transparent 55%),
+    linear-gradient(135deg, #0b0a08, #15110d 55%, #0f0c09);
+  min-height: 100vh;
+}
+
+.landing .page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.landing main {
+  display: block;
+}
+
+.eyebrow {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  font-weight: 600;
+  color: rgba(247, 239, 217, 0.7);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 48px;
+  align-items: center;
+  padding: 80px 0 50px;
+}
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 4vw, 4rem);
+  margin: 16px 0 12px;
+  letter-spacing: 0.04em;
+}
+
+.hero p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin: 0 0 24px;
+  color: rgba(247, 239, 217, 0.85);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.btn-primary {
+  background: var(--crimson);
+  color: #fff;
+  box-shadow: var(--shadow-tight);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(178, 31, 31, 0.35);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid rgba(247, 239, 217, 0.4);
+}
+
+.btn-secondary:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ink);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-ghost:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.hero-media {
+  position: relative;
+}
+
+.hero-media img {
+  width: 100%;
+  border-radius: 24px;
+  box-shadow: var(--shadow-soft);
+}
+
+.hero-media .hero-badge {
+  position: absolute;
+  bottom: -22px;
+  left: 24px;
+  background: #0f0c09;
+  color: #f7e2a8;
+  padding: 12px 18px;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.45);
+}
+
+.section {
+  padding: 70px 0;
+}
+
+.section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.section-header h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  margin: 0;
+}
+
+.section-header p {
+  margin: 0;
+  max-width: 640px;
+  color: rgba(247, 239, 217, 0.72);
+}
+
+.card-grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.card {
+  background: var(--card-bg);
+  padding: 22px;
+  border-radius: 24px;
+  box-shadow: var(--shadow-tight);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.card img {
+  width: 100%;
+  border-radius: 18px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.card h3 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.card p {
+  margin: 0;
+  color: rgba(247, 239, 217, 0.7);
+  line-height: 1.5;
+}
+
+.text-link {
+  color: var(--gold);
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.text-link:hover {
+  text-decoration: underline;
+}
+
+.countdown-card {
+  background: linear-gradient(135deg, #0f0c09, #2a2118 55%, #1a140f);
+  color: #f6e6c7;
+  padding: 32px;
+  border-radius: 26px;
+  box-shadow: var(--shadow-soft);
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+.countdown-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.countdown-card::after {
+  content: "";
+  position: absolute;
+  inset: -40% 0 auto;
+  height: 80%;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.25), transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.countdown-title {
+  font-family: var(--font-display);
+  margin: 0 0 8px;
+  font-size: clamp(1.4rem, 2.4vw, 2rem);
+}
+
+.countdown-time {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3.2vw, 3rem);
+  letter-spacing: 0.04em;
+  margin: 16px auto 10px;
+  display: block;
+  text-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  line-height: 1.4;
+}
+
+.countdown-labels {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.7rem;
+  color: rgba(246, 230, 199, 0.7);
+}
+
+.countdown-card.is-complete .countdown-time {
+  color: var(--gold);
+  animation: pulseGold 2.2s ease-in-out infinite;
+}
+
+@keyframes pulseGold {
+  0% {
+    transform: scale(1);
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+  }
+  50% {
+    transform: scale(1.04);
+    text-shadow: 0 0 22px rgba(212, 175, 55, 0.7);
+  }
+  100% {
+    transform: scale(1);
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+  }
+}
+
+.hero-countdown {
+  padding: 140px 0 90px;
+}
+
+.countdown-hero {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: clamp(36px, 6vw, 70px);
+}
+
+.countdown-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("oscer_hero.png") center/cover no-repeat;
+  opacity: 0.12;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.banner {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 28px;
+  align-items: center;
+  background: rgba(20, 16, 12, 0.85);
+  border-radius: 26px;
+  padding: 28px;
+  box-shadow: var(--shadow-tight);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.banner img {
+  width: 100%;
+  border-radius: 20px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.banner h3 {
+  font-family: var(--font-display);
+  margin: 0 0 12px;
+  font-size: 1.8rem;
+}
+
+.banner p {
+  margin: 0 0 20px;
+  color: rgba(247, 239, 217, 0.7);
+  line-height: 1.6;
+}
+
+.download-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  background: rgba(20, 16, 12, 0.8);
+  border-radius: 22px;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.download-panel p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.site-footer {
+  text-align: center;
+  padding: 40px 20px 60px;
+  font-size: 0.85rem;
+  color: rgba(247, 239, 217, 0.55);
+}
+
+.dream-page .site-nav {
+  position: fixed;
+  width: 100%;
+}
+
+@media (max-width: 720px) {
+  .site-nav {
+    letter-spacing: 0.08em;
+    font-size: 0.7rem;
+  }
+  .hero-countdown {
+    padding-top: 110px;
+  }
+  .download-panel {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
