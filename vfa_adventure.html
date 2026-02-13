@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Oscer.com - VFA Adventure</title>
+  <link rel="stylesheet" href="site.css" />
+  <style>
+    :root {
+      --vfa-bg: #090807;
+      --vfa-panel: #15110d;
+      --vfa-panel-border: rgba(212, 175, 55, 0.22);
+      --vfa-ink: #f7efd9;
+      --vfa-ink-soft: rgba(247, 239, 217, 0.72);
+      --vfa-danger: #cc4235;
+      --vfa-glow: rgba(212, 175, 55, 0.2);
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 14% 18%, rgba(212, 175, 55, 0.15), transparent 42%),
+        radial-gradient(circle at 82% 12%, rgba(128, 26, 24, 0.2), transparent 38%),
+        linear-gradient(140deg, #060504, #0f0b08 60%, #080706);
+      color: var(--vfa-ink);
+      font-family: var(--font-body), sans-serif;
+      min-height: 100vh;
+    }
+
+    .vfa-main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 22px 60px;
+    }
+
+    .vfa-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: end;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .vfa-title {
+      margin: 0;
+      font-family: var(--font-display), serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .vfa-subtitle {
+      margin: 8px 0 0;
+      color: var(--vfa-ink-soft);
+      font-size: 1rem;
+    }
+
+    .vfa-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .vfa-chip {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      font-size: 0.82rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .vfa-hud {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .hud-card {
+      background: var(--vfa-panel);
+      border: 1px solid var(--vfa-panel-border);
+      border-radius: 14px;
+      padding: 10px 12px;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .hud-card .label {
+      text-transform: uppercase;
+      letter-spacing: 0.11em;
+      font-size: 0.72rem;
+      color: rgba(247, 239, 217, 0.65);
+      margin: 0 0 6px;
+    }
+
+    .hud-card .value {
+      margin: 0;
+      font-weight: 600;
+      font-size: 1.25rem;
+    }
+
+    .vfa-status {
+      min-height: 24px;
+      margin: 4px 0 14px;
+      color: #f3d487;
+      letter-spacing: 0.04em;
+    }
+
+    .game-shell {
+      position: relative;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid var(--vfa-panel-border);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+      background: #070605;
+    }
+
+    #vfaCanvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      aspect-ratio: 16 / 9;
+      background: #0a0807;
+      touch-action: none;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(6, 5, 4, 0.82);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .overlay[hidden] {
+      display: none;
+    }
+
+    .overlay-panel {
+      max-width: 560px;
+      background: rgba(21, 17, 13, 0.92);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 18px;
+      padding: 26px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .overlay-panel h2 {
+      margin: 0 0 10px;
+      font-family: var(--font-display), serif;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .overlay-panel p {
+      margin: 0 0 20px;
+      color: var(--vfa-ink-soft);
+      line-height: 1.5;
+    }
+
+    .btn {
+      cursor: pointer;
+    }
+
+    .touch-controls {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(56px, 1fr));
+      gap: 8px;
+      max-width: 280px;
+    }
+
+    .touch-controls button {
+      min-height: 52px;
+      border-radius: 12px;
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      background: rgba(255, 255, 255, 0.06);
+      color: #f7efd9;
+      font-size: 1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .touch-controls button:active {
+      background: rgba(212, 175, 55, 0.2);
+    }
+
+    .touch-controls .spacer {
+      visibility: hidden;
+    }
+
+    .vfa-footer {
+      text-align: center;
+      padding: 30px 10px 40px;
+      font-size: 0.8rem;
+      color: rgba(247, 239, 217, 0.55);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .touch-controls {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="site-nav" aria-label="Primary">
+    <a href="index.html">Home</a>
+    <a href="bingo.html">Oscer Bingo</a>
+    <a href="runtimes.html">Runtime Challenge</a>
+    <a href="runtime_dream.html">Runtime Dream</a>
+    <a href="vfa_adventure.html">VFA Adventure</a>
+    <a class="nav-cta" href="Oscer_Bingo_Oscar_2025.pdf">Download Cards</a>
+  </nav>
+
+  <main class="vfa-main">
+    <header class="vfa-header">
+      <div>
+        <h1 class="vfa-title">VFA Adventure</h1>
+        <p class="vfa-subtitle">Guide Gregg through the tape room, dub DVDs to VHS, survive Deanula raids.</p>
+      </div>
+    </header>
+
+    <div class="vfa-legend">
+      <div class="vfa-chip">Move: Arrow Keys / WASD</div>
+      <div class="vfa-chip">Action: Space / Enter / E</div>
+      <div class="vfa-chip">Goal: Carry DVDs to the VFA Deck</div>
+    </div>
+
+    <section class="vfa-hud" aria-live="polite">
+      <article class="hud-card">
+        <p class="label">Lives</p>
+        <p class="value" id="hudLives">4</p>
+      </article>
+      <article class="hud-card">
+        <p class="label">Dubbed</p>
+        <p class="value" id="hudDubbed">0</p>
+      </article>
+      <article class="hud-card">
+        <p class="label">Score</p>
+        <p class="value" id="hudScore">0</p>
+      </article>
+      <article class="hud-card">
+        <p class="label">Raid Level</p>
+        <p class="value" id="hudRaid">1</p>
+      </article>
+    </section>
+
+    <p class="vfa-status" id="statusText">Press Start to begin.</p>
+
+    <section class="game-shell">
+      <canvas id="vfaCanvas" width="960" height="540" aria-label="VFA Adventure game canvas"></canvas>
+      <div class="overlay" id="gameOverlay">
+        <div class="overlay-panel">
+          <h2 id="overlayTitle">VFA Adventure</h2>
+          <p id="overlayBody">
+            DVDs keep coming in. Gregg has to dub them to VHS before Deanula destroys the stock.
+            If too many tapes get wrecked, the run is over.
+          </p>
+          <button class="btn btn-primary" id="startButton" type="button">Start Run</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="touch-controls" aria-label="Touch controls">
+      <button class="spacer" type="button" tabindex="-1" aria-hidden="true">.</button>
+      <button data-touch="up" type="button">Up</button>
+      <button class="spacer" type="button" tabindex="-1" aria-hidden="true">.</button>
+      <button data-touch="left" type="button">Left</button>
+      <button data-touch="action" type="button">Action</button>
+      <button data-touch="right" type="button">Right</button>
+      <button class="spacer" type="button" tabindex="-1" aria-hidden="true">.</button>
+      <button data-touch="down" type="button">Down</button>
+      <button class="spacer" type="button" tabindex="-1" aria-hidden="true">.</button>
+    </section>
+  </main>
+
+  <footer class="vfa-footer">Not affiliated with HEI Network or Oscer. Site by @johnwsmith with robot help.</footer>
+
+  <script>
+    (function () {
+      const canvas = document.getElementById("vfaCanvas");
+      const ctx = canvas.getContext("2d");
+      const overlay = document.getElementById("gameOverlay");
+      const overlayTitle = document.getElementById("overlayTitle");
+      const overlayBody = document.getElementById("overlayBody");
+      const startButton = document.getElementById("startButton");
+      const statusText = document.getElementById("statusText");
+      const hudLives = document.getElementById("hudLives");
+      const hudDubbed = document.getElementById("hudDubbed");
+      const hudScore = document.getElementById("hudScore");
+      const hudRaid = document.getElementById("hudRaid");
+      const touchButtons = document.querySelectorAll("[data-touch]");
+
+      const world = {
+        width: canvas.width,
+        height: canvas.height,
+        deckZone: { x: 26, y: 170, w: 170, h: 210 }
+      };
+
+      const keys = {
+        up: false,
+        down: false,
+        left: false,
+        right: false
+      };
+
+      const state = {
+        running: false,
+        lives: 4,
+        score: 0,
+        dubbed: 0,
+        raidLevel: 1,
+        dvds: [],
+        debris: [],
+        nextDvdId: 1,
+        spawnTimer: 0,
+        spawnInterval: 1.65,
+        vampireCooldown: 5,
+        actionQueued: false,
+        player: {
+          x: 180,
+          y: 430,
+          w: 34,
+          h: 42,
+          speed: 230,
+          carryingId: null,
+          dubProgress: 0,
+          invuln: 0
+        },
+        vampire: {
+          active: false,
+          x: -80,
+          y: 80,
+          w: 52,
+          h: 76,
+          speed: 250,
+          phase: "off",
+          targetId: null,
+          huntTimer: 0
+        }
+      };
+
+      function resetGame() {
+        state.running = true;
+        state.lives = 4;
+        state.score = 0;
+        state.dubbed = 0;
+        state.raidLevel = 1;
+        state.dvds = [];
+        state.debris = [];
+        state.nextDvdId = 1;
+        state.spawnTimer = 0.6;
+        state.spawnInterval = 1.65;
+        state.vampireCooldown = 4.2;
+        state.actionQueued = false;
+        state.player.x = 180;
+        state.player.y = 430;
+        state.player.carryingId = null;
+        state.player.dubProgress = 0;
+        state.player.invuln = 0;
+        state.vampire.active = false;
+        state.vampire.phase = "off";
+        state.vampire.targetId = null;
+        statusText.textContent = "Run active. Protect the inventory.";
+        syncHud();
+      }
+
+      function randomRange(min, max) {
+        return min + Math.random() * (max - min);
+      }
+
+      function queueAction() {
+        state.actionQueued = true;
+      }
+
+      function getLooseDvds() {
+        return state.dvds.filter((dvd) => dvd.state === "loose");
+      }
+
+      function spawnDvd() {
+        if (getLooseDvds().length >= 11) {
+          return;
+        }
+        const dvd = {
+          id: state.nextDvdId++,
+          x: randomRange(240, world.width - 62),
+          y: randomRange(80, world.height - 72),
+          r: 12,
+          state: "loose",
+          wobble: randomRange(0, Math.PI * 2)
+        };
+        state.dvds.push(dvd);
+      }
+
+      function spawnVampire() {
+        if (state.vampire.active || !getLooseDvds().length) {
+          return;
+        }
+
+        const side = Math.floor(Math.random() * 3);
+        if (side === 0) {
+          state.vampire.x = -60;
+          state.vampire.y = randomRange(80, world.height - 140);
+        } else if (side === 1) {
+          state.vampire.x = world.width + 60;
+          state.vampire.y = randomRange(80, world.height - 140);
+        } else {
+          state.vampire.x = randomRange(220, world.width - 80);
+          state.vampire.y = -70;
+        }
+
+        const looseDvds = getLooseDvds();
+        const target = looseDvds[Math.floor(Math.random() * looseDvds.length)];
+        state.vampire.active = true;
+        state.vampire.phase = "approach";
+        state.vampire.targetId = target ? target.id : null;
+        state.vampire.huntTimer = 2.5;
+        statusText.textContent = "Deanula raid incoming.";
+      }
+
+      function loseLife(reason) {
+        state.lives -= 1;
+        state.player.invuln = Math.max(state.player.invuln, 1.2);
+        if (reason) {
+          statusText.textContent = reason;
+        }
+        syncHud();
+        if (state.lives <= 0) {
+          gameOver();
+        }
+      }
+
+      function gameOver() {
+        state.running = false;
+        overlayTitle.textContent = "Gregg Is Out Of Lives";
+        overlayBody.textContent = `Deanula destroyed the run. Final score: ${state.score}. Dubbed tapes: ${state.dubbed}.`;
+        startButton.textContent = "Restart Run";
+        overlay.hidden = false;
+        statusText.textContent = "Run over.";
+      }
+
+      function dist(aX, aY, bX, bY) {
+        const dx = aX - bX;
+        const dy = aY - bY;
+        return Math.sqrt(dx * dx + dy * dy);
+      }
+
+      function syncHud() {
+        hudLives.textContent = String(Math.max(0, state.lives));
+        hudDubbed.textContent = String(state.dubbed);
+        hudScore.textContent = String(state.score);
+        hudRaid.textContent = String(state.raidLevel);
+      }
+
+      function getPlayerCenter() {
+        return {
+          x: state.player.x + state.player.w / 2,
+          y: state.player.y + state.player.h / 2
+        };
+      }
+
+      function nearestLooseDvd() {
+        const center = getPlayerCenter();
+        let winner = null;
+        let winnerDist = Infinity;
+
+        for (const dvd of state.dvds) {
+          if (dvd.state !== "loose") {
+            continue;
+          }
+          const d = dist(center.x, center.y, dvd.x, dvd.y);
+          if (d < winnerDist) {
+            winnerDist = d;
+            winner = dvd;
+          }
+        }
+
+        return winnerDist <= 48 ? winner : null;
+      }
+
+      function updatePlayer(dt) {
+        const speed = state.player.speed;
+        let moveX = 0;
+        let moveY = 0;
+
+        if (keys.left) moveX -= 1;
+        if (keys.right) moveX += 1;
+        if (keys.up) moveY -= 1;
+        if (keys.down) moveY += 1;
+
+        if (moveX !== 0 || moveY !== 0) {
+          const length = Math.sqrt(moveX * moveX + moveY * moveY);
+          moveX /= length;
+          moveY /= length;
+          state.player.x += moveX * speed * dt;
+          state.player.y += moveY * speed * dt;
+        }
+
+        state.player.x = Math.max(0, Math.min(world.width - state.player.w, state.player.x));
+        state.player.y = Math.max(38, Math.min(world.height - state.player.h, state.player.y));
+
+        if (state.player.invuln > 0) {
+          state.player.invuln -= dt;
+        }
+
+        if (state.actionQueued) {
+          if (state.player.carryingId === null) {
+            const pick = nearestLooseDvd();
+            if (pick) {
+              pick.state = "carried";
+              state.player.carryingId = pick.id;
+              state.player.dubProgress = 0;
+              statusText.textContent = "DVD secured. Move to the VFA deck.";
+            }
+          }
+          state.actionQueued = false;
+        }
+
+        const carrying = state.dvds.find((dvd) => dvd.id === state.player.carryingId);
+        if (carrying) {
+          carrying.x = state.player.x + state.player.w / 2;
+          carrying.y = state.player.y - 6;
+        }
+      }
+
+      function updateDubbing(dt) {
+        const carrying = state.dvds.find((dvd) => dvd.id === state.player.carryingId);
+        if (!carrying) {
+          state.player.dubProgress = 0;
+          return;
+        }
+
+        const p = state.player;
+        const zone = world.deckZone;
+        const insideZone =
+          p.x + p.w > zone.x &&
+          p.x < zone.x + zone.w &&
+          p.y + p.h > zone.y &&
+          p.y < zone.y + zone.h;
+
+        if (!insideZone) {
+          state.player.dubProgress = Math.max(0, state.player.dubProgress - dt * 0.7);
+          return;
+        }
+
+        state.player.dubProgress += dt;
+        if (state.player.dubProgress >= 1.35) {
+          carrying.state = "dubbed";
+          state.player.carryingId = null;
+          state.player.dubProgress = 0;
+          state.dubbed += 1;
+          state.score += 100 + state.raidLevel * 8;
+          state.raidLevel = 1 + Math.floor(state.dubbed / 4);
+          state.spawnInterval = Math.max(0.85, 1.65 - state.dubbed * 0.04);
+          statusText.textContent = "Dub complete. Keep the line moving.";
+          syncHud();
+        }
+      }
+
+      function updateDebris(dt) {
+        state.debris = state.debris
+          .map((piece) => ({
+            ...piece,
+            x: piece.x + piece.vx * dt,
+            y: piece.y + piece.vy * dt,
+            life: piece.life - dt
+          }))
+          .filter((piece) => piece.life > 0);
+      }
+
+      function blastDebris(x, y) {
+        for (let i = 0; i < 12; i += 1) {
+          state.debris.push({
+            x,
+            y,
+            vx: randomRange(-80, 80),
+            vy: randomRange(-90, 85),
+            life: randomRange(0.4, 0.8),
+            size: randomRange(2, 4)
+          });
+        }
+      }
+
+      function destroyDvd(dvd, reason) {
+        dvd.state = "destroyed";
+        blastDebris(dvd.x, dvd.y);
+        if (state.player.carryingId === dvd.id) {
+          state.player.carryingId = null;
+          state.player.dubProgress = 0;
+        }
+        loseLife(reason || "Inventory destroyed.");
+      }
+
+      function updateVampire(dt) {
+        if (!state.vampire.active) {
+          state.vampireCooldown -= dt;
+          if (state.vampireCooldown <= 0 && getLooseDvds().length) {
+            spawnVampire();
+            state.vampireCooldown = randomRange(5.2, 9.4) / Math.max(1, state.raidLevel * 0.75);
+          }
+          return;
+        }
+
+        const v = state.vampire;
+        let targetX = world.width + 110;
+        let targetY = -80;
+
+        if (v.phase === "approach") {
+          const targetDvd = state.dvds.find((dvd) => dvd.id === v.targetId && dvd.state === "loose");
+          if (!targetDvd) {
+            v.phase = "hunt";
+            v.huntTimer = 2.1;
+          } else {
+            targetX = targetDvd.x;
+            targetY = targetDvd.y;
+            const reach = dist(v.x, v.y, targetX, targetY);
+            if (reach < 18) {
+              destroyDvd(targetDvd, "Deanula destroyed a DVD stack.");
+              v.phase = "hunt";
+              v.huntTimer = 2.3;
+            }
+          }
+        }
+
+        if (v.phase === "hunt") {
+          const playerCenter = getPlayerCenter();
+          targetX = playerCenter.x;
+          targetY = playerCenter.y;
+          v.huntTimer -= dt;
+          if (v.huntTimer <= 0) {
+            v.phase = "exit";
+          }
+
+          if (dist(v.x, v.y, playerCenter.x, playerCenter.y) < 34 && state.player.invuln <= 0) {
+            loseLife("Deanula hit Gregg directly.");
+          }
+        }
+
+        if (v.phase === "exit") {
+          targetX = world.width + 120;
+          targetY = -90;
+          if (v.x > world.width + 90 || v.y < -70) {
+            v.active = false;
+            v.phase = "off";
+            v.targetId = null;
+            statusText.textContent = "Raid cleared. Keep dubbing.";
+            return;
+          }
+        }
+
+        const dx = targetX - v.x;
+        const dy = targetY - v.y;
+        const len = Math.sqrt(dx * dx + dy * dy) || 1;
+        const moveSpeed = v.speed + state.raidLevel * 22;
+        v.x += (dx / len) * moveSpeed * dt;
+        v.y += (dy / len) * moveSpeed * dt;
+      }
+
+      function cleanupEntities() {
+        state.dvds = state.dvds.filter((dvd) => dvd.state !== "destroyed" && dvd.state !== "dubbed");
+      }
+
+      function update(dt) {
+        if (!state.running) {
+          return;
+        }
+
+        state.spawnTimer -= dt;
+        if (state.spawnTimer <= 0) {
+          spawnDvd();
+          state.spawnTimer = state.spawnInterval;
+        }
+
+        updatePlayer(dt);
+        updateDubbing(dt);
+        updateVampire(dt);
+        updateDebris(dt);
+
+        for (const dvd of state.dvds) {
+          dvd.wobble += dt * 4;
+        }
+
+        cleanupEntities();
+        syncHud();
+      }
+
+      function drawBackground() {
+        const gradient = ctx.createLinearGradient(0, 0, world.width, world.height);
+        gradient.addColorStop(0, "#1a120e");
+        gradient.addColorStop(0.55, "#110c09");
+        gradient.addColorStop(1, "#080605");
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, world.width, world.height);
+
+        ctx.fillStyle = "rgba(212, 175, 55, 0.07)";
+        for (let i = 0; i < 8; i += 1) {
+          const x = 220 + i * 90;
+          ctx.fillRect(x, 42, 6, world.height - 78);
+        }
+
+        ctx.fillStyle = "rgba(247, 239, 217, 0.06)";
+        for (let row = 0; row < 4; row += 1) {
+          const y = 120 + row * 90;
+          ctx.fillRect(220, y, 700, 5);
+        }
+
+        ctx.fillStyle = "rgba(212, 175, 55, 0.18)";
+        ctx.fillRect(world.deckZone.x, world.deckZone.y, world.deckZone.w, world.deckZone.h);
+
+        ctx.strokeStyle = "rgba(212, 175, 55, 0.55)";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(world.deckZone.x, world.deckZone.y, world.deckZone.w, world.deckZone.h);
+
+        ctx.fillStyle = "#f6dea0";
+        ctx.font = "700 18px 'Source Sans 3', sans-serif";
+        ctx.fillText("VFA DUB DECK", world.deckZone.x + 20, world.deckZone.y + 36);
+      }
+
+      function drawDvd(dvd) {
+        const bob = Math.sin(dvd.wobble) * 2;
+        ctx.save();
+        ctx.translate(dvd.x, dvd.y + bob);
+        ctx.fillStyle = dvd.state === "carried" ? "#ecd392" : "#e5e5e5";
+        ctx.beginPath();
+        ctx.arc(0, 0, dvd.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = "#a88b3c";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, 4, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = "#2d2418";
+        ctx.font = "700 10px 'IBM Plex Mono', monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("DVD", 0, 3);
+        ctx.restore();
+      }
+
+      function drawPlayer() {
+        const p = state.player;
+        const flash = p.invuln > 0 && Math.floor(performance.now() / 100) % 2 === 0;
+        if (flash) {
+          return;
+        }
+
+        ctx.fillStyle = "#d4af37";
+        ctx.fillRect(p.x + 8, p.y + 8, p.w - 16, p.h - 8);
+
+        ctx.fillStyle = "#f4e2b6";
+        ctx.fillRect(p.x + 10, p.y, p.w - 20, 12);
+
+        ctx.fillStyle = "#2f2517";
+        ctx.fillRect(p.x + 11, p.y + 4, p.w - 22, 3);
+
+        ctx.fillStyle = "#1c1711";
+        ctx.fillRect(p.x + 6, p.y + p.h - 8, p.w - 12, 8);
+
+        ctx.fillStyle = "#f7efd9";
+        ctx.font = "700 9px 'IBM Plex Mono', monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("GREGG", p.x + p.w / 2, p.y + p.h + 13);
+
+        if (p.carryingId !== null) {
+          ctx.strokeStyle = "rgba(247, 239, 217, 0.7)";
+          ctx.strokeRect(p.x - 2, p.y - 18, p.w + 4, 14);
+        }
+      }
+
+      function drawVampire() {
+        if (!state.vampire.active) {
+          return;
+        }
+
+        const v = state.vampire;
+        ctx.save();
+        ctx.translate(v.x, v.y);
+
+        ctx.fillStyle = "#3d1520";
+        ctx.beginPath();
+        ctx.moveTo(-22, 34);
+        ctx.lineTo(0, -18);
+        ctx.lineTo(22, 34);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = "#e5d8c0";
+        ctx.fillRect(-11, -12, 22, 22);
+
+        ctx.fillStyle = "#b2a796";
+        ctx.fillRect(-12, -20, 24, 8);
+
+        ctx.fillStyle = "#101010";
+        ctx.fillRect(-8, -4, 3, 3);
+        ctx.fillRect(5, -4, 3, 3);
+
+        ctx.strokeStyle = "#7f2020";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-6, 7);
+        ctx.lineTo(0, 10);
+        ctx.lineTo(6, 7);
+        ctx.stroke();
+
+        ctx.fillStyle = "rgba(204, 66, 53, 0.95)";
+        ctx.fillRect(-2, 9, 4, 6);
+
+        ctx.fillStyle = "#f4e4bf";
+        ctx.font = "700 10px 'IBM Plex Mono', monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("DEANULA", 0, 49);
+
+        ctx.restore();
+      }
+
+      function drawDubMeter() {
+        if (state.player.carryingId === null) {
+          return;
+        }
+
+        const width = 200;
+        const height = 14;
+        const x = 24;
+        const y = world.height - 32;
+        const progress = Math.min(1, state.player.dubProgress / 1.35);
+
+        ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
+        ctx.fillRect(x, y, width, height);
+        ctx.fillStyle = "rgba(212, 175, 55, 0.86)";
+        ctx.fillRect(x, y, width * progress, height);
+        ctx.strokeStyle = "rgba(247, 239, 217, 0.6)";
+        ctx.strokeRect(x, y, width, height);
+
+        ctx.fillStyle = "#f7efd9";
+        ctx.font = "700 12px 'Source Sans 3', sans-serif";
+        ctx.fillText("Dubbing", x + 68, y - 5);
+      }
+
+      function drawDebris() {
+        for (const piece of state.debris) {
+          ctx.fillStyle = `rgba(237, 219, 170, ${piece.life})`;
+          ctx.fillRect(piece.x, piece.y, piece.size, piece.size);
+        }
+      }
+
+      function draw() {
+        drawBackground();
+        for (const dvd of state.dvds) {
+          drawDvd(dvd);
+        }
+        drawDebris();
+        drawPlayer();
+        drawVampire();
+        drawDubMeter();
+      }
+
+      let lastTs = performance.now();
+      function loop(ts) {
+        const dt = Math.min(0.05, (ts - lastTs) / 1000);
+        lastTs = ts;
+        update(dt);
+        draw();
+        requestAnimationFrame(loop);
+      }
+
+      function onKeyChange(event, down) {
+        const key = event.key.toLowerCase();
+        if (["arrowup", "w"].includes(key)) keys.up = down;
+        if (["arrowdown", "s"].includes(key)) keys.down = down;
+        if (["arrowleft", "a"].includes(key)) keys.left = down;
+        if (["arrowright", "d"].includes(key)) keys.right = down;
+
+        if (down && [" ", "enter", "e"].includes(key)) {
+          queueAction();
+          event.preventDefault();
+        }
+      }
+
+      document.addEventListener("keydown", (event) => onKeyChange(event, true));
+      document.addEventListener("keyup", (event) => onKeyChange(event, false));
+
+      touchButtons.forEach((button) => {
+        const control = button.getAttribute("data-touch");
+        if (!control || control === "action") {
+          return;
+        }
+
+        button.addEventListener("pointerdown", () => {
+          keys[control] = true;
+        });
+        button.addEventListener("pointerup", () => {
+          keys[control] = false;
+        });
+        button.addEventListener("pointercancel", () => {
+          keys[control] = false;
+        });
+        button.addEventListener("pointerleave", () => {
+          keys[control] = false;
+        });
+      });
+
+      const actionButton = document.querySelector('[data-touch="action"]');
+      if (actionButton) {
+        actionButton.addEventListener("pointerdown", () => {
+          queueAction();
+        });
+      }
+
+      startButton.addEventListener("click", () => {
+        overlay.hidden = true;
+        resetGame();
+      });
+
+      draw();
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>
