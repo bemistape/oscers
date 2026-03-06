@@ -1,0 +1,143 @@
+{
+  "version": "1.0",
+  "character_id": "base_bald_male_v1",
+  "coordinate_system": "normalized_front_view",
+  "canvas_reference": {
+    "width": 1.0,
+    "height": 1.0,
+    "origin": "top_left"
+  },
+  "anchors": {
+    "head_center": [0.5, 0.16],
+    "neck_base": [0.5, 0.26],
+    "shoulder_left": [0.39, 0.29],
+    "shoulder_right": [0.61, 0.29],
+    "chest_center": [0.5, 0.36],
+    "waist_center": [0.5, 0.50],
+    "hip_left": [0.45, 0.57],
+    "hip_right": [0.55, 0.57],
+    "knee_left": [0.46, 0.74],
+    "knee_right": [0.54, 0.74],
+    "ankle_left": [0.46, 0.91],
+    "ankle_right": [0.54, 0.91],
+    "elbow_left": [0.32, 0.45],
+    "elbow_right": [0.68, 0.45],
+    "wrist_left": [0.27, 0.60],
+    "wrist_right": [0.73, 0.60]
+  },
+  "bones": [
+    {
+      "id": "torso",
+      "parent": null,
+      "start": "neck_base",
+      "end": "waist_center",
+      "rotation_limit_deg": [-18, 18]
+    },
+    {
+      "id": "head",
+      "parent": "torso",
+      "start": "neck_base",
+      "end": "head_center",
+      "rotation_limit_deg": [-45, 45]
+    },
+    {
+      "id": "upper_arm_left",
+      "parent": "torso",
+      "start": "shoulder_left",
+      "end": "elbow_left",
+      "rotation_limit_deg": [-130, 85]
+    },
+    {
+      "id": "lower_arm_left",
+      "parent": "upper_arm_left",
+      "start": "elbow_left",
+      "end": "wrist_left",
+      "rotation_limit_deg": [0, 150]
+    },
+    {
+      "id": "upper_arm_right",
+      "parent": "torso",
+      "start": "shoulder_right",
+      "end": "elbow_right",
+      "rotation_limit_deg": [-85, 130]
+    },
+    {
+      "id": "lower_arm_right",
+      "parent": "upper_arm_right",
+      "start": "elbow_right",
+      "end": "wrist_right",
+      "rotation_limit_deg": [0, 150]
+    },
+    {
+      "id": "thigh_left",
+      "parent": "torso",
+      "start": "hip_left",
+      "end": "knee_left",
+      "rotation_limit_deg": [-95, 35]
+    },
+    {
+      "id": "calf_left",
+      "parent": "thigh_left",
+      "start": "knee_left",
+      "end": "ankle_left",
+      "rotation_limit_deg": [0, 145]
+    },
+    {
+      "id": "thigh_right",
+      "parent": "torso",
+      "start": "hip_right",
+      "end": "knee_right",
+      "rotation_limit_deg": [-35, 95]
+    },
+    {
+      "id": "calf_right",
+      "parent": "thigh_right",
+      "start": "knee_right",
+      "end": "ankle_right",
+      "rotation_limit_deg": [0, 145]
+    }
+  ],
+  "physics": {
+    "gravity_scale": 1.0,
+    "linear_damping": 0.16,
+    "angular_damping": 0.28,
+    "joint_stiffness": 0.72,
+    "joint_damping": 0.44,
+    "solver_iterations": 12
+  },
+  "collision_shapes": [
+    {
+      "id": "head_collider",
+      "type": "circle",
+      "center_anchor": "head_center",
+      "radius": 0.078
+    },
+    {
+      "id": "torso_collider",
+      "type": "capsule",
+      "start_anchor": "neck_base",
+      "end_anchor": "waist_center",
+      "radius": 0.055
+    },
+    {
+      "id": "pelvis_collider",
+      "type": "circle",
+      "center": [0.5, 0.57],
+      "radius": 0.052
+    }
+  ],
+  "pose_presets": [
+    {
+      "id": "neutral_stand",
+      "description": "Balanced standing idle pose"
+    },
+    {
+      "id": "seated_theater",
+      "description": "Relaxed seated pose for theater scenes"
+    },
+    {
+      "id": "pointing_side",
+      "description": "One arm extended for callout poses"
+    }
+  ]
+}

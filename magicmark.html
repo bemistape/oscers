@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Magic Mark</title>
+  <link rel="stylesheet" href="site.css" />
+  <style>
+    body.magicmark-page {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 12% 12%, rgba(255, 214, 78, 0.16), transparent 36%),
+        radial-gradient(circle at 82% 8%, rgba(152, 29, 29, 0.16), transparent 38%),
+        linear-gradient(180deg, #0d0c09 0%, #14110e 48%, #0f0d0a 100%);
+      color: #f7e8be;
+      font-family: var(--font-body);
+    }
+
+    .magicmark-main {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 34px 20px 56px;
+    }
+
+    .magicmark-header {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .magicmark-header h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4.6vw, 3.2rem);
+      color: #ffd700;
+      letter-spacing: 0.02em;
+      font-family: var(--font-display);
+      text-transform: uppercase;
+      text-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+    }
+
+    .magicmark-header p {
+      margin: 10px auto 0;
+      max-width: 900px;
+      color: rgba(247, 232, 190, 0.9);
+      font-size: 1rem;
+      line-height: 1.45;
+    }
+
+    .magicmark-panel {
+      background: rgba(20, 17, 13, 0.94);
+      border: 2px solid rgba(255, 215, 0, 0.32);
+      border-radius: 22px;
+      padding: 14px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.48);
+    }
+
+    .magicmark-status {
+      margin: 0 0 10px;
+      text-align: center;
+      font-size: 0.84rem;
+      color: rgba(247, 232, 190, 0.74);
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .magicmark-canvas-wrap {
+      border: 1px solid rgba(255, 215, 0, 0.22);
+      border-radius: 16px;
+      overflow: hidden;
+      background: #12100d;
+    }
+
+    #magicRigCanvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      aspect-ratio: 17 / 10;
+      touch-action: none;
+      cursor: grab;
+    }
+
+    #magicRigCanvas.is-dragging {
+      cursor: grabbing;
+    }
+
+    @media (max-width: 760px) {
+      .magicmark-main {
+        padding: 20px 12px 36px;
+      }
+
+      .magicmark-header p {
+        font-size: 0.92rem;
+      }
+    }
+  </style>
+</head>
+<body class="magicmark-page">
+  <main class="magicmark-main">
+    <header class="magicmark-header">
+      <h1>Explore Your Imagination with Magic Mark Prokfsh</h1>
+      <p>He stands ready. Grab and fling any part of the figure to stretch him around like a toy and watch him settle back to standing.</p>
+    </header>
+
+    <section class="magicmark-panel">
+      <p class="magicmark-status" id="statusText">Standing by for pull-and-throw tests...</p>
+      <div class="magicmark-canvas-wrap">
+        <canvas id="magicRigCanvas" width="1700" height="1000" aria-label="Magic Mark stretch figure canvas"></canvas>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const canvas = document.getElementById("magicRigCanvas");
+      const ctx = canvas.getContext("2d");
+      const statusText = document.getElementById("statusText");
+      if (!ctx || !statusText) {
+        return;
+      }
+
+      const SKIN = {
+        light: "#e2c3ab",
+        base: "#d5b299",
+        shadow: "#b48c72",
+        deep: "#8e6752",
+        outline: "rgba(72, 47, 34, 0.55)"
+      };
+
+      const RIG = {
+        head_center: [0.5, 0.15],
+        neck: [0.5, 0.23],
+        shoulder_left: [0.445, 0.285],
+        shoulder_right: [0.555, 0.285],
+        chest: [0.5, 0.355],
+        waist: [0.5, 0.47],
+        pelvis: [0.5, 0.56],
+        hip_left: [0.468, 0.56],
+        hip_right: [0.532, 0.56],
+        elbow_left: [0.392, 0.43],
+        elbow_right: [0.608, 0.43],
+        wrist_left: [0.355, 0.585],
+        wrist_right: [0.645, 0.585],
+        knee_left: [0.474, 0.74],
+        knee_right: [0.526, 0.74],
+        ankle_left: [0.472, 0.91],
+        ankle_right: [0.528, 0.91],
+        foot_left: [0.463, 0.965],
+        foot_right: [0.537, 0.965]
+      };
+
+      const BONE_LINKS = [
+        ["neck", "head_center", 0.27, 1.45],
+        ["neck", "shoulder_left", 0.34, 1.25],
+        ["neck", "shoulder_right", 0.34, 1.25],
+        ["shoulder_left", "elbow_left", 0.26, 2.6],
+        ["elbow_left", "wrist_left", 0.24, 2.8],
+        ["shoulder_right", "elbow_right", 0.26, 2.6],
+        ["elbow_right", "wrist_right", 0.24, 2.8],
+        ["neck", "chest", 0.32, 1.45],
+        ["chest", "waist", 0.34, 1.55],
+        ["waist", "pelvis", 0.34, 1.55],
+        ["pelvis", "hip_left", 0.36, 1.35],
+        ["pelvis", "hip_right", 0.36, 1.35],
+        ["hip_left", "knee_left", 0.3, 2.55],
+        ["knee_left", "ankle_left", 0.28, 2.7],
+        ["ankle_left", "foot_left", 0.36, 1.6],
+        ["hip_right", "knee_right", 0.3, 2.55],
+        ["knee_right", "ankle_right", 0.28, 2.7],
+        ["ankle_right", "foot_right", 0.36, 1.6]
+      ];
+
+      const BRACES = [
+        ["shoulder_left", "shoulder_right", 0.46, 1.24],
+        ["hip_left", "hip_right", 0.48, 1.2],
+        ["shoulder_left", "hip_left", 0.25, 1.42],
+        ["shoulder_right", "hip_right", 0.25, 1.42],
+        ["shoulder_left", "hip_right", 0.16, 1.72],
+        ["shoulder_right", "hip_left", 0.16, 1.72],
+        ["chest", "hip_left", 0.22, 1.48],
+        ["chest", "hip_right", 0.22, 1.48]
+      ];
+
+      const DRAGGABLE = [
+        "head_center",
+        "neck",
+        "shoulder_left",
+        "shoulder_right",
+        "chest",
+        "waist",
+        "pelvis",
+        "elbow_left",
+        "elbow_right",
+        "wrist_left",
+        "wrist_right",
+        "hip_left",
+        "hip_right",
+        "knee_left",
+        "knee_right",
+        "ankle_left",
+        "ankle_right"
+      ];
+
+      const state = {
+        points: {},
+        rest: {},
+        constraints: [],
+        springs: [],
+        draggedId: null,
+        pointer: { x: 0, y: 0 },
+        pointerVelocity: { x: 0, y: 0 },
+        lastPointerTime: 0,
+        headRadius: 54,
+        groundY: canvas.height - 125
+      };
+
+      function setStatus(text) {
+        statusText.textContent = text;
+      }
+
+      function toCanvas(nx, ny) {
+        const scale = Math.min(canvas.width, canvas.height) * 0.52;
+        const centerX = canvas.width * 0.5;
+        const topOffset = canvas.height * 0.12;
+        return [
+          centerX + (nx - 0.5) * scale * 1.58,
+          topOffset + ny * scale
+        ];
+      }
+
+      function createPoint(x, y) {
+        return { x, y, px: x, py: y };
+      }
+
+      function distance(a, b) {
+        return Math.hypot(b.x - a.x, b.y - a.y);
+      }
+
+      function createConstraint(aId, bId, stiffness, maxStretch) {
+        const a = state.points[aId];
+        const b = state.points[bId];
+        const rest = distance(a, b);
+        return {
+          a: aId,
+          b: bId,
+          rest,
+          stiffness,
+          max: rest * maxStretch
+        };
+      }
+
+      function initializeFigure() {
+        state.points = {};
+        state.rest = {};
+        state.constraints = [];
+        state.springs = [];
+
+        Object.entries(RIG).forEach(([id, normalized]) => {
+          const [x, y] = toCanvas(normalized[0], normalized[1]);
+          state.points[id] = createPoint(x, y);
+          state.rest[id] = { x, y };
+        });
+
+        BONE_LINKS.forEach((entry) => {
+          state.constraints.push(createConstraint(entry[0], entry[1], entry[2], entry[3]));
+        });
+        BRACES.forEach((entry) => {
+          state.constraints.push(createConstraint(entry[0], entry[1], entry[2], entry[3]));
+        });
+
+        Object.keys(state.points).forEach((id) => {
+          let stiffness = 0.025;
+          if (id.includes("ankle") || id.includes("foot")) {
+            stiffness = 0.06;
+          } else if (id.includes("knee") || id.includes("wrist")) {
+            stiffness = 0.038;
+          } else if (id === "waist" || id === "pelvis") {
+            stiffness = 0.03;
+          } else if (id === "head_center" || id === "neck") {
+            stiffness = 0.034;
+          }
+          state.springs.push({ id, stiffness });
+        });
+
+        state.groundY = canvas.height - 125;
+        const headToNeck = distance(state.points.head_center, state.points.neck);
+        state.headRadius = Math.max(46, Math.min(62, headToNeck * 0.97));
+        setStatus("Standing by for pull-and-throw tests...");
+      }
+
+      function resetToStand() {
+        Object.entries(state.rest).forEach(([id, rest]) => {
+          const point = state.points[id];
+          point.x = rest.x;
+          point.y = rest.y;
+          point.px = rest.x;
+          point.py = rest.y;
+        });
+        state.draggedId = null;
+        canvas.classList.remove("is-dragging");
+        setStatus("Standing by for pull-and-throw tests...");
+      }
+
+      function applyConstraint(constraint) {
+        const a = state.points[constraint.a];
+        const b = state.points[constraint.b];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const currentDistance = Math.hypot(dx, dy) || 0.00001;
+
+        let target = constraint.rest;
+        let strength = constraint.stiffness;
+
+        if (currentDistance > constraint.max) {
+          target = constraint.max;
+          strength = Math.max(strength, 0.56);
+        }
+
+        const delta = (currentDistance - target) / currentDistance;
+        const offsetX = dx * 0.5 * delta * strength;
+        const offsetY = dy * 0.5 * delta * strength;
+
+        if (state.draggedId !== constraint.a) {
+          a.x += offsetX;
+          a.y += offsetY;
+        }
+        if (state.draggedId !== constraint.b) {
+          b.x -= offsetX;
+          b.y -= offsetY;
+        }
+      }
+
+      function applyHomeSpring(spring) {
+        if (spring.id === state.draggedId) {
+          return;
+        }
+        const point = state.points[spring.id];
+        const rest = state.rest[spring.id];
+        point.x += (rest.x - point.x) * spring.stiffness;
+        point.y += (rest.y - point.y) * spring.stiffness;
+      }
+
+      function integrate() {
+        const damping = 0.06;
+        const gravity = 0.78;
+        const floorBounce = 0.18;
+
+        Object.entries(state.points).forEach(([id, point]) => {
+          if (id === state.draggedId) {
+            return;
+          }
+
+          const vx = (point.x - point.px) * (1 - damping);
+          const vy = (point.y - point.py) * (1 - damping) + gravity;
+
+          point.px = point.x;
+          point.py = point.y;
+          point.x += vx;
+          point.y += vy;
+
+          if (point.y > state.groundY) {
+            point.y = state.groundY;
+            point.py = point.y + vy * -floorBounce;
+            point.px = point.x - vx * 0.7;
+          }
+
+          if (point.x < 74) {
+            point.x = 74;
+            point.px = point.x + vx * -0.3;
+          }
+          if (point.x > canvas.width - 74) {
+            point.x = canvas.width - 74;
+            point.px = point.x + vx * -0.3;
+          }
+        });
+
+        if (state.draggedId) {
+          const point = state.points[state.draggedId];
+          point.x = state.pointer.x;
+          point.y = state.pointer.y;
+          point.px = point.x - state.pointerVelocity.x * 0.16;
+          point.py = point.y - state.pointerVelocity.y * 0.16;
+        }
+      }
+
+      function stepSimulation() {
+        integrate();
+        for (let i = 0; i < 17; i += 1) {
+          state.constraints.forEach(applyConstraint);
+          state.springs.forEach(applyHomeSpring);
+        }
+      }
+
+      function drawBackground() {
+        const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        bg.addColorStop(0, "#17130f");
+        bg.addColorStop(0.58, "#130f0c");
+        bg.addColorStop(1, "#0f0c08");
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const glowA = ctx.createRadialGradient(canvas.width * 0.26, canvas.height * 0.16, 24, canvas.width * 0.26, canvas.height * 0.16, 350);
+        glowA.addColorStop(0, "rgba(255, 208, 72, 0.16)");
+        glowA.addColorStop(1, "rgba(255, 208, 72, 0)");
+        ctx.fillStyle = glowA;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const glowB = ctx.createRadialGradient(canvas.width * 0.72, canvas.height * 0.17, 24, canvas.width * 0.72, canvas.height * 0.17, 320);
+        glowB.addColorStop(0, "rgba(172, 42, 42, 0.18)");
+        glowB.addColorStop(1, "rgba(172, 42, 42, 0)");
+        ctx.fillStyle = glowB;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const floorGrad = ctx.createLinearGradient(0, state.groundY - 20, 0, canvas.height);
+        floorGrad.addColorStop(0, "rgba(47, 37, 25, 0.18)");
+        floorGrad.addColorStop(1, "rgba(17, 13, 10, 0.96)");
+        ctx.fillStyle = floorGrad;
+        ctx.fillRect(0, state.groundY - 20, canvas.width, canvas.height - state.groundY + 20);
+
+        ctx.strokeStyle = "rgba(255, 215, 0, 0.16)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, state.groundY + 1);
+        ctx.lineTo(canvas.width, state.groundY + 1);
+        ctx.stroke();
+      }
+
+      function drawShadow() {
+        const pelvis = state.points.pelvis;
+        if (!pelvis) {
+          return;
+        }
+        ctx.fillStyle = "rgba(0, 0, 0, 0.38)";
+        ctx.beginPath();
+        ctx.ellipse(pelvis.x, state.groundY + 24, 175, 25, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      function strokeLimb(aId, bId, width) {
+        const a = state.points[aId];
+        const b = state.points[bId];
+        if (!a || !b) {
+          return;
+        }
+
+        const grad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+        grad.addColorStop(0, SKIN.light);
+        grad.addColorStop(0.45, SKIN.base);
+        grad.addColorStop(1, SKIN.shadow);
+
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = width;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+      }
+
+      function drawHairAlongSegment(aId, bId, count, size, color) {
+        const a = state.points[aId];
+        const b = state.points[bId];
+        if (!a || !b) {
+          return;
+        }
+
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const length = Math.hypot(dx, dy) || 1;
+        const nx = -dy / length;
+        const ny = dx / length;
+
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        ctx.lineCap = "round";
+        for (let i = 0; i < count; i += 1) {
+          const t = (i + 1) / (count + 1);
+          const px = a.x + dx * t;
+          const py = a.y + dy * t;
+          const direction = i % 2 === 0 ? 1 : -1;
+          ctx.beginPath();
+          ctx.moveTo(px, py);
+          ctx.lineTo(px + nx * size * direction, py + ny * size * direction);
+          ctx.stroke();
+        }
+      }
+
+      function drawLimbs() {
+        strokeLimb("neck", "head_center", 24);
+        strokeLimb("shoulder_left", "elbow_left", 22);
+        strokeLimb("elbow_left", "wrist_left", 18);
+        strokeLimb("shoulder_right", "elbow_right", 22);
+        strokeLimb("elbow_right", "wrist_right", 18);
+        strokeLimb("hip_left", "knee_left", 24);
+        strokeLimb("knee_left", "ankle_left", 19);
+        strokeLimb("hip_right", "knee_right", 24);
+        strokeLimb("knee_right", "ankle_right", 19);
+
+        drawHairAlongSegment("shoulder_left", "wrist_left", 12, 5, "rgba(87, 60, 45, 0.52)");
+        drawHairAlongSegment("shoulder_right", "wrist_right", 12, 5, "rgba(87, 60, 45, 0.52)");
+        drawHairAlongSegment("hip_left", "ankle_left", 14, 4, "rgba(87, 60, 45, 0.55)");
+        drawHairAlongSegment("hip_right", "ankle_right", 14, 4, "rgba(87, 60, 45, 0.55)");
+      }
+
+      function drawHandsAndFeet() {
+        const wl = state.points.wrist_left;
+        const wr = state.points.wrist_right;
+        const fl = state.points.foot_left;
+        const fr = state.points.foot_right;
+        if (!wl || !wr || !fl || !fr) {
+          return;
+        }
+
+        ctx.fillStyle = SKIN.base;
+        ctx.strokeStyle = SKIN.outline;
+        ctx.lineWidth = 1.6;
+
+        ctx.beginPath();
+        ctx.ellipse(wl.x, wl.y + 4, 16, 11, 0.2, 0, Math.PI * 2);
+        ctx.ellipse(wr.x, wr.y + 4, 16, 11, -0.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.ellipse(fl.x, fl.y + 4, 20, 10, 0.1, 0, Math.PI * 2);
+        ctx.ellipse(fr.x, fr.y + 4, 20, 10, -0.1, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      function drawTorso() {
+        const sl = state.points.shoulder_left;
+        const sr = state.points.shoulder_right;
+        const chest = state.points.chest;
+        const waist = state.points.waist;
+        const pelvis = state.points.pelvis;
+        const hl = state.points.hip_left;
+        const hr = state.points.hip_right;
+        if (!sl || !sr || !chest || !waist || !pelvis || !hl || !hr) {
+          return;
+        }
+
+        const torsoGrad = ctx.createLinearGradient(0, sl.y - 10, 0, pelvis.y + 30);
+        torsoGrad.addColorStop(0, SKIN.light);
+        torsoGrad.addColorStop(0.52, SKIN.base);
+        torsoGrad.addColorStop(1, SKIN.shadow);
+
+        ctx.fillStyle = torsoGrad;
+        ctx.strokeStyle = SKIN.outline;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(sl.x - 16, sl.y + 4);
+        ctx.quadraticCurveTo(chest.x - 58, chest.y - 2, hl.x - 24, hl.y + 12);
+        ctx.quadraticCurveTo(waist.x - 20, waist.y + 24, pelvis.x - 18, pelvis.y + 28);
+        ctx.quadraticCurveTo(pelvis.x + 18, pelvis.y + 28, waist.x + 20, waist.y + 24);
+        ctx.quadraticCurveTo(hr.x + 24, hr.y + 12, sr.x + 16, sr.y + 4);
+        ctx.quadraticCurveTo(chest.x + 58, chest.y - 2, sl.x - 16, sl.y + 4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.strokeStyle = "rgba(130, 90, 66, 0.38)";
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.moveTo(chest.x, chest.y - 6);
+        ctx.lineTo(waist.x, waist.y + 26);
+        ctx.stroke();
+
+        ctx.fillStyle = "rgba(114, 78, 58, 0.48)";
+        ctx.beginPath();
+        ctx.arc(waist.x, waist.y + 17, 3.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        drawBodyHair(chest, waist, pelvis);
+      }
+
+      function drawBodyHair(chest, waist, pelvis) {
+        ctx.strokeStyle = "rgba(77, 50, 35, 0.72)";
+        ctx.lineWidth = 1.4;
+        for (let i = 0; i < 18; i += 1) {
+          const t = i / 17;
+          const x = chest.x - 44 + t * 88;
+          const y = chest.y + 2 + Math.sin(i * 1.2) * 2.5;
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.quadraticCurveTo(x + (i % 2 === 0 ? 2 : -2), y + 8, x + (i % 2 === 0 ? -1 : 1), y + 13);
+          ctx.stroke();
+        }
+
+        for (let i = 0; i < 15; i += 1) {
+          const spread = (i - 7) * 2.9;
+          ctx.beginPath();
+          ctx.moveTo(waist.x + spread * 0.35, waist.y + 18 + Math.abs(spread) * 0.04);
+          ctx.lineTo(waist.x + spread, waist.y + 35 + Math.abs(spread) * 0.07);
+          ctx.stroke();
+        }
+
+        ctx.fillStyle = "rgba(64, 40, 28, 0.82)";
+        ctx.beginPath();
+        ctx.moveTo(pelvis.x - 16, pelvis.y + 10);
+        ctx.lineTo(pelvis.x + 16, pelvis.y + 10);
+        ctx.lineTo(pelvis.x + 8, pelvis.y + 26);
+        ctx.lineTo(pelvis.x - 8, pelvis.y + 26);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      function drawHead() {
+        const head = state.points.head_center;
+        if (!head) {
+          return;
+        }
+        const r = state.headRadius;
+
+        const skullGrad = ctx.createRadialGradient(head.x - r * 0.34, head.y - r * 0.5, r * 0.15, head.x, head.y, r * 1.06);
+        skullGrad.addColorStop(0, SKIN.light);
+        skullGrad.addColorStop(1, SKIN.base);
+        ctx.fillStyle = skullGrad;
+        ctx.strokeStyle = SKIN.outline;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse(head.x, head.y, r * 0.92, r, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = SKIN.base;
+        ctx.beginPath();
+        ctx.ellipse(head.x - r * 0.9, head.y + r * 0.08, r * 0.11, r * 0.17, 0, 0, Math.PI * 2);
+        ctx.ellipse(head.x + r * 0.9, head.y + r * 0.08, r * 0.11, r * 0.17, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "rgba(178, 140, 112, 0.42)";
+        ctx.beginPath();
+        ctx.ellipse(head.x, head.y + r * 0.68, r * 0.38, r * 0.14, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        drawFace(head, r);
+      }
+
+      function drawFace(head, r) {
+        const eyeY = head.y - r * 0.09;
+        const eyeGap = r * 0.31;
+
+        ctx.fillStyle = "#f3f2ee";
+        ctx.beginPath();
+        ctx.ellipse(head.x - eyeGap, eyeY, r * 0.12, r * 0.07, 0, 0, Math.PI * 2);
+        ctx.ellipse(head.x + eyeGap, eyeY, r * 0.12, r * 0.07, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#7892ad";
+        ctx.beginPath();
+        ctx.arc(head.x - eyeGap, eyeY, r * 0.036, 0, Math.PI * 2);
+        ctx.arc(head.x + eyeGap, eyeY, r * 0.036, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = "rgba(57, 40, 28, 0.58)";
+        ctx.lineWidth = 2.1;
+        ctx.beginPath();
+        ctx.moveTo(head.x + r * 0.02, eyeY + r * 0.02);
+        ctx.lineTo(head.x - r * 0.02, eyeY + r * 0.28);
+        ctx.stroke();
+
+        ctx.strokeStyle = "rgba(104, 73, 58, 0.6)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(head.x - r * 0.13, head.y + r * 0.38);
+        ctx.quadraticCurveTo(head.x, head.y + r * 0.44, head.x + r * 0.13, head.y + r * 0.38);
+        ctx.stroke();
+
+        ctx.strokeStyle = "rgba(39, 36, 34, 0.95)";
+        ctx.lineWidth = 5;
+        const frameW = r * 0.51;
+        const frameH = r * 0.26;
+        ctx.strokeRect(head.x - eyeGap - frameW / 2, eyeY - frameH / 2, frameW, frameH);
+        ctx.strokeRect(head.x + eyeGap - frameW / 2, eyeY - frameH / 2, frameW, frameH);
+        ctx.beginPath();
+        ctx.moveTo(head.x - r * 0.065, eyeY);
+        ctx.lineTo(head.x + r * 0.065, eyeY);
+        ctx.stroke();
+
+        ctx.strokeStyle = "rgba(82, 58, 42, 0.42)";
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(head.x - r * 0.18, head.y + r * 0.52);
+        ctx.lineTo(head.x - r * 0.08, head.y + r * 0.58);
+        ctx.moveTo(head.x + r * 0.18, head.y + r * 0.52);
+        ctx.lineTo(head.x + r * 0.08, head.y + r * 0.58);
+        ctx.stroke();
+      }
+
+      function drawFrame() {
+        drawBackground();
+        drawShadow();
+        drawLimbs();
+        drawHandsAndFeet();
+        drawTorso();
+        drawHead();
+      }
+
+      function getCanvasPointer(event) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        return {
+          x: (event.clientX - rect.left) * scaleX,
+          y: (event.clientY - rect.top) * scaleY
+        };
+      }
+
+      function findNearestHandle(x, y) {
+        let winner = null;
+        let best = Infinity;
+        DRAGGABLE.forEach((id) => {
+          const point = state.points[id];
+          const d = Math.hypot(point.x - x, point.y - y);
+          if (d < 62 && d < best) {
+            best = d;
+            winner = id;
+          }
+        });
+        return winner;
+      }
+
+      function pointerDown(event) {
+        const p = getCanvasPointer(event);
+        state.pointer.x = p.x;
+        state.pointer.y = p.y;
+        state.pointerVelocity.x = 0;
+        state.pointerVelocity.y = 0;
+        state.lastPointerTime = performance.now();
+
+        const handleId = findNearestHandle(p.x, p.y);
+        if (!handleId) {
+          return;
+        }
+
+        state.draggedId = handleId;
+        canvas.classList.add("is-dragging");
+        canvas.setPointerCapture(event.pointerId);
+        setStatus("Pulling " + handleId.replace(/_/g, " ") + "...");
+      }
+
+      function pointerMove(event) {
+        const p = getCanvasPointer(event);
+        const now = performance.now();
+        const dt = Math.max(8, now - state.lastPointerTime);
+
+        state.pointerVelocity.x = ((p.x - state.pointer.x) / dt) * 16;
+        state.pointerVelocity.y = ((p.y - state.pointer.y) / dt) * 16;
+        state.pointer.x = p.x;
+        state.pointer.y = p.y;
+        state.lastPointerTime = now;
+      }
+
+      function releaseDrag(event) {
+        if (state.draggedId) {
+          const point = state.points[state.draggedId];
+          point.px = point.x - state.pointerVelocity.x * 0.92;
+          point.py = point.y - state.pointerVelocity.y * 0.92;
+        }
+        state.draggedId = null;
+        canvas.classList.remove("is-dragging");
+        setStatus("Standing by for pull-and-throw tests...");
+
+        if (event && canvas.hasPointerCapture(event.pointerId)) {
+          canvas.releasePointerCapture(event.pointerId);
+        }
+      }
+
+      function attachEvents() {
+        canvas.addEventListener("pointerdown", pointerDown);
+        canvas.addEventListener("pointermove", pointerMove);
+        canvas.addEventListener("pointerup", releaseDrag);
+        canvas.addEventListener("pointercancel", releaseDrag);
+        canvas.addEventListener("dblclick", resetToStand);
+      }
+
+      function animate() {
+        stepSimulation();
+        drawFrame();
+        requestAnimationFrame(animate);
+      }
+
+      attachEvents();
+      initializeFigure();
+      animate();
+    })();
+  </script>
+</body>
+</html>
