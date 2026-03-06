@@ -8,7 +8,7 @@
     html, body {
       margin: 0; padding: 0; overflow: hidden;
       width: 100%; height: 100%;
-      background: #000;
+      background: #1c1c1c;
       font-family: var(--font-body), sans-serif;
     }
     /* The container that will have its transform updated by JS */
@@ -24,9 +24,9 @@
       position: fixed;
       top: 70px;
       right: 10px;
-      background: rgba(255, 255, 255, 0.2);
-      border: 1px solid #fff;
-      color: #fff;
+      background: rgba(255, 215, 0, 0.1);
+      border: 1px solid #ffd700;
+      color: #ffd700;
       padding: 5px 8px;
       border-radius: 4px;
       cursor: pointer;
@@ -52,16 +52,16 @@
     /* Poster styling with glow */
     .poster {
       width: 120px;
-      border: 3px solid #fff;
-      box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+      border: 3px solid #ffd700;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.45);
       transition: transform 1.5s ease-in-out;
     }
     /* Runtime button with subtle swirl */
     .runtime-btn {
       margin-top: -5px;
-      background: #ff6347;
-      color: #fff;
-      border: none;
+      background: #ffd700;
+      color: #000;
+      border: 1px solid #b28a14;
       padding: 5px 10px;
       font-size: 0.8rem;
       border-radius: 5px;
@@ -88,7 +88,7 @@
       pointer-events: none;
       opacity: 1;
       transition: opacity 1s ease-out;
-      text-shadow: 0 0 10px rgba(255,255,255,0.8);
+      text-shadow: 0 0 10px rgba(255,215,0,0.8);
     }
     /* Cloud-like drifting for movie groups */
     @keyframes cloudFloat {
@@ -114,7 +114,7 @@
       width: 100%;
       text-align: center;
       font-size: 0.75rem;
-      color: rgba(255, 255, 255, 0.6);
+      color: rgba(255, 215, 0, 0.8);
       z-index: 900;
       pointer-events: none;
     }
@@ -245,8 +245,8 @@ document.addEventListener('click', () => {
           ghost.style.left = x + 'px';
           ghost.style.top = y + 'px';
           ghost.style.width = '120px';
-          ghost.style.border = '3px solid #fff';
-          ghost.style.boxShadow = '0 0 15px rgba(255, 255, 255, 0.7)';
+          ghost.style.border = '3px solid #ffd700';
+          ghost.style.boxShadow = '0 0 15px rgba(255, 215, 0, 0.45)';
           ghost.style.transform = 'scale(' + scale + ')';
           container.appendChild(ghost);
           setTimeout(() => { ghost.style.opacity = 0; }, 50);

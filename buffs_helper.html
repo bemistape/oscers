@@ -32,10 +32,9 @@
         <div class="helper-grid">
           <article class="helper-module">
             <div class="helper-module-copy">
-              <p class="eyebrow">Module 01</p>
+              <p class="eyebrow">Emergency Tool</p>
               <h2>Star / Bag Conversion</h2>
               <p>Select the number of star to automatically convert to the On Cinema popcorn system.</p>
-              <p class="formula-note">1 star = 1.25 bags of popcorn.</p>
             </div>
 
             <div class="helper-converter">
@@ -58,18 +57,9 @@
                 </button>
               </div>
 
-              <p class="conversion-readout" aria-live="polite">
-                <span data-stars-value>0</span> <span data-stars-unit>stars</span> =
-                <span data-bags-value>0</span> <span data-bags-unit>bags</span> of popcorn
-              </p>
-
               <div class="popcorn-stage is-empty" data-popcorn-stage>
-                <img class="popcorn-graphic" src="on_cinema_popcorn.png" alt="On Cinema popcorn graphic" />
-                <div class="popcorn-badge">
-                  <strong data-badge-value>0</strong>
-                  bags
-                </div>
-                <p class="popcorn-caption">Hover or tap the stars to convert.</p>
+                <div class="popcorn-bag-wall" data-popcorn-wall aria-live="polite" aria-label="Converted popcorn bag count"></div>
+                <p class="popcorn-caption" data-popcorn-caption>Hover or tap the stars to convert.</p>
               </div>
             </div>
           </article>
@@ -84,23 +74,20 @@
 
   <script>
     (function () {
+      const popcornImageSrc = "1_bag.png";
       const starButtons = Array.from(document.querySelectorAll("[data-star-button]"));
-      const starsValue = document.querySelector("[data-stars-value]");
-      const starsUnit = document.querySelector("[data-stars-unit]");
-      const bagsValue = document.querySelector("[data-bags-value]");
-      const bagsUnit = document.querySelector("[data-bags-unit]");
-      const badgeValue = document.querySelector("[data-badge-value]");
       const popcornStage = document.querySelector("[data-popcorn-stage]");
-      const popcornCaption = document.querySelector(".popcorn-caption");
+      const popcornWall = document.querySelector("[data-popcorn-wall]");
+      const popcornCaption = document.querySelector("[data-popcorn-caption]");
 
-      if (!starButtons.length || !starsValue || !starsUnit || !bagsValue || !bagsUnit || !badgeValue || !popcornStage || !popcornCaption) {
+      if (!starButtons.length || !popcornStage || !popcornWall || !popcornCaption) {
         return;
       }
 
       let selectedValue = 0;
 
       function formatNumber(value) {
-        return Number(value.toFixed(3)).toString();
+        return Number(value.toFixed(2)).toString();
       }
 
       function paintStars(value) {
@@ -121,29 +108,42 @@
         });
       }
 
-      function render(value, shouldAnimate) {
-        const bags = value * 1.25;
-        const scale = 0.78 + (bags / 5) * 0.32;
-        const tilt = (value - 2) * 2.8;
+      function renderBags(visualBags) {
+        const fullBagCount = Math.floor(visualBags);
+        const hasHalfBag = visualBags - fullBagCount >= 0.5;
+        const fragment = document.createDocumentFragment();
 
-        paintStars(value);
-        starsValue.textContent = formatNumber(value);
-        starsUnit.textContent = value === 1 ? "star" : "stars";
-        bagsValue.textContent = formatNumber(bags);
-        bagsUnit.textContent = bags === 1 ? "bag" : "bags";
-        badgeValue.textContent = formatNumber(bags);
-        popcornStage.classList.toggle("is-empty", value === 0);
-        popcornStage.style.setProperty("--bag-scale", scale.toFixed(3));
-        popcornStage.style.setProperty("--bag-tilt", tilt.toFixed(1) + "deg");
-        popcornCaption.textContent = value === 0
-          ? "Hover or tap the stars to convert."
-          : "Conversion complete. Bag it and tag it.";
+        function addBag(isHalf) {
+          const bag = document.createElement("div");
+          bag.className = "popcorn-bag" + (isHalf ? " is-half" : "");
 
-        if (shouldAnimate && value > 0) {
-          popcornStage.classList.remove("is-popping");
-          void popcornStage.offsetWidth;
-          popcornStage.classList.add("is-popping");
+          const image = document.createElement("img");
+          image.src = popcornImageSrc;
+          image.alt = "Popcorn bag";
+
+          bag.appendChild(image);
+          fragment.appendChild(bag);
         }
+
+        for (let i = 0; i < fullBagCount; i += 1) {
+          addBag(false);
+        }
+        if (hasHalfBag) {
+          addBag(true);
+        }
+
+        popcornWall.replaceChildren(fragment);
+      }
+
+      function render(value) {
+        const exactBags = value * 1.25;
+        const visualBags = Math.round(exactBags * 2) / 2;
+        paintStars(value);
+        popcornStage.classList.toggle("is-empty", visualBags === 0);
+        renderBags(visualBags);
+        popcornCaption.textContent = visualBags === 0
+          ? "Hover or tap the stars to convert."
+          : `${formatNumber(value)} ${value === 1 ? "star" : "stars"} converts to ${formatNumber(visualBags)} ${visualBags === 1 ? "bag" : "bags"} of popcorn`;
       }
 
       function getHalfStarValue(event, button) {
@@ -154,9 +154,9 @@
         return Math.max(0.5, Number(button.dataset.starIndex) - 1 + half);
       }
 
-      function setSelection(value, shouldAnimate) {
+      function setSelection(value) {
         selectedValue = Math.max(0, Math.min(4, value));
-        render(selectedValue, shouldAnimate);
+        render(selectedValue);
       }
 
       starButtons.forEach((button) => {
@@ -165,39 +165,39 @@
             return;
           }
 
-          render(getHalfStarValue(event, button), false);
+          render(getHalfStarValue(event, button));
         });
 
         button.addEventListener("pointerleave", () => {
-          render(selectedValue, false);
+          render(selectedValue);
         });
 
         button.addEventListener("click", (event) => {
-          setSelection(getHalfStarValue(event, button), true);
+          setSelection(getHalfStarValue(event, button));
         });
 
         button.addEventListener("focus", () => {
-          render(Number(button.dataset.starIndex), false);
+          render(Number(button.dataset.starIndex));
         });
 
         button.addEventListener("blur", () => {
-          render(selectedValue, false);
+          render(selectedValue);
         });
 
         button.addEventListener("keydown", (event) => {
           if (event.key === "ArrowRight" || event.key === "ArrowUp") {
             event.preventDefault();
-            setSelection(selectedValue + 0.5, true);
+            setSelection(selectedValue + 0.5);
           }
 
           if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
             event.preventDefault();
-            setSelection(selectedValue - 0.5, true);
+            setSelection(selectedValue - 0.5);
           }
         });
       });
 
-      render(0, false);
+      render(0);
     })();
   </script>
 </body>

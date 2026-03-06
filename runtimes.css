@@ -3,8 +3,8 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  background: black;
-  color: white;
+  background: #1c1c1c;
+  color: #f5d66f;
   font-family: Rockwell, serif;
 }
 .page-container {
@@ -56,7 +56,7 @@ button {
 .diff-btn {
   background: #222;
   border: 2px solid #FFD700;
-  color: white;
+  color: #FFD700;
   font-size: 16px;
   padding: 8px 16px;
   margin: 5px;
@@ -110,8 +110,8 @@ button {
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  color: white;
-  border: 2px solid #444;
+  color: #FFD700;
+  border: 2px solid #FFD700;
   transition: all 0.2s ease;
   position: relative;
 }
@@ -132,7 +132,7 @@ button {
   font-size: 24px;
   background: #222;
   border: 2px solid #FFD700;
-  color: white;
+  color: #FFD700;
   z-index: 3;
 }
 #joker-btn:hover {
@@ -160,7 +160,7 @@ button {
 
 .movie-card {
   width: 160px;
-  border: 2px solid white;
+  border: 2px solid #FFD700;
   padding: 10px;
   background-color: #000;
   border-radius: 15px;
@@ -277,14 +277,14 @@ button {
   justify-content: center;
   font-size: 48px;
   font-weight: bold;
-  color: white;
-  border: 2px solid #444;
+  color: #FFD700;
+  border: 2px solid #FFD700;
   transition: all 0.2s ease;
   margin-bottom: 20px;
 }
 .floating-card {
   width: 140px;
-  border: 2px solid white;
+  border: 2px solid #FFD700;
   border-radius: 10px;
   background: #000;
   display: flex;
@@ -456,7 +456,7 @@ button {
 }
 #scoreboard-container th,
 #scoreboard-container td {
-  border: 1px solid #fff; /* white border */
+  border: 1px solid #FFD700;
   padding: 8px 12px;
   font-size: 14px;
 }
