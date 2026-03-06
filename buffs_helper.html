@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Oscer.com - Buff's Helper</title>
+  <link rel="stylesheet" href="site.css" />
+</head>
+<body class="landing helper-page">
+  <nav class="site-nav" aria-label="Primary">
+    <a href="index.html">Home</a>
+    <a href="bingo.html">Oscer Bingo</a>
+    <a href="runtimes.html">Runtime Challenge</a>
+    <a href="runtime_dream.html">Runtime Dream</a>
+    <a class="is-current" href="buffs_helper.html">Buff's Helper</a>
+    <a class="nav-cta" href="Oscer_Bingo_Oscar_2025.pdf">Download Cards</a>
+  </nav>
+
+  <main>
+    <section class="hero-countdown helper-hero">
+      <div class="page">
+        <div class="countdown-card countdown-hero helper-intro">
+          <p class="eyebrow">Buff Utility Desk</p>
+          <h1>Buff's Helper</h1>
+          <p>This page contains resources that every buff needs to accompplish their life's work: watch and review momvies!</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="page">
+        <div class="helper-grid">
+          <article class="helper-module">
+            <div class="helper-module-copy">
+              <p class="eyebrow">Module 01</p>
+              <h2>Star / Bag Conversion</h2>
+              <p>Select the number of star to automatically convert to the On Cinema popcorn system.</p>
+              <p class="formula-note">1 star = 1.25 bags of popcorn.</p>
+            </div>
+
+            <div class="helper-converter">
+              <div class="star-rating" data-star-rating role="group" aria-label="Choose a star rating in half-star increments">
+                <button class="star-button" type="button" data-star-button data-star-index="1" aria-label="Up to 1 star">
+                  <span class="star-base" aria-hidden="true"><span>★</span></span>
+                  <span class="star-fill" data-star-fill aria-hidden="true"><span>★</span></span>
+                </button>
+                <button class="star-button" type="button" data-star-button data-star-index="2" aria-label="Up to 2 stars">
+                  <span class="star-base" aria-hidden="true"><span>★</span></span>
+                  <span class="star-fill" data-star-fill aria-hidden="true"><span>★</span></span>
+                </button>
+                <button class="star-button" type="button" data-star-button data-star-index="3" aria-label="Up to 3 stars">
+                  <span class="star-base" aria-hidden="true"><span>★</span></span>
+                  <span class="star-fill" data-star-fill aria-hidden="true"><span>★</span></span>
+                </button>
+                <button class="star-button" type="button" data-star-button data-star-index="4" aria-label="Up to 4 stars">
+                  <span class="star-base" aria-hidden="true"><span>★</span></span>
+                  <span class="star-fill" data-star-fill aria-hidden="true"><span>★</span></span>
+                </button>
+              </div>
+
+              <p class="conversion-readout" aria-live="polite">
+                <span data-stars-value>0</span> <span data-stars-unit>stars</span> =
+                <span data-bags-value>0</span> <span data-bags-unit>bags</span> of popcorn
+              </p>
+
+              <div class="popcorn-stage is-empty" data-popcorn-stage>
+                <img class="popcorn-graphic" src="on_cinema_popcorn.png" alt="On Cinema popcorn graphic" />
+                <div class="popcorn-badge">
+                  <strong data-badge-value>0</strong>
+                  bags
+                </div>
+                <p class="popcorn-caption">Hover or tap the stars to convert.</p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    Not affiliated with HEI Network or Oscer. Site by @johnwsmith with robot help.
+  </footer>
+
+  <script>
+    (function () {
+      const starButtons = Array.from(document.querySelectorAll("[data-star-button]"));
+      const starsValue = document.querySelector("[data-stars-value]");
+      const starsUnit = document.querySelector("[data-stars-unit]");
+      const bagsValue = document.querySelector("[data-bags-value]");
+      const bagsUnit = document.querySelector("[data-bags-unit]");
+      const badgeValue = document.querySelector("[data-badge-value]");
+      const popcornStage = document.querySelector("[data-popcorn-stage]");
+      const popcornCaption = document.querySelector(".popcorn-caption");
+
+      if (!starButtons.length || !starsValue || !starsUnit || !bagsValue || !bagsUnit || !badgeValue || !popcornStage || !popcornCaption) {
+        return;
+      }
+
+      let selectedValue = 0;
+
+      function formatNumber(value) {
+        return Number(value.toFixed(3)).toString();
+      }
+
+      function paintStars(value) {
+        starButtons.forEach((button, index) => {
+          const fill = button.querySelector("[data-star-fill]");
+          const step = value - index;
+          let width = 0;
+
+          if (step >= 1) {
+            width = 100;
+          } else if (step >= 0.5) {
+            width = 50;
+          }
+
+          if (fill) {
+            fill.style.width = width + "%";
+          }
+        });
+      }
+
+      function render(value, shouldAnimate) {
+        const bags = value * 1.25;
+        const scale = 0.78 + (bags / 5) * 0.32;
+        const tilt = (value - 2) * 2.8;
+
+        paintStars(value);
+        starsValue.textContent = formatNumber(value);
+        starsUnit.textContent = value === 1 ? "star" : "stars";
+        bagsValue.textContent = formatNumber(bags);
+        bagsUnit.textContent = bags === 1 ? "bag" : "bags";
+        badgeValue.textContent = formatNumber(bags);
+        popcornStage.classList.toggle("is-empty", value === 0);
+        popcornStage.style.setProperty("--bag-scale", scale.toFixed(3));
+        popcornStage.style.setProperty("--bag-tilt", tilt.toFixed(1) + "deg");
+        popcornCaption.textContent = value === 0
+          ? "Hover or tap the stars to convert."
+          : "Conversion complete. Bag it and tag it.";
+
+        if (shouldAnimate && value > 0) {
+          popcornStage.classList.remove("is-popping");
+          void popcornStage.offsetWidth;
+          popcornStage.classList.add("is-popping");
+        }
+      }
+
+      function getHalfStarValue(event, button) {
+        const rect = button.getBoundingClientRect();
+        const pointerX = typeof event.clientX === "number" ? event.clientX : rect.left + rect.width;
+        const half = pointerX - rect.left <= rect.width / 2 ? 0.5 : 1;
+
+        return Math.max(0.5, Number(button.dataset.starIndex) - 1 + half);
+      }
+
+      function setSelection(value, shouldAnimate) {
+        selectedValue = Math.max(0, Math.min(4, value));
+        render(selectedValue, shouldAnimate);
+      }
+
+      starButtons.forEach((button) => {
+        button.addEventListener("pointermove", (event) => {
+          if (event.pointerType === "touch") {
+            return;
+          }
+
+          render(getHalfStarValue(event, button), false);
+        });
+
+        button.addEventListener("pointerleave", () => {
+          render(selectedValue, false);
+        });
+
+        button.addEventListener("click", (event) => {
+          setSelection(getHalfStarValue(event, button), true);
+        });
+
+        button.addEventListener("focus", () => {
+          render(Number(button.dataset.starIndex), false);
+        });
+
+        button.addEventListener("blur", () => {
+          render(selectedValue, false);
+        });
+
+        button.addEventListener("keydown", (event) => {
+          if (event.key === "ArrowRight" || event.key === "ArrowUp") {
+            event.preventDefault();
+            setSelection(selectedValue + 0.5, true);
+          }
+
+          if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
+            event.preventDefault();
+            setSelection(selectedValue - 0.5, true);
+          }
+        });
+      });
+
+      render(0, false);
+    })();
+  </script>
+</body>
+</html>

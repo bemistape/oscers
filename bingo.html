@@ -417,10 +417,10 @@
 <body class="theme-classic">
   <nav class="site-nav" aria-label="Primary">
     <a href="index.html">Home</a>
-    <a href="bingo.html">Oscer Bingo</a>
+    <a class="is-current" href="bingo.html">Oscer Bingo</a>
     <a href="runtimes.html">Runtime Challenge</a>
     <a href="runtime_dream.html">Runtime Dream</a>
-    <a href="vfa_adventure.html">VFA Adventure</a>
+    <a href="buffs_helper.html">Buff's Helper</a>
     <a class="nav-cta" href="Oscer_Bingo_Oscar_2025.pdf">Download Cards</a>
   </nav>
 
@@ -438,12 +438,6 @@
   <div id="controls">
     <button onclick="generateBingoCard()">Generate New Card</button>
     <button onclick="saveAndShare()">Save & Share</button>
-    <select id="themeSelector" onchange="changeTheme(this.value)">
-      <option value="classic">Classic Oscars (Gold & Black)</option>
-      <option value="modern">Modern Red Carpet (Red & Silver)</option>
-      <option value="silent">Silent Film Era (Sepia & Vintage)</option>
-      <option value="silver">Silver Screen (Greyscale)</option>
-    </select>
   </div>
 
   <!-- Bingo Table -->
@@ -477,7 +471,7 @@
   <!-- Banner -->
   <div id="bottomBanner">
     <a href="https://www.heinetwork.tv/tickets/" target="_blank">
-      <img src="Oscar-Special-12-2025-Promo-website22SQUARE-2048x878.png" alt="Oscar Special Banner" />
+      <img src="on_cinema_oscars13.jpg" alt="On Cinema Oscar Special banner" />
     </a>
   </div>
 
@@ -715,28 +709,7 @@
     }
 
     /**************************************************************
-     * 4) Theme Switching
-     **************************************************************/
-    function changeTheme(theme) {
-      document.body.classList.remove("theme-classic", "theme-modern", "theme-silent", "theme-silver");
-      document.getElementById("bingoModal").classList.remove("theme-classic", "theme-modern", "theme-silent", "theme-silver");
-      if (theme === "classic") {
-        document.body.classList.add("theme-classic");
-        document.getElementById("bingoModal").classList.add("theme-classic");
-      } else if (theme === "modern") {
-        document.body.classList.add("theme-modern");
-        document.getElementById("bingoModal").classList.add("theme-modern");
-      } else if (theme === "silent") {
-        document.body.classList.add("theme-silent");
-        document.getElementById("bingoModal").classList.add("theme-silent");
-      } else if (theme === "silver") {
-        document.body.classList.add("theme-silver");
-        document.getElementById("bingoModal").classList.add("theme-silver");
-      }
-    }
-
-    /**************************************************************
-     * 5) Save & Share
+     * 4) Save & Share
      **************************************************************/
     function saveAndShare() {
       html2canvas(document.getElementById("bingo-table")).then(canvas => {
@@ -749,7 +722,7 @@
     }
 
     /**************************************************************
-     * 6) Toggle Hash Section
+     * 5) Toggle Hash Section
      **************************************************************/
     function toggleHash() {
       const hashSec = document.getElementById("hashSection");
@@ -765,7 +738,6 @@
      **************************************************************/
     document.addEventListener("DOMContentLoaded", () => {
       generateBingoCard();
-      changeTheme(document.getElementById("themeSelector").value);
     });
   </script>
   </div>

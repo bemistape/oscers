@@ -1,0 +1,76 @@
+<svg width="720" height="720" viewBox="0 0 720 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="burstGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(360 360) rotate(90) scale(280)">
+      <stop stop-color="#FFECA8" stop-opacity="0.8"/>
+      <stop offset="1" stop-color="#FFECA8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bucketLeft" x1="250" y1="250" x2="280" y2="580" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A81E24"/>
+      <stop offset="1" stop-color="#671014"/>
+    </linearGradient>
+    <linearGradient id="bucketRight" x1="470" y1="250" x2="440" y2="580" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C95B3A"/>
+      <stop offset="1" stop-color="#7A2414"/>
+    </linearGradient>
+    <linearGradient id="bucketRim" x1="235" y1="248" x2="485" y2="248" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7D06E"/>
+      <stop offset="1" stop-color="#E3A019"/>
+    </linearGradient>
+    <filter id="shadow" x="90" y="75" width="540" height="595" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000000" flood-opacity="0.45"/>
+    </filter>
+    <filter id="softGlow" x="96" y="90" width="528" height="528" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#F7D76B" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <rect width="720" height="720" fill="transparent"/>
+  <circle cx="360" cy="380" r="220" fill="url(#burstGlow)"/>
+
+  <g opacity="0.96">
+    <path d="M360 66L409 188L542 111L472 234L618 260L484 317L603 401L449 404L518 543L390 458L367 619L328 459L198 543L272 404L116 401L237 318L102 260L248 234L178 111L312 188L360 66Z" fill="#F8C531"/>
+    <path d="M360 102L395 205L506 141L450 246L572 273L460 326L556 394L430 393L485 500L380 431L362 560L330 431L224 500L285 393L160 394L257 326L145 273L270 246L215 141L325 205L360 102Z" fill="#B91D24"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <ellipse cx="360" cy="542" rx="122" ry="42" fill="#180605" opacity="0.55"/>
+    <path d="M236 250H484L452 568C449 588 432 602 412 602H308C288 602 271 588 268 568L236 250Z" fill="url(#bucketRight)"/>
+    <path d="M236 250H360V602H308C288 602 271 588 268 568L236 250Z" fill="url(#bucketLeft)"/>
+    <path d="M224 230C224 214 236 202 252 202H468C484 202 496 214 496 230V252H224V230Z" fill="url(#bucketRim)"/>
+    <path d="M284 252H330V600H284V252Z" fill="#E6B645" opacity="0.92"/>
+    <path d="M390 252H436V600H390V252Z" fill="#E6B645" opacity="0.92"/>
+    <path d="M330 252H390V600H330V252Z" fill="#C92A27" opacity="0.16"/>
+    <path d="M275 468C294 444 329 443 350 465C360 438 394 428 417 447C441 467 439 508 412 525C395 536 377 535 360 529C340 539 314 538 295 520C272 499 264 468 275 468Z" fill="#F7C84F" opacity="0.88"/>
+    <path d="M307 468L323 489L350 489L330 506L338 533L315 518L292 533L300 506L280 489L307 489L307 468Z" fill="#F4DA78"/>
+    <path d="M410 432C423 419 442 417 455 428C468 440 467 461 454 474C441 488 422 490 408 477C395 465 396 444 410 432Z" fill="#F0C247"/>
+    <path d="M361 554C380 543 401 544 416 557C399 582 375 589 351 584C338 581 326 575 318 565C331 561 347 562 361 554Z" fill="#F7CC5A"/>
+    <path d="M318 528C337 519 356 520 373 529C366 545 349 555 331 553C319 551 309 545 302 537C306 534 312 531 318 528Z" fill="#F0B53D"/>
+    <path d="M288 612C312 586 406 586 431 612" stroke="#190707" stroke-width="7" stroke-linecap="round"/>
+    <text x="360" y="604" text-anchor="middle" fill="#1D0B08" font-family="Georgia, serif" font-size="42" font-style="italic">Popcorn</text>
+  </g>
+
+  <g filter="url(#softGlow)">
+    <g fill="#FBF3D9">
+      <path d="M232 220C211 217 194 197 194 176C194 154 212 136 234 136C241 136 248 138 255 141C265 119 286 104 311 104C340 104 365 125 370 154C376 151 383 149 391 149C418 149 440 171 440 198C440 226 418 248 391 248H232V220Z"/>
+      <path d="M364 188C364 158 389 133 419 133C426 133 434 134 440 137C448 116 468 101 492 101C524 101 550 127 550 159C550 166 549 173 546 180C563 188 575 206 575 227C575 254 553 276 526 276H403C381 276 364 259 364 237V188Z"/>
+      <path d="M118 240C118 213 141 191 168 191C177 191 186 194 194 198C203 175 225 159 250 159C285 159 314 188 314 223C314 228 313 233 312 238C333 244 348 263 348 286C348 314 325 337 297 337H174C143 337 118 312 118 281V240Z"/>
+      <path d="M458 232C458 205 480 183 507 183C517 183 526 186 534 191C543 171 562 157 586 157C619 157 646 184 646 217C646 231 641 243 632 253C647 262 658 279 658 299C658 328 635 352 606 352H500C477 352 458 333 458 310V232Z"/>
+      <path d="M220 315C220 289 241 268 267 268C276 268 284 270 292 274C302 255 322 242 346 242C377 242 402 267 402 298C402 303 401 309 399 314C419 320 433 338 433 360C433 387 411 409 384 409H273C244 409 220 385 220 356V315Z"/>
+      <path d="M377 292C377 267 398 247 423 247C431 247 439 249 446 252C456 234 475 222 497 222C528 222 552 247 552 278C552 282 551 287 550 291C570 298 584 316 584 338C584 365 562 387 535 387H431C401 387 377 363 377 333V292Z"/>
+      <path d="M269 196C269 178 284 163 302 163C307 163 313 164 317 166C324 154 337 146 352 146C373 146 390 163 390 184C390 187 390 190 389 193C401 198 409 209 409 223C409 240 395 254 378 254H303C284 254 269 239 269 220V196Z"/>
+      <path d="M468 318C468 300 483 285 501 285C506 285 511 286 516 288C523 276 536 268 551 268C572 268 589 285 589 306C589 310 589 313 587 317C599 322 607 333 607 347C607 365 593 379 575 379H502C483 379 468 364 468 345V318Z"/>
+    </g>
+    <g fill="#F6E1A6" opacity="0.82">
+      <circle cx="225" cy="206" r="18"/>
+      <circle cx="291" cy="138" r="19"/>
+      <circle cx="419" cy="176" r="22"/>
+      <circle cx="512" cy="131" r="20"/>
+      <circle cx="603" cy="193" r="18"/>
+      <circle cx="166" cy="247" r="18"/>
+      <circle cx="338" cy="312" r="22"/>
+      <circle cx="459" cy="308" r="20"/>
+      <circle cx="268" cy="349" r="19"/>
+      <circle cx="543" cy="347" r="17"/>
+    </g>
+  </g>
+</svg>
