@@ -1,0 +1,11 @@
+paths:
+  static: ''
+  uploads: uploads
+timezone: America/Chicago
+markdown:
+  engine: commonmark
+  options: {}
+collections_config:
+  pages:
+    path: ''
+    icon: wysiwyg
