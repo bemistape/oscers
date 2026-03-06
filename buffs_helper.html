@@ -95,6 +95,7 @@
 
       let selectedValue = 0;
       let hoverValue = null;
+      let revealTimers = [];
 
       function formatNumber(value) {
         return Number(value.toFixed(3)).toString();
@@ -118,32 +119,64 @@
         });
       }
 
-      function renderBags(exactBags) {
+      function clearRevealTimers() {
+        revealTimers.forEach((timerId) => clearTimeout(timerId));
+        revealTimers = [];
+      }
+
+      function createBag(fillAmount, isEntering) {
+        const bag = document.createElement("div");
+        bag.className = "popcorn-bag" + (isEntering ? " is-entering" : "");
+        bag.style.setProperty("--bag-fill", fillAmount.toString());
+
+        const image = document.createElement("img");
+        image.src = popcornImageSrc;
+        image.alt = "Popcorn bag";
+
+        bag.appendChild(image);
+        return bag;
+      }
+
+      function buildBagFillList(exactBags) {
+        const fills = [];
         const fullBagCount = Math.floor(exactBags);
         const remainder = exactBags - fullBagCount;
-        const fragment = document.createDocumentFragment();
-
-        function addBag(fillAmount) {
-          const bag = document.createElement("div");
-          bag.className = "popcorn-bag";
-          bag.style.setProperty("--bag-fill", fillAmount.toString());
-
-          const image = document.createElement("img");
-          image.src = popcornImageSrc;
-          image.alt = "Popcorn bag";
-
-          bag.appendChild(image);
-          fragment.appendChild(bag);
-        }
 
         for (let i = 0; i < fullBagCount; i += 1) {
-          addBag(1);
+          fills.push(1);
         }
         if (remainder > 0.001) {
-          addBag(remainder);
+          fills.push(Number(remainder.toFixed(4)));
         }
 
-        popcornWall.replaceChildren(fragment);
+        return fills;
+      }
+
+      function playPop() {
+        if (!popSound) {
+          return;
+        }
+
+        popSound.currentTime = 0;
+        popSound.play().catch(() => {});
+      }
+
+      function revealBags(fills, withAudio) {
+        clearRevealTimers();
+        popcornWall.replaceChildren();
+
+        fills.forEach((fill, index) => {
+          const timerId = setTimeout(() => {
+            const bag = createBag(fill, true);
+            popcornWall.appendChild(bag);
+
+            if (withAudio) {
+              playPop();
+            }
+          }, index * 170);
+
+          revealTimers.push(timerId);
+        });
       }
 
       function paintSelection(value) {
@@ -152,16 +185,19 @@
 
       function convertSelected(playAudio) {
         const exactBags = selectedValue * 1.25;
+        const fills = buildBagFillList(exactBags);
         popcornStage.classList.toggle("is-empty", exactBags === 0);
-        renderBags(exactBags);
+
+        if (fills.length) {
+          revealBags(fills, playAudio);
+        } else {
+          clearRevealTimers();
+          popcornWall.replaceChildren();
+        }
+
         popcornCaption.textContent = exactBags === 0
           ? "Select stars and press CONVERT."
           : `${formatNumber(selectedValue)} ${selectedValue === 1 ? "star" : "stars"} converts to ${formatNumber(exactBags)} ${exactBags === 1 ? "bag" : "bags"} of popcorn`;
-
-        if (playAudio && popSound) {
-          popSound.currentTime = 0;
-          popSound.play().catch(() => {});
-        }
       }
 
       function getHalfStarValue(event, button) {
