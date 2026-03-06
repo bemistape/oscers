@@ -34,7 +34,7 @@
             <div class="helper-module-copy">
               <p class="eyebrow">Emergency Tool</p>
               <h2>Star / Bag Conversion</h2>
-              <p>Select the number of star to automatically convert to the On Cinema popcorn system.</p>
+              <p>Select the number of stars, then press CONVERT to generate the On Cinema popcorn result.</p>
             </div>
 
             <div class="helper-converter">
@@ -57,6 +57,8 @@
                 </button>
               </div>
 
+              <button class="helper-convert-btn" type="button" data-convert-button>CONVERT</button>
+
               <div class="popcorn-stage is-empty" data-popcorn-stage>
                 <div class="popcorn-bag-wall" data-popcorn-wall aria-live="polite" aria-label="Converted popcorn bag count"></div>
                 <p class="popcorn-caption" data-popcorn-caption>Hover or tap the stars to convert.</p>
@@ -68,6 +70,11 @@
     </section>
   </main>
 
+  <audio id="pop-sound" preload="auto">
+    <source src="pop.wav" type="audio/mp4" />
+    <source src="pop.wav" />
+  </audio>
+
   <footer class="site-footer">
     Not affiliated with HEI Network or Oscer. Site by @johnwsmith with robot help.
   </footer>
@@ -76,18 +83,21 @@
     (function () {
       const popcornImageSrc = "1_bag.png";
       const starButtons = Array.from(document.querySelectorAll("[data-star-button]"));
+      const convertButton = document.querySelector("[data-convert-button]");
       const popcornStage = document.querySelector("[data-popcorn-stage]");
       const popcornWall = document.querySelector("[data-popcorn-wall]");
       const popcornCaption = document.querySelector("[data-popcorn-caption]");
+      const popSound = document.getElementById("pop-sound");
 
-      if (!starButtons.length || !popcornStage || !popcornWall || !popcornCaption) {
+      if (!starButtons.length || !convertButton || !popcornStage || !popcornWall || !popcornCaption) {
         return;
       }
 
       let selectedValue = 0;
+      let hoverValue = null;
 
       function formatNumber(value) {
-        return Number(value.toFixed(2)).toString();
+        return Number(value.toFixed(3)).toString();
       }
 
       function paintStars(value) {
@@ -108,14 +118,15 @@
         });
       }
 
-      function renderBags(visualBags) {
-        const fullBagCount = Math.floor(visualBags);
-        const hasHalfBag = visualBags - fullBagCount >= 0.5;
+      function renderBags(exactBags) {
+        const fullBagCount = Math.floor(exactBags);
+        const remainder = exactBags - fullBagCount;
         const fragment = document.createDocumentFragment();
 
-        function addBag(isHalf) {
+        function addBag(fillAmount) {
           const bag = document.createElement("div");
-          bag.className = "popcorn-bag" + (isHalf ? " is-half" : "");
+          bag.className = "popcorn-bag";
+          bag.style.setProperty("--bag-fill", fillAmount.toString());
 
           const image = document.createElement("img");
           image.src = popcornImageSrc;
@@ -126,24 +137,31 @@
         }
 
         for (let i = 0; i < fullBagCount; i += 1) {
-          addBag(false);
+          addBag(1);
         }
-        if (hasHalfBag) {
-          addBag(true);
+        if (remainder > 0.001) {
+          addBag(remainder);
         }
 
         popcornWall.replaceChildren(fragment);
       }
 
-      function render(value) {
-        const exactBags = value * 1.25;
-        const visualBags = Math.round(exactBags * 2) / 2;
+      function paintSelection(value) {
         paintStars(value);
-        popcornStage.classList.toggle("is-empty", visualBags === 0);
-        renderBags(visualBags);
-        popcornCaption.textContent = visualBags === 0
-          ? "Hover or tap the stars to convert."
-          : `${formatNumber(value)} ${value === 1 ? "star" : "stars"} converts to ${formatNumber(visualBags)} ${visualBags === 1 ? "bag" : "bags"} of popcorn`;
+      }
+
+      function convertSelected(playAudio) {
+        const exactBags = selectedValue * 1.25;
+        popcornStage.classList.toggle("is-empty", exactBags === 0);
+        renderBags(exactBags);
+        popcornCaption.textContent = exactBags === 0
+          ? "Select stars and press CONVERT."
+          : `${formatNumber(selectedValue)} ${selectedValue === 1 ? "star" : "stars"} converts to ${formatNumber(exactBags)} ${exactBags === 1 ? "bag" : "bags"} of popcorn`;
+
+        if (playAudio && popSound) {
+          popSound.currentTime = 0;
+          popSound.play().catch(() => {});
+        }
       }
 
       function getHalfStarValue(event, button) {
@@ -156,7 +174,8 @@
 
       function setSelection(value) {
         selectedValue = Math.max(0, Math.min(4, value));
-        render(selectedValue);
+        hoverValue = null;
+        paintSelection(selectedValue);
       }
 
       starButtons.forEach((button) => {
@@ -165,11 +184,13 @@
             return;
           }
 
-          render(getHalfStarValue(event, button));
+          hoverValue = getHalfStarValue(event, button);
+          paintSelection(hoverValue);
         });
 
         button.addEventListener("pointerleave", () => {
-          render(selectedValue);
+          hoverValue = null;
+          paintSelection(selectedValue);
         });
 
         button.addEventListener("click", (event) => {
@@ -177,11 +198,11 @@
         });
 
         button.addEventListener("focus", () => {
-          render(Number(button.dataset.starIndex));
+          paintSelection(Number(button.dataset.starIndex));
         });
 
         button.addEventListener("blur", () => {
-          render(selectedValue);
+          paintSelection(selectedValue);
         });
 
         button.addEventListener("keydown", (event) => {
@@ -197,7 +218,9 @@
         });
       });
 
-      render(0);
+      convertButton.addEventListener("click", () => convertSelected(true));
+      paintSelection(0);
+      convertSelected(false);
     })();
   </script>
 </body>

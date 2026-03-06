@@ -262,19 +262,45 @@ body {
 .text-link {
   color: #000;
   text-decoration: none;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  display: inline-block;
-  padding: 10px 15px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 54px;
+  padding: 12px 22px;
   border-radius: 999px;
-  background: linear-gradient(45deg, #ffd700, #e5c100);
-  border: 1px solid #ad8318;
+  background: linear-gradient(180deg, #ffe45f 0%, #ffd700 55%, #dbb300 100%);
+  border: 1px solid #8a6a0f;
   text-transform: uppercase;
-  font-size: 0.76rem;
+  font-size: 1.05rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.52), 0 8px 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.text-link::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 -42%;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transform: skewX(-22deg);
+  transition: transform 0.35s ease;
+}
+
+.card .text-link {
+  margin-top: auto;
 }
 
 .text-link:hover {
-  filter: brightness(1.04);
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.text-link:hover::after {
+  transform: skewX(-22deg) translateX(320%);
 }
 
 .countdown-card {
@@ -554,6 +580,30 @@ body {
   text-align: center;
 }
 
+.helper-convert-btn {
+  width: 100%;
+  min-height: 54px;
+  border-radius: 999px;
+  border: 1px solid #8a6a0f;
+  background: linear-gradient(180deg, #ffe45f 0%, #ffd700 55%, #dbb300 100%);
+  color: #000;
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  letter-spacing: 0.05em;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 8px 20px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.helper-convert-btn:hover,
+.helper-convert-btn:focus-visible {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  outline: none;
+}
+
 .popcorn-stage {
   position: relative;
   display: flex;
@@ -576,17 +626,22 @@ body {
   width: 100%;
   min-height: 216px;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 4px;
   transition: opacity 0.2s ease;
 }
 
 .popcorn-bag {
   width: 104px;
   height: 104px;
-  overflow: hidden;
+  width: calc(104px * var(--bag-fill, 1));
+  min-width: calc(104px * var(--bag-fill, 1));
+  overflow: clip;
   display: inline-flex;
   border-radius: 12px;
 }
@@ -596,10 +651,6 @@ body {
   height: 104px;
   object-fit: contain;
   display: block;
-}
-
-.popcorn-bag.is-half {
-  width: 52px;
 }
 
 .popcorn-caption {
@@ -664,12 +715,11 @@ body {
   .popcorn-bag {
     width: 84px;
     height: 84px;
+    width: calc(84px * var(--bag-fill, 1));
+    min-width: calc(84px * var(--bag-fill, 1));
   }
   .popcorn-bag img {
     width: 84px;
     height: 84px;
-  }
-  .popcorn-bag.is-half {
-    width: 42px;
   }
 }
