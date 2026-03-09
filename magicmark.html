@@ -1,1183 +1,1442 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Magic Mark</title>
-  <link rel="stylesheet" href="site.css" />
+  <title>Magic Mark Prokfsh</title>
   <style>
-    body.magicmark-page {
+    :root {
+      --bg0: #070605;
+      --bg1: #100d0a;
+      --bg2: #18130d;
+      --panel: rgba(17, 13, 10, 0.94);
+      --gold: #d4ae4f;
+      --gold-soft: rgba(212, 174, 79, 0.34);
+      --gold-faint: rgba(212, 174, 79, 0.14);
+      --text: #f2e2b2;
+      --switch-off-0: #2a241b;
+      --switch-off-1: #17120e;
+      --switch-on-0: #5f3513;
+      --switch-on-1: #29170d;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { height: 100%; }
+
+    body {
       margin: 0;
       min-height: 100vh;
+      color: var(--text);
+      font-family: Georgia, "Times New Roman", serif;
       background:
-        radial-gradient(circle at 14% 12%, rgba(255, 214, 74, 0.15), transparent 34%),
-        radial-gradient(circle at 82% 10%, rgba(132, 18, 18, 0.16), transparent 36%),
-        linear-gradient(180deg, #0d0b08 0%, #15120d 48%, #100d09 100%);
-      color: #f7e8be;
-      font-family: var(--font-body);
+        radial-gradient(circle at 12% 10%, rgba(230, 186, 86, 0.12), transparent 28%),
+        radial-gradient(circle at 86% 12%, rgba(119, 27, 16, 0.12), transparent 30%),
+        linear-gradient(180deg, var(--bg2) 0%, var(--bg1) 56%, var(--bg0) 100%);
     }
 
-    .magicmark-main {
-      max-width: 1400px;
+    main {
+      max-width: 1540px;
       margin: 0 auto;
-      padding: 34px 20px 56px;
+      padding: 28px 16px 36px;
     }
 
-    .magicmark-header {
+    h1 {
+      margin: 0 0 18px;
       text-align: center;
-      margin-bottom: 18px;
-    }
-
-    .magicmark-header h1 {
-      margin: 0;
-      font-size: clamp(1.8rem, 4.6vw, 3.2rem);
-      color: #ffd700;
-      letter-spacing: 0.02em;
-      font-family: var(--font-display);
+      color: #e0ba5d;
+      font-size: clamp(1.9rem, 4.1vw, 3.25rem);
+      line-height: 1.04;
       text-transform: uppercase;
-      text-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+      letter-spacing: 0.028em;
+      text-shadow: 0 12px 28px rgba(0,0,0,0.45);
     }
 
-    .magicmark-header p {
-      margin: 10px auto 0;
-      max-width: 900px;
-      color: rgba(247, 232, 190, 0.9);
-      font-size: 1rem;
-      line-height: 1.45;
-    }
-
-    .magicmark-panel {
-      background: rgba(20, 17, 13, 0.94);
-      border: 2px solid rgba(255, 215, 0, 0.32);
-      border-radius: 22px;
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--gold-soft);
+      border-radius: 24px;
+      box-shadow:
+        0 28px 56px rgba(0,0,0,0.42),
+        inset 0 0 0 1px rgba(255,255,255,0.02);
       padding: 14px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.48);
     }
 
-    .magicmark-toolbar {
+    .toolbar {
       display: flex;
-      align-items: center;
       justify-content: center;
-      gap: 18px;
+      align-items: center;
+      gap: 14px;
+      padding: 4px 8px 14px;
       flex-wrap: wrap;
-      padding: 2px 8px 16px;
     }
 
-    .magicmark-toggle {
+    .toggle {
       display: inline-flex;
       align-items: center;
       gap: 14px;
-      color: #f7e8be;
-      font-family: var(--font-display);
-      font-size: 0.98rem;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      cursor: pointer;
       user-select: none;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--text);
+      font-size: 0.98rem;
     }
 
-    .magicmark-toggle input {
+    .toggle input {
       position: absolute;
       opacity: 0;
       pointer-events: none;
     }
 
-    .magicmark-switch {
+    .switch {
       position: relative;
-      display: inline-flex;
-      width: 74px;
-      height: 38px;
+      display: inline-block;
+      width: 78px;
+      height: 40px;
       flex: 0 0 auto;
     }
 
-    .magicmark-track {
+    .track {
       position: absolute;
       inset: 0;
       border-radius: 999px;
-      background: linear-gradient(180deg, rgba(57, 49, 35, 0.96), rgba(24, 20, 16, 0.96));
-      border: 1px solid rgba(255, 215, 0, 0.34);
-      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.32);
-      transition: background 180ms ease, border-color 180ms ease;
+      border: 1px solid var(--gold-soft);
+      background: linear-gradient(180deg, var(--switch-off-0), var(--switch-off-1));
+      box-shadow:
+        inset 0 2px 6px rgba(0,0,0,0.35),
+        0 0 0 1px rgba(255,255,255,0.03);
+      transition: background 150ms ease, border-color 150ms ease;
     }
 
-    .magicmark-track::after {
+    .track::after {
       content: "";
       position: absolute;
-      top: 4px;
       left: 4px;
-      width: 28px;
-      height: 28px;
+      top: 4px;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
-      background: linear-gradient(180deg, #ffe58b, #d1a61e);
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
-      transition: transform 180ms ease;
+      background: linear-gradient(180deg, #f8e09b, #c99922);
+      box-shadow:
+        0 6px 12px rgba(0,0,0,0.36),
+        inset 0 1px 1px rgba(255,255,255,0.44);
+      transition: transform 150ms ease;
     }
 
-    .magicmark-toggle input:checked + .magicmark-track {
-      background: linear-gradient(180deg, rgba(87, 23, 23, 0.96), rgba(50, 12, 12, 0.96));
-      border-color: rgba(255, 196, 0, 0.55);
+    .toggle input:checked + .track {
+      background: linear-gradient(180deg, var(--switch-on-0), var(--switch-on-1));
+      border-color: rgba(212, 174, 79, 0.58);
     }
 
-    .magicmark-toggle input:checked + .magicmark-track::after {
-      transform: translateX(36px);
+    .toggle input:checked + .track::after {
+      transform: translateX(38px);
     }
 
-    .magicmark-mode-pill {
-      display: inline-flex;
-      align-items: center;
-      min-height: 36px;
-      padding: 0 16px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 215, 0, 0.26);
-      background: rgba(14, 12, 10, 0.88);
-      color: rgba(247, 232, 190, 0.92);
-      font-size: 0.82rem;
-      font-weight: 700;
-      letter-spacing: 0.09em;
-      text-transform: uppercase;
-    }
-
-    .magicmark-canvas-wrap {
-      border: 1px solid rgba(255, 215, 0, 0.2);
-      border-radius: 16px;
+    .canvas-wrap {
       overflow: hidden;
-      background: #12100d;
+      border-radius: 16px;
+      border: 1px solid var(--gold-faint);
+      background: #0d0907;
     }
 
-    #magicRigCanvas {
+    canvas {
+      display: block;
       width: 100%;
       height: auto;
-      display: block;
-      aspect-ratio: 17 / 10;
+      aspect-ratio: 18 / 11;
       touch-action: none;
       cursor: grab;
     }
 
-    #magicRigCanvas.is-dragging {
-      cursor: grabbing;
-    }
+    canvas.dragging { cursor: grabbing; }
 
-    @media (max-width: 760px) {
-      .magicmark-main {
-        padding: 20px 12px 36px;
-      }
-
-      .magicmark-header p {
-        font-size: 0.92rem;
-      }
-
-      .magicmark-toggle {
-        font-size: 0.88rem;
-      }
+    @media (max-width: 720px) {
+      main { padding: 20px 10px 26px; }
+      h1 { margin-bottom: 14px; }
+      .toggle { font-size: 0.9rem; }
     }
   </style>
 </head>
-<body class="magicmark-page">
-  <main class="magicmark-main">
-    <header class="magicmark-header">
-      <h1>Explore Your Imagination with Magic Mark Prokfsh</h1>
-      <p>Stretch him in default mode, or flip Relax, Mark to pick him up and place him around the scene.</p>
-    </header>
+<body>
+  <main>
+    <h1>Explore Your Imagination with Magic Mark Prokfsh</h1>
 
-    <section class="magicmark-panel">
-      <div class="magicmark-toolbar">
-        <label class="magicmark-toggle" for="relaxToggle">
+    <section class="panel">
+      <div class="toolbar">
+        <label class="toggle" for="relaxToggle">
           <span>Relax, Mark</span>
-          <span class="magicmark-switch">
+          <span class="switch">
             <input id="relaxToggle" type="checkbox" aria-label="Relax, Mark" />
-            <span class="magicmark-track"></span>
+            <span class="track"></span>
           </span>
         </label>
-        <span class="magicmark-mode-pill" id="modePill">Stretch Mode</span>
       </div>
-      <div class="magicmark-canvas-wrap">
-        <canvas id="magicRigCanvas" width="1700" height="1000" aria-label="Magic Mark interactive figure canvas"></canvas>
+
+      <div class="canvas-wrap">
+        <canvas id="scene" width="1800" height="1100" aria-label="Magic Mark interactive scene"></canvas>
       </div>
     </section>
   </main>
 
   <script>
-    (() => {
-      const canvas = document.getElementById("magicRigCanvas");
-      const ctx = canvas.getContext("2d");
-      const relaxToggle = document.getElementById("relaxToggle");
-      const modePill = document.getElementById("modePill");
+  (() => {
+    "use strict";
 
-      if (!ctx || !relaxToggle || !modePill) {
+    const SCENE = {
+      width: 1800,
+      height: 1100,
+      groundY: 918,
+      margin: 72
+    };
+
+    const PHYSICS = {
+      gravity: 0.72,
+      damping: 0.045,
+      bounce: 0.16,
+      stretchIterations: 18,
+      poseIterations: 22,
+      dragVelocityScale: 17,
+      dragImpulse: 0.92,
+      stretchSpring: 0.028,
+      stretchSpringHeavy: 0.036,
+      poseSpring: 0.34,
+      supportStiffness: 0.42,
+      boneStiffness: 0.9
+    };
+
+    const INTERACTION = {
+      handleRadius: 54,
+      doubleTapMs: 320,
+      tapDistance: 18
+    };
+
+    const VISUAL = {
+      headRadius: 62,
+      chestWidth: 128,
+      waistWidth: 84,
+      pelvisWidth: 98,
+      upperArmA: 26,
+      upperArmB: 22,
+      forearmA: 21,
+      forearmB: 17,
+      thighA: 37,
+      thighB: 29,
+      calfA: 27,
+      calfB: 19,
+      neckA: 26,
+      neckB: 22,
+      skinLight: "#edd5c3",
+      skinBase: "#dbb79f",
+      skinMid: "#c79d84",
+      skinDark: "#ad7f67",
+      line: "rgba(60, 40, 31, 0.68)",
+      hair: "rgba(72, 52, 39, 0.52)",
+      glasses: "#1a1a1a",
+      eyeWhite: "#f3eee8",
+      iris: "#8ea165",
+      lip: "#9f6f66",
+      sceneLine: "rgba(212, 174, 79, 0.14)"
+    };
+
+    const POSE = {
+      pelvis: [0, -438],
+      waist: [0, -520],
+      chest: [0, -618],
+      neck: [0, -690],
+      head: [0, -784],
+
+      shoulderL: [-74, -626],
+      elbowL: [-144, -506],
+      wristL: [-160, -380],
+
+      shoulderR: [74, -626],
+      elbowR: [144, -506],
+      wristR: [160, -380],
+
+      hipL: [-46, -430],
+      kneeL: [-42, -236],
+      ankleL: [-34, -56],
+      toeL: [-25, 0],
+
+      hipR: [46, -430],
+      kneeR: [42, -236],
+      ankleR: [34, -56],
+      toeR: [25, 0]
+    };
+
+    const BONE_DEFS = [
+      ["pelvis", "waist", PHYSICS.boneStiffness],
+      ["waist", "chest", PHYSICS.boneStiffness],
+      ["chest", "neck", PHYSICS.boneStiffness],
+      ["neck", "head", PHYSICS.boneStiffness],
+
+      ["chest", "shoulderL", PHYSICS.boneStiffness],
+      ["shoulderL", "elbowL", PHYSICS.boneStiffness],
+      ["elbowL", "wristL", PHYSICS.boneStiffness],
+
+      ["chest", "shoulderR", PHYSICS.boneStiffness],
+      ["shoulderR", "elbowR", PHYSICS.boneStiffness],
+      ["elbowR", "wristR", PHYSICS.boneStiffness],
+
+      ["pelvis", "hipL", PHYSICS.boneStiffness],
+      ["hipL", "kneeL", PHYSICS.boneStiffness],
+      ["kneeL", "ankleL", PHYSICS.boneStiffness],
+      ["ankleL", "toeL", 0.76],
+
+      ["pelvis", "hipR", PHYSICS.boneStiffness],
+      ["hipR", "kneeR", PHYSICS.boneStiffness],
+      ["kneeR", "ankleR", PHYSICS.boneStiffness],
+      ["ankleR", "toeR", 0.76],
+
+      ["shoulderL", "shoulderR", PHYSICS.supportStiffness],
+      ["hipL", "hipR", PHYSICS.supportStiffness],
+      ["shoulderL", "hipL", 0.28],
+      ["shoulderR", "hipR", 0.28],
+      ["shoulderL", "hipR", 0.22],
+      ["shoulderR", "hipL", 0.22],
+      ["waist", "hipL", 0.26],
+      ["waist", "hipR", 0.26]
+    ];
+
+    const JOINT_SIDE_DEFS = [
+      ["shoulderL", "elbowL", "wristL", -1, 11],
+      ["shoulderR", "elbowR", "wristR", 1, 11],
+      ["hipL", "kneeL", "ankleL", -1, 12],
+      ["hipR", "kneeR", "ankleR", 1, 12]
+    ];
+
+    const HANDLE_IDS = [
+      "head", "neck",
+      "shoulderL", "elbowL", "wristL",
+      "shoulderR", "elbowR", "wristR",
+      "pelvis", "waist", "chest",
+      "hipL", "kneeL", "ankleL", "toeL",
+      "hipR", "kneeR", "ankleR", "toeR"
+    ];
+
+    const POSE_HANDLE_IDS = [
+      "head", "neck",
+      "shoulderL", "elbowL", "wristL",
+      "shoulderR", "elbowR", "wristR",
+      "hipL", "kneeL", "ankleL", "toeL",
+      "hipR", "kneeR", "ankleR", "toeR"
+    ];
+
+    const SEGMENT_DRAWS = [
+      ["neck", "head", VISUAL.neckA, VISUAL.neckB],
+      ["shoulderL", "elbowL", VISUAL.upperArmA, VISUAL.upperArmB],
+      ["elbowL", "wristL", VISUAL.forearmA, VISUAL.forearmB],
+      ["shoulderR", "elbowR", VISUAL.upperArmA, VISUAL.upperArmB],
+      ["elbowR", "wristR", VISUAL.forearmA, VISUAL.forearmB],
+      ["hipL", "kneeL", VISUAL.thighA, VISUAL.thighB],
+      ["kneeL", "ankleL", VISUAL.calfA, VISUAL.calfB],
+      ["hipR", "kneeR", VISUAL.thighA, VISUAL.thighB],
+      ["kneeR", "ankleR", VISUAL.calfA, VISUAL.calfB]
+    ];
+
+    const canvas = document.getElementById("scene");
+    const ctx = canvas.getContext("2d");
+    const relaxToggle = document.getElementById("relaxToggle");
+    if (!canvas || !ctx || !relaxToggle) return;
+
+    const state = {
+      points: {},
+      targets: {},
+      bones: [],
+      jointSide: [],
+      relaxed: false,
+      dragKind: "",
+      draggedId: "",
+      pointerX: 0,
+      pointerY: 0,
+      pointerVX: 0,
+      pointerVY: 0,
+      lastPointerTime: 0,
+      downX: 0,
+      downY: 0,
+      movedSinceDown: false,
+      lastTapTime: 0,
+      lastTapX: 0,
+      lastTapY: 0,
+      spawnX: SCENE.width * 0.5,
+      spawnY: SCENE.groundY
+    };
+
+    function clamp(v, min, max) {
+      return v < min ? min : (v > max ? max : v);
+    }
+
+    function dist(x0, y0, x1, y1) {
+      return Math.hypot(x1 - x0, y1 - y0);
+    }
+
+    function createPoint(x, y) {
+      return { x, y, px: x, py: y };
+    }
+
+    function segmentDistance(px, py, ax, ay, bx, by) {
+      const abx = bx - ax;
+      const aby = by - ay;
+      const denom = abx * abx + aby * aby || 1;
+      let t = ((px - ax) * abx + (py - ay) * aby) / denom;
+      t = t < 0 ? 0 : (t > 1 ? 1 : t);
+      const dx = ax + abx * t - px;
+      const dy = ay + aby * t - py;
+      return Math.hypot(dx, dy);
+    }
+
+    function placeNeutralAt(anchorX, anchorY) {
+      const ids = Object.keys(POSE);
+      for (let i = 0; i < ids.length; i++) {
+        const id = ids[i];
+        const base = POSE[id];
+        const x = anchorX + base[0];
+        const y = anchorY + base[1];
+        if (!state.targets[id]) {
+          state.targets[id] = { x, y };
+          state.points[id] = createPoint(x, y);
+        } else {
+          state.targets[id].x = x;
+          state.targets[id].y = y;
+          state.points[id].x = x;
+          state.points[id].y = y;
+          state.points[id].px = x;
+          state.points[id].py = y;
+        }
+      }
+    }
+
+    function buildBones() {
+      state.bones.length = 0;
+      for (let i = 0; i < BONE_DEFS.length; i++) {
+        const def = BONE_DEFS[i];
+        const a = state.targets[def[0]];
+        const b = state.targets[def[1]];
+        state.bones.push({
+          a: def[0],
+          b: def[1],
+          rest: dist(a.x, a.y, b.x, b.y),
+          stiffness: def[2]
+        });
+      }
+    }
+
+    function buildJointSideConstraints() {
+      state.jointSide.length = 0;
+      for (let i = 0; i < JOINT_SIDE_DEFS.length; i++) {
+        const def = JOINT_SIDE_DEFS[i];
+        state.jointSide.push({
+          a: def[0],
+          b: def[1],
+          c: def[2],
+          sign: def[3],
+          offset: def[4]
+        });
+      }
+    }
+
+    function captureTargetsFromPoints() {
+      const ids = Object.keys(state.points);
+      for (let i = 0; i < ids.length; i++) {
+        const id = ids[i];
+        const p = state.points[id];
+        state.targets[id].x = p.x;
+        state.targets[id].y = p.y;
+      }
+    }
+
+    function zeroVelocities() {
+      const ids = Object.keys(state.points);
+      for (let i = 0; i < ids.length; i++) {
+        const p = state.points[ids[i]];
+        p.px = p.x;
+        p.py = p.y;
+      }
+    }
+
+    function figureBounds() {
+      let minX = Infinity;
+      let minY = Infinity;
+      let maxX = -Infinity;
+      let maxY = -Infinity;
+      const ids = Object.keys(state.points);
+      for (let i = 0; i < ids.length; i++) {
+        const p = state.points[ids[i]];
+        if (p.x < minX) minX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y > maxY) maxY = p.y;
+      }
+      return { minX, minY, maxX, maxY };
+    }
+
+    function clampWholeFigureIntoScene() {
+      const b = figureBounds();
+      let dx = 0;
+      let dy = 0;
+      if (b.minX < SCENE.margin) dx = SCENE.margin - b.minX;
+      else if (b.maxX > SCENE.width - SCENE.margin) dx = (SCENE.width - SCENE.margin) - b.maxX;
+      if (b.minY < 80) dy = 80 - b.minY;
+      else if (b.maxY > SCENE.height - 50) dy = (SCENE.height - 50) - b.maxY;
+      if (dx || dy) translateFigure(dx, dy);
+    }
+
+    function translateFigure(dx, dy) {
+      const ids = Object.keys(state.points);
+      for (let i = 0; i < ids.length; i++) {
+        const id = ids[i];
+        const p = state.points[id];
+        const t = state.targets[id];
+        p.x += dx;
+        p.y += dy;
+        p.px += dx;
+        p.py += dy;
+        t.x += dx;
+        t.y += dy;
+      }
+    }
+
+    function setMode(relaxed) {
+      state.relaxed = relaxed;
+      state.dragKind = "";
+      state.draggedId = "";
+      captureTargetsFromPoints();
+      zeroVelocities();
+      canvas.classList.remove("dragging");
+    }
+
+    function resetSpawn() {
+      placeNeutralAt(state.spawnX, state.spawnY);
+      buildBones();
+      zeroVelocities();
+      state.dragKind = "";
+      state.draggedId = "";
+      canvas.classList.remove("dragging");
+    }
+
+    function averageToe() {
+      const l = state.points.toeL;
+      const r = state.points.toeR;
+      return { x: (l.x + r.x) * 0.5, y: (l.y + r.y) * 0.5 };
+    }
+
+    function headTilt() {
+      const neck = state.points.neck;
+      const head = state.points.head;
+      return clamp(Math.atan2(head.y - neck.y, head.x - neck.x) - Math.PI * 0.5, -0.4, 0.4);
+    }
+
+    function torsoHit(px, py) {
+      const chest = state.points.chest;
+      const waist = state.points.waist;
+      const pelvis = state.points.pelvis;
+      const shoulderL = state.points.shoulderL;
+      const shoulderR = state.points.shoulderR;
+      const hipL = state.points.hipL;
+      const hipR = state.points.hipR;
+      const minX = Math.min(shoulderL.x, hipL.x) - 50;
+      const maxX = Math.max(shoulderR.x, hipR.x) + 50;
+      const minY = chest.y - 50;
+      const maxY = pelvis.y + 76;
+      if (px < minX || px > maxX || py < minY || py > maxY) return false;
+      return Math.abs(px - chest.x) < 110 && py >= minY && py <= maxY;
+    }
+
+    function headHit(px, py) {
+      const h = state.points.head;
+      const tilt = headTilt();
+      const dx0 = px - h.x;
+      const dy0 = py - h.y;
+      const c = Math.cos(-tilt);
+      const s = Math.sin(-tilt);
+      const dx = dx0 * c - dy0 * s;
+      const dy = dx0 * s + dy0 * c;
+      const rx = VISUAL.headRadius * 0.88;
+      const ry = VISUAL.headRadius * 1.05;
+      return (dx * dx) / (rx * rx) + (dy * dy) / (ry * ry) <= 1.06;
+    }
+
+    function figureHit(px, py) {
+      if (headHit(px, py) || torsoHit(px, py)) return true;
+      for (let i = 0; i < SEGMENT_DRAWS.length; i++) {
+        const def = SEGMENT_DRAWS[i];
+        const a = state.points[def[0]];
+        const b = state.points[def[1]];
+        const radius = Math.max(def[2], def[3]) * 0.72;
+        if (segmentDistance(px, py, a.x, a.y, b.x, b.y) <= radius) return true;
+      }
+      return false;
+    }
+
+    function nearestHandle(px, py, relaxedMode) {
+      const ids = relaxedMode ? POSE_HANDLE_IDS : HANDLE_IDS;
+      let bestId = "";
+      let best = INTERACTION.handleRadius;
+      for (let i = 0; i < ids.length; i++) {
+        const id = ids[i];
+        const p = state.points[id];
+        const d = dist(px, py, p.x, p.y);
+        if (d < best) {
+          best = d;
+          bestId = id;
+        }
+      }
+      return bestId;
+    }
+
+    function applyBoneConstraint(bone) {
+      const a = state.points[bone.a];
+      const b = state.points[bone.b];
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const d = Math.hypot(dx, dy) || 0.0001;
+      const delta = (d - bone.rest) / d;
+      const ox = dx * 0.5 * delta * bone.stiffness;
+      const oy = dy * 0.5 * delta * bone.stiffness;
+
+      if ((state.dragKind === "pose" || state.dragKind === "stretch") && state.draggedId === bone.a) {
+        b.x -= ox * 2;
+        b.y -= oy * 2;
+        return;
+      }
+      if ((state.dragKind === "pose" || state.dragKind === "stretch") && state.draggedId === bone.b) {
+        a.x += ox * 2;
+        a.y += oy * 2;
         return;
       }
 
-      const SKIN = {
-        light: "#e3c4ae",
-        base: "#d7b49c",
-        shade: "#bc977f",
-        deep: "#916c59",
-        outline: "rgba(78, 53, 39, 0.58)"
-      };
+      a.x += ox;
+      a.y += oy;
+      b.x -= ox;
+      b.y -= oy;
+    }
 
-      const FACE = {
-        eye: "#748ea9",
-        white: "#eceae7",
-        lip: "#9d7267",
-        brow: "#705b4e",
-        glasses: "#1f1f1f",
-        hair: "rgba(74, 51, 37, 0.55)"
-      };
+    function applyJointSideConstraint(rule) {
+      const a = state.points[rule.a];
+      const b = state.points[rule.b];
+      const c = state.points[rule.c];
 
-      const RIG = {
-        head: [0.5, 0.162],
-        neck: [0.5, 0.244],
-        shoulder_left: [0.442, 0.304],
-        shoulder_right: [0.558, 0.304],
-        chest: [0.5, 0.372],
-        ribcage_left: [0.454, 0.398],
-        ribcage_right: [0.546, 0.398],
-        waist: [0.5, 0.49],
-        pelvis: [0.5, 0.57],
-        hip_left: [0.47, 0.57],
-        hip_right: [0.53, 0.57],
-        elbow_left: [0.392, 0.432],
-        elbow_right: [0.608, 0.432],
-        wrist_left: [0.35, 0.59],
-        wrist_right: [0.65, 0.59],
-        knee_left: [0.478, 0.748],
-        knee_right: [0.522, 0.748],
-        ankle_left: [0.474, 0.916],
-        ankle_right: [0.526, 0.916],
-        foot_left: [0.463, 0.966],
-        foot_right: [0.537, 0.966]
-      };
+      const acx = c.x - a.x;
+      const acy = c.y - a.y;
+      const len = Math.hypot(acx, acy) || 1;
+      const nx = -acy / len;
+      const ny = acx / len;
+      const signed = ((b.x - a.x) * nx + (b.y - a.y) * ny);
+      const desired = rule.offset * rule.sign;
 
-      const BONE_LINKS = [
-        ["neck", "head", 0.26, 1.45],
-        ["neck", "shoulder_left", 0.34, 1.22],
-        ["neck", "shoulder_right", 0.34, 1.22],
-        ["shoulder_left", "elbow_left", 0.26, 2.6],
-        ["elbow_left", "wrist_left", 0.24, 2.85],
-        ["shoulder_right", "elbow_right", 0.26, 2.6],
-        ["elbow_right", "wrist_right", 0.24, 2.85],
-        ["neck", "chest", 0.35, 1.4],
-        ["chest", "waist", 0.34, 1.46],
-        ["waist", "pelvis", 0.35, 1.52],
-        ["pelvis", "hip_left", 0.45, 1.3],
-        ["pelvis", "hip_right", 0.45, 1.3],
-        ["hip_left", "knee_left", 0.3, 2.48],
-        ["knee_left", "ankle_left", 0.28, 2.72],
-        ["ankle_left", "foot_left", 0.44, 1.52],
-        ["hip_right", "knee_right", 0.3, 2.48],
-        ["knee_right", "ankle_right", 0.28, 2.72],
-        ["ankle_right", "foot_right", 0.44, 1.52]
+      if (signed * rule.sign < rule.offset) {
+        const push = desired - signed;
+        b.x += nx * push * 0.92;
+        b.y += ny * push * 0.92;
+      }
+    }
+
+    function applyTargetSpring(id, strength) {
+      if (state.draggedId === id && (state.dragKind === "pose" || state.dragKind === "stretch")) return;
+      const p = state.points[id];
+      const t = state.targets[id];
+      p.x += (t.x - p.x) * strength;
+      p.y += (t.y - p.y) * strength;
+    }
+
+    function pinDraggedPoint() {
+      if (!state.draggedId) return;
+      const p = state.points[state.draggedId];
+      p.x = state.pointerX;
+      p.y = state.pointerY;
+      p.px = p.x - state.pointerVX * 0.16;
+      p.py = p.y - state.pointerVY * 0.16;
+    }
+
+    function applySceneBounds(withGround) {
+      const ids = Object.keys(state.points);
+      for (let i = 0; i < ids.length; i++) {
+        const p = state.points[ids[i]];
+        if (p.x < SCENE.margin) {
+          p.x = SCENE.margin;
+          p.px = p.x;
+        } else if (p.x > SCENE.width - SCENE.margin) {
+          p.x = SCENE.width - SCENE.margin;
+          p.px = p.x;
+        }
+
+        if (p.y < 58) {
+          p.y = 58;
+          p.py = p.y;
+        } else if (!withGround && p.y > SCENE.height - 38) {
+          p.y = SCENE.height - 38;
+          p.py = p.y;
+        }
+
+        if (withGround && p.y > SCENE.groundY) {
+          const vy = p.y - p.py;
+          const vx = p.x - p.px;
+          p.y = SCENE.groundY;
+          p.py = p.y + vy * -PHYSICS.bounce;
+          p.px = p.x - vx * 0.56;
+        }
+      }
+    }
+
+    function stepStretch() {
+      const ids = Object.keys(state.points);
+      const damping = 1 - PHYSICS.damping;
+
+      for (let i = 0; i < ids.length; i++) {
+        const id = ids[i];
+        if (state.dragKind === "stretch" && state.draggedId === id) continue;
+        const p = state.points[id];
+        const vx = (p.x - p.px) * damping;
+        const vy = (p.y - p.py) * damping + PHYSICS.gravity;
+        p.px = p.x;
+        p.py = p.y;
+        p.x += vx;
+        p.y += vy;
+      }
+
+      for (let i = 0; i < ids.length; i++) {
+        const id = ids[i];
+        const heavy = (id === "pelvis" || id === "waist" || id === "chest");
+        applyTargetSpring(id, heavy ? PHYSICS.stretchSpringHeavy : PHYSICS.stretchSpring);
+      }
+
+      if (state.dragKind === "stretch") pinDraggedPoint();
+
+      for (let iter = 0; iter < PHYSICS.stretchIterations; iter++) {
+        for (let i = 0; i < state.bones.length; i++) applyBoneConstraint(state.bones[i]);
+        for (let i = 0; i < state.jointSide.length; i++) applyJointSideConstraint(state.jointSide[i]);
+        if (state.dragKind === "stretch") pinDraggedPoint();
+        applySceneBounds(true);
+      }
+    }
+
+    function stepRelaxed() {
+      const ids = Object.keys(state.points);
+
+      for (let i = 0; i < ids.length; i++) {
+        const id = ids[i];
+        if (state.dragKind === "pose" && state.draggedId === id) continue;
+        const p = state.points[id];
+        const t = state.targets[id];
+        p.x += (t.x - p.x) * PHYSICS.poseSpring;
+        p.y += (t.y - p.y) * PHYSICS.poseSpring;
+        p.px = p.x;
+        p.py = p.y;
+      }
+
+      if (state.dragKind === "pose") pinDraggedPoint();
+
+      for (let iter = 0; iter < PHYSICS.poseIterations; iter++) {
+        for (let i = 0; i < state.bones.length; i++) applyBoneConstraint(state.bones[i]);
+        for (let i = 0; i < state.jointSide.length; i++) applyJointSideConstraint(state.jointSide[i]);
+        if (state.dragKind === "pose") pinDraggedPoint();
+        applySceneBounds(false);
+      }
+
+      if (state.dragKind === "pose") captureTargetsFromPoints();
+    }
+
+    function step() {
+      if (state.relaxed) stepRelaxed();
+      else stepStretch();
+    }
+
+    function drawBackground() {
+      const bg = ctx.createLinearGradient(0, 0, 0, SCENE.height);
+      bg.addColorStop(0, "#17120d");
+      bg.addColorStop(0.58, "#100d0a");
+      bg.addColorStop(1, "#090706");
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, SCENE.width, SCENE.height);
+
+      let glow = ctx.createRadialGradient(230, 150, 20, 230, 150, 340);
+      glow.addColorStop(0, "rgba(231, 188, 89, 0.14)");
+      glow.addColorStop(1, "rgba(231, 188, 89, 0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, SCENE.width, SCENE.height);
+
+      glow = ctx.createRadialGradient(1540, 140, 16, 1540, 140, 340);
+      glow.addColorStop(0, "rgba(130, 32, 21, 0.15)");
+      glow.addColorStop(1, "rgba(130, 32, 21, 0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, SCENE.width, SCENE.height);
+
+      const floorTop = SCENE.groundY - 58;
+      const floor = ctx.createLinearGradient(0, floorTop, 0, SCENE.height);
+      floor.addColorStop(0, "rgba(60, 46, 31, 0.08)");
+      floor.addColorStop(1, "rgba(11, 8, 7, 0.96)");
+      ctx.fillStyle = floor;
+      ctx.fillRect(0, floorTop, SCENE.width, SCENE.height - floorTop);
+
+      ctx.strokeStyle = VISUAL.sceneLine;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, SCENE.groundY + 0.5);
+      ctx.lineTo(SCENE.width, SCENE.groundY + 0.5);
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(212, 174, 79, 0.035)";
+      ctx.lineWidth = 1;
+      for (let x = 150; x < SCENE.width; x += 220) {
+        ctx.beginPath();
+        ctx.moveTo(x, SCENE.groundY + 4);
+        ctx.lineTo(x - 120, SCENE.height);
+        ctx.stroke();
+      }
+    }
+
+    function drawShadow() {
+      const toe = averageToe();
+      const b = figureBounds();
+      const lift = Math.max(0, SCENE.groundY - b.maxY);
+      const alpha = clamp(0.38 - lift * 0.00045, 0.08, 0.38);
+      const stretch = clamp(1 + lift * 0.001, 1, 1.45);
+      ctx.fillStyle = "rgba(0,0,0," + alpha.toFixed(3) + ")";
+      ctx.beginPath();
+      ctx.ellipse(toe.x, SCENE.groundY + 32, 190 * stretch, 26 * stretch * 0.72, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawTaperedSegment(aId, bId, w0, w1) {
+      const a = state.points[aId];
+      const b = state.points[bId];
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const len = Math.hypot(dx, dy) || 1;
+      const nx = -dy / len;
+      const ny = dx / len;
+      const hw0 = w0 * 0.5;
+      const hw1 = w1 * 0.5;
+
+      const fill = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+      fill.addColorStop(0, VISUAL.skinLight);
+      fill.addColorStop(0.5, VISUAL.skinBase);
+      fill.addColorStop(1, VISUAL.skinMid);
+
+      ctx.beginPath();
+      ctx.moveTo(a.x + nx * hw0, a.y + ny * hw0);
+      ctx.lineTo(b.x + nx * hw1, b.y + ny * hw1);
+      ctx.quadraticCurveTo(b.x + dx * 0.03, b.y + dy * 0.03, b.x - nx * hw1, b.y - ny * hw1);
+      ctx.lineTo(a.x - nx * hw0, a.y - ny * hw0);
+      ctx.quadraticCurveTo(a.x - dx * 0.03, a.y - dy * 0.03, a.x + nx * hw0, a.y + ny * hw0);
+      ctx.closePath();
+
+      ctx.fillStyle = fill;
+      ctx.strokeStyle = VISUAL.line;
+      ctx.lineWidth = 1.4;
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(255,255,255,0.12)";
+      ctx.lineWidth = Math.max(1.8, Math.min(w0, w1) * 0.11);
+      ctx.beginPath();
+      ctx.moveTo(a.x + nx * hw0 * 0.28, a.y + ny * hw0 * 0.28);
+      ctx.quadraticCurveTo((a.x + b.x) * 0.5 + nx * 4, (a.y + b.y) * 0.5 + ny * 4, b.x + nx * hw1 * 0.22, b.y + ny * hw1 * 0.22);
+      ctx.stroke();
+    }
+
+    function drawHairLineAlongSegment(aId, bId, count, size, alpha) {
+      const a = state.points[aId];
+      const b = state.points[bId];
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const len = Math.hypot(dx, dy) || 1;
+      const nx = -dy / len;
+      const ny = dx / len;
+      ctx.strokeStyle = "rgba(70, 51, 38," + alpha + ")";
+      ctx.lineWidth = 1.05;
+      ctx.lineCap = "round";
+      for (let i = 1; i <= count; i++) {
+        const t = i / (count + 1);
+        const px = a.x + dx * t;
+        const py = a.y + dy * t;
+        const dir = (i & 1) ? 1 : -1;
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(px + nx * size * dir, py + ny * size * dir);
+        ctx.stroke();
+      }
+    }
+
+    function drawTorso() {
+      const chest = state.points.chest;
+      const waist = state.points.waist;
+      const pelvis = state.points.pelvis;
+      const shoulderL = state.points.shoulderL;
+      const shoulderR = state.points.shoulderR;
+      const hipL = state.points.hipL;
+      const hipR = state.points.hipR;
+
+      const chestLx = chest.x - VISUAL.chestWidth * 0.5;
+      const chestRx = chest.x + VISUAL.chestWidth * 0.5;
+      const waistLx = waist.x - VISUAL.waistWidth * 0.5;
+      const waistRx = waist.x + VISUAL.waistWidth * 0.5;
+      const pelvisLx = pelvis.x - VISUAL.pelvisWidth * 0.5;
+      const pelvisRx = pelvis.x + VISUAL.pelvisWidth * 0.5;
+
+      const fill = ctx.createLinearGradient(0, chest.y - 36, 0, pelvis.y + 60);
+      fill.addColorStop(0, VISUAL.skinLight);
+      fill.addColorStop(0.46, VISUAL.skinBase);
+      fill.addColorStop(1, VISUAL.skinMid);
+
+      ctx.beginPath();
+      ctx.moveTo(shoulderL.x - 16, shoulderL.y + 10);
+      ctx.bezierCurveTo(chestLx - 8, chest.y - 10, chestLx - 8, chest.y + 32, chestLx + 6, chest.y + 64);
+      ctx.bezierCurveTo(waistLx - 8, waist.y + 10, waistLx - 6, waist.y + 36, hipL.x - 12, hipL.y + 12);
+      ctx.quadraticCurveTo(pelvisLx + 4, pelvis.y + 18, pelvis.x - 16, pelvis.y + 44);
+      ctx.lineTo(pelvis.x + 16, pelvis.y + 44);
+      ctx.quadraticCurveTo(pelvisRx - 4, pelvis.y + 18, hipR.x + 12, hipR.y + 12);
+      ctx.bezierCurveTo(waistRx + 6, waist.y + 36, waistRx + 8, waist.y + 10, chestRx - 6, chest.y + 64);
+      ctx.bezierCurveTo(chestRx + 8, chest.y + 32, chestRx + 8, chest.y - 10, shoulderR.x + 16, shoulderR.y + 10);
+      ctx.quadraticCurveTo(chest.x + 18, chest.y - 18, chest.x, chest.y - 14);
+      ctx.quadraticCurveTo(chest.x - 18, chest.y - 18, shoulderL.x - 16, shoulderL.y + 10);
+      ctx.closePath();
+
+      ctx.fillStyle = fill;
+      ctx.strokeStyle = VISUAL.line;
+      ctx.lineWidth = 1.6;
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "rgba(255,255,255,0.065)";
+      ctx.beginPath();
+      ctx.moveTo(chestLx + 22, chest.y + 8);
+      ctx.quadraticCurveTo(waist.x - 26, waist.y - 10, waist.x - 10, waist.y + 40);
+      ctx.quadraticCurveTo(waist.x - 18, pelvis.y - 2, pelvis.x - 10, pelvis.y + 16);
+      ctx.lineTo(chest.x - 10, pelvis.y + 10);
+      ctx.quadraticCurveTo(chest.x - 22, waist.y + 8, chest.x - 14, chest.y + 12);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.strokeStyle = "rgba(105, 78, 65, 0.34)";
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(chest.x, chest.y + 2);
+      ctx.quadraticCurveTo(chest.x + 2, waist.y - 12, waist.x, waist.y + 18);
+      ctx.quadraticCurveTo(waist.x - 2, pelvis.y - 2, pelvis.x, pelvis.y + 24);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(chest.x - 34, chest.y + 20);
+      ctx.quadraticCurveTo(chest.x - 18, chest.y + 10, chest.x - 6, chest.y + 28);
+      ctx.moveTo(chest.x + 34, chest.y + 20);
+      ctx.quadraticCurveTo(chest.x + 18, chest.y + 10, chest.x + 6, chest.y + 28);
+      ctx.stroke();
+
+      ctx.fillStyle = "rgba(120, 89, 73, 0.42)";
+      ctx.beginPath();
+      ctx.arc(chest.x - 34, chest.y + 28, 4.8, 0, Math.PI * 2);
+      ctx.arc(chest.x + 34, chest.y + 28, 4.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "rgba(112, 84, 66, 0.54)";
+      ctx.beginPath();
+      ctx.arc(waist.x, waist.y + 17, 3.4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = VISUAL.hair;
+      ctx.lineWidth = 1.2;
+      for (let i = 0; i < 18; i++) {
+        const t = i / 17;
+        const x = chest.x - 42 + t * 84;
+        const y = chest.y + 8 + Math.sin(i * 1.1) * 1.6;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.quadraticCurveTo(x + ((i & 1) ? -1.2 : 1.2), y + 6.5, x + ((i & 1) ? 0.5 : -0.5), y + 12);
+        ctx.stroke();
+      }
+
+      for (let i = 0; i < 13; i++) {
+        const spread = (i - 6) * 3.6;
+        ctx.beginPath();
+        ctx.moveTo(waist.x + spread * 0.34, waist.y + 20);
+        ctx.lineTo(waist.x + spread, waist.y + 34 + Math.abs(spread) * 0.08);
+        ctx.stroke();
+      }
+
+      drawGenitals(pelvis.x, pelvis.y + 25);
+    }
+
+    function drawGenitals(x, y) {
+      ctx.fillStyle = "rgba(188, 148, 127, 0.94)";
+      ctx.strokeStyle = "rgba(91, 65, 52, 0.42)";
+      ctx.lineWidth = 1.0;
+
+      ctx.beginPath();
+      ctx.ellipse(x - 7.2, y + 13.5, 5.8, 8, -0.1, 0, Math.PI * 2);
+      ctx.ellipse(x + 7.2, y + 13.5, 5.8, 8, 0.1, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(x - 4.4, y + 1.8);
+      ctx.quadraticCurveTo(x - 2.4, y + 7.8, x - 2.2, y + 12.2);
+      ctx.lineTo(x + 2.2, y + 12.2);
+      ctx.quadraticCurveTo(x + 2.4, y + 7.8, x + 4.0, y + 2.2);
+      ctx.quadraticCurveTo(x + 2.1, y + 0.1, x, y + 0.2);
+      ctx.quadraticCurveTo(x - 2.0, y + 0.1, x - 4.4, y + 1.8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "rgba(70, 47, 34, 0.84)";
+      ctx.beginPath();
+      ctx.moveTo(x - 20, y - 2);
+      ctx.lineTo(x + 20, y - 2);
+      ctx.lineTo(x + 11, y + 11);
+      ctx.lineTo(x - 11, y + 11);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function drawHandsAndFeet() {
+      drawHand("wristL", "elbowL", true);
+      drawHand("wristR", "elbowR", false);
+      drawFoot("ankleL", "toeL", true);
+      drawFoot("ankleR", "toeR", false);
+    }
+
+    function drawHand(wristId, elbowId, isLeft) {
+      const wrist = state.points[wristId];
+      const elbow = state.points[elbowId];
+      const angle = Math.atan2(wrist.y - elbow.y, wrist.x - elbow.x);
+      const flip = isLeft ? -1 : 1;
+
+      ctx.save();
+      ctx.translate(wrist.x, wrist.y);
+      ctx.rotate(angle);
+
+      ctx.beginPath();
+      ctx.moveTo(-10, -12);
+      ctx.quadraticCurveTo(2, -15, 14, -11);
+      ctx.quadraticCurveTo(25, -4, 26, 6);
+      ctx.quadraticCurveTo(24, 16, 11, 18);
+      ctx.quadraticCurveTo(-1, 18, -10, 12);
+      ctx.quadraticCurveTo(-15, 2, -10, -12);
+      ctx.closePath();
+
+      const fill = ctx.createLinearGradient(-12, -10, 24, 18);
+      fill.addColorStop(0, VISUAL.skinLight);
+      fill.addColorStop(1, VISUAL.skinBase);
+      ctx.fillStyle = fill;
+      ctx.strokeStyle = VISUAL.line;
+      ctx.lineWidth = 1.2;
+      ctx.fill();
+      ctx.stroke();
+
+      const fingerY = [-8.5, -3.4, 1.6, 6.8];
+      const lengths = [18, 20, 19, 16];
+      ctx.lineCap = "round";
+      for (let i = 0; i < 4; i++) {
+        ctx.strokeStyle = "rgba(55, 37, 28, 0.48)";
+        ctx.lineWidth = 5.8;
+        ctx.beginPath();
+        ctx.moveTo(14, fingerY[i]);
+        ctx.lineTo(14 + lengths[i], fingerY[i] + (i - 1.5) * 0.72);
+        ctx.stroke();
+
+        ctx.strokeStyle = VISUAL.skinBase;
+        ctx.lineWidth = 3.9;
+        ctx.beginPath();
+        ctx.moveTo(14, fingerY[i]);
+        ctx.lineTo(14 + lengths[i], fingerY[i] + (i - 1.5) * 0.72);
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = "rgba(55, 37, 28, 0.48)";
+      ctx.lineWidth = 5.6;
+      ctx.beginPath();
+      ctx.moveTo(1, 5 * flip);
+      ctx.lineTo(14, 15 * flip);
+      ctx.stroke();
+
+      ctx.strokeStyle = VISUAL.skinBase;
+      ctx.lineWidth = 3.8;
+      ctx.beginPath();
+      ctx.moveTo(1, 5 * flip);
+      ctx.lineTo(14, 15 * flip);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function drawFoot(ankleId, toeId, isLeft) {
+      const ankle = state.points[ankleId];
+      const toe = state.points[toeId];
+      const angle = Math.atan2(toe.y - ankle.y, toe.x - ankle.x) + (isLeft ? -0.12 : 0.12);
+
+      ctx.save();
+      ctx.translate(ankle.x, ankle.y + 6);
+      ctx.rotate(angle);
+
+      ctx.beginPath();
+      ctx.moveTo(-14, -8);
+      ctx.quadraticCurveTo(6, -15, 38, -10);
+      ctx.quadraticCurveTo(52, -5, 56, 4);
+      ctx.quadraticCurveTo(55, 13, 43, 16);
+      ctx.lineTo(-1, 17);
+      ctx.quadraticCurveTo(-13, 14, -14, -8);
+      ctx.closePath();
+
+      const fill = ctx.createLinearGradient(-12, -10, 52, 12);
+      fill.addColorStop(0, VISUAL.skinLight);
+      fill.addColorStop(1, VISUAL.skinBase);
+      ctx.fillStyle = fill;
+      ctx.strokeStyle = VISUAL.line;
+      ctx.lineWidth = 1.3;
+      ctx.fill();
+      ctx.stroke();
+
+      const toes = [
+        [42, -5, 4.8, 4.5],
+        [47, -2.4, 4.4, 4.1],
+        [51, 1.0, 4.1, 3.8],
+        [53, 4.5, 3.4, 3.2],
+        [52, 8.0, 2.8, 2.6]
       ];
+      for (let i = 0; i < toes.length; i++) {
+        const t = toes[i];
+        ctx.beginPath();
+        ctx.ellipse(t[0], t[1], t[2], t[3], 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
 
-      const BRACES = [
-        ["shoulder_left", "shoulder_right", 0.46, 1.18],
-        ["ribcage_left", "ribcage_right", 0.28, 1.08],
-        ["hip_left", "hip_right", 0.48, 1.18],
-        ["shoulder_left", "hip_left", 0.22, 1.42],
-        ["shoulder_right", "hip_right", 0.22, 1.42],
-        ["shoulder_left", "hip_right", 0.15, 1.68],
-        ["shoulder_right", "hip_left", 0.15, 1.68],
-        ["chest", "hip_left", 0.21, 1.44],
-        ["chest", "hip_right", 0.21, 1.44],
-        ["waist", "knee_left", 0.1, 1.9],
-        ["waist", "knee_right", 0.1, 1.9]
-      ];
+      ctx.restore();
+    }
 
-      const STRETCH_HANDLES = [
-        "head",
-        "neck",
-        "shoulder_left",
-        "shoulder_right",
-        "chest",
-        "waist",
-        "pelvis",
-        "elbow_left",
-        "elbow_right",
-        "wrist_left",
-        "wrist_right",
-        "hip_left",
-        "hip_right",
-        "knee_left",
-        "knee_right",
-        "ankle_left",
-        "ankle_right"
-      ];
+    function drawHead() {
+      const head = state.points.head;
+      const neck = state.points.neck;
+      const r = VISUAL.headRadius;
+      const tilt = headTilt();
 
-      const state = {
-        points: {},
-        baseRest: {},
-        rest: {},
-        constraints: [],
-        springs: [],
-        draggedId: null,
-        dragType: null,
-        relaxedMode: false,
-        pointer: { x: 0, y: 0 },
-        pointerVelocity: { x: 0, y: 0 },
-        lastPointerTime: 0,
-        headRadius: 58,
-        groundY: canvas.height - 118
+      ctx.fillStyle = VISUAL.skinMid;
+      ctx.beginPath();
+      ctx.moveTo(neck.x - 13, neck.y + 12);
+      ctx.quadraticCurveTo(head.x - 16, head.y + r * 0.74, head.x, head.y + r * 0.72);
+      ctx.quadraticCurveTo(head.x + 16, head.y + r * 0.74, neck.x + 13, neck.y + 12);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.save();
+      ctx.translate(head.x, head.y);
+      ctx.rotate(tilt);
+
+      const faceFill = ctx.createRadialGradient(-12, -24, 12, 0, 10, r * 1.22);
+      faceFill.addColorStop(0, "#f0d8c6");
+      faceFill.addColorStop(0.42, VISUAL.skinBase);
+      faceFill.addColorStop(1, VISUAL.skinDark);
+
+      ctx.beginPath();
+      ctx.moveTo(0, -r * 1.06);
+      ctx.bezierCurveTo(r * 0.78, -r * 1.04, r * 0.98, -r * 0.22, r * 0.9, r * 0.24);
+      ctx.bezierCurveTo(r * 0.82, r * 0.86, r * 0.42, r * 1.1, 0, r * 1.12);
+      ctx.bezierCurveTo(-r * 0.42, r * 1.08, -r * 0.83, r * 0.86, -r * 0.9, r * 0.22);
+      ctx.bezierCurveTo(-r * 0.98, -r * 0.22, -r * 0.78, -r * 1.04, 0, -r * 1.06);
+      ctx.closePath();
+
+      ctx.fillStyle = faceFill;
+      ctx.strokeStyle = VISUAL.line;
+      ctx.lineWidth = 1.8;
+      ctx.fill();
+      ctx.stroke();
+
+      const scalp = ctx.createRadialGradient(-r * 0.18, -r * 0.56, r * 0.06, 0, -r * 0.2, r * 0.96);
+      scalp.addColorStop(0, "rgba(255,255,255,0.22)");
+      scalp.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = scalp;
+      ctx.beginPath();
+      ctx.ellipse(0, -r * 0.08, r * 0.94, r * 0.92, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "rgba(67, 47, 37, 0.22)";
+      ctx.beginPath();
+      ctx.ellipse(-r * 0.75, -r * 0.12, r * 0.14, r * 0.45, -0.06, 0, Math.PI * 2);
+      ctx.ellipse(r * 0.75, -r * 0.1, r * 0.14, r * 0.46, 0.06, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = VISUAL.skinBase;
+      ctx.beginPath();
+      ctx.ellipse(-r * 0.88, r * 0.04, r * 0.11, r * 0.18, 0, 0, Math.PI * 2);
+      ctx.ellipse(r * 0.88, r * 0.05, r * 0.11, r * 0.18, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      drawFaceFeatures(r);
+
+      ctx.restore();
+    }
+
+    function drawFaceFeatures(r) {
+      const eyeY = -r * 0.02;
+      const eyeGap = r * 0.305;
+      const frameW = r * 0.66;
+      const frameH = r * 0.29;
+
+      ctx.fillStyle = "rgba(112, 84, 70, 0.14)";
+      ctx.beginPath();
+      ctx.ellipse(-eyeGap, eyeY + 5, r * 0.17, r * 0.1, 0, 0, Math.PI * 2);
+      ctx.ellipse(eyeGap, eyeY + 5, r * 0.17, r * 0.1, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = "rgba(93, 67, 55, 0.52)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-eyeGap - r * 0.14, eyeY - r * 0.12);
+      ctx.quadraticCurveTo(-eyeGap, eyeY - r * 0.17, -eyeGap + r * 0.16, eyeY - r * 0.12);
+      ctx.moveTo(eyeGap - r * 0.16, eyeY - r * 0.12);
+      ctx.quadraticCurveTo(eyeGap, eyeY - r * 0.18, eyeGap + r * 0.15, eyeY - r * 0.12);
+      ctx.stroke();
+
+      ctx.fillStyle = VISUAL.eyeWhite;
+      ctx.beginPath();
+      ctx.ellipse(-eyeGap, eyeY, r * 0.13, r * 0.074, 0, 0, Math.PI * 2);
+      ctx.ellipse(eyeGap, eyeY + 1, r * 0.13, r * 0.074, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = VISUAL.iris;
+      ctx.beginPath();
+      ctx.arc(-eyeGap + 1, eyeY, r * 0.04, 0, Math.PI * 2);
+      ctx.arc(eyeGap + 1, eyeY + 1, r * 0.04, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#212121";
+      ctx.beginPath();
+      ctx.arc(-eyeGap + 1, eyeY, r * 0.016, 0, Math.PI * 2);
+      ctx.arc(eyeGap + 1, eyeY + 1, r * 0.016, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "rgba(255,255,255,0.66)";
+      ctx.beginPath();
+      ctx.arc(-eyeGap - 1.5, eyeY - 2, r * 0.010, 0, Math.PI * 2);
+      ctx.arc(eyeGap - 1.5, eyeY - 1, r * 0.010, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = "rgba(98, 74, 63, 0.56)";
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(r * 0.04, eyeY + r * 0.03);
+      ctx.quadraticCurveTo(r * 0.06, eyeY + r * 0.18, r * 0.01, eyeY + r * 0.35);
+      ctx.quadraticCurveTo(-r * 0.03, eyeY + r * 0.5, r * 0.02, eyeY + r * 0.58);
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(103, 79, 66, 0.40)";
+      ctx.lineWidth = 1.45;
+      ctx.beginPath();
+      ctx.moveTo(-r * 0.24, r * 0.23);
+      ctx.quadraticCurveTo(-r * 0.18, r * 0.46, -r * 0.13, r * 0.56);
+      ctx.moveTo(r * 0.24, r * 0.22);
+      ctx.quadraticCurveTo(r * 0.18, r * 0.46, r * 0.13, r * 0.56);
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(111, 83, 67, 0.46)";
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(-r * 0.06, eyeY + r * 0.56);
+      ctx.quadraticCurveTo(0, eyeY + r * 0.62, r * 0.06, eyeY + r * 0.56);
+      ctx.stroke();
+
+      ctx.strokeStyle = VISUAL.lip;
+      ctx.lineWidth = 2.1;
+      ctx.beginPath();
+      ctx.moveTo(-r * 0.19, r * 0.45);
+      ctx.quadraticCurveTo(-r * 0.06, r * 0.5, 0, r * 0.48);
+      ctx.quadraticCurveTo(r * 0.07, r * 0.49, r * 0.2, r * 0.44);
+      ctx.stroke();
+
+      ctx.strokeStyle = VISUAL.glasses;
+      ctx.lineWidth = 5;
+      ctx.strokeRect(-eyeGap - frameW * 0.5, eyeY - frameH * 0.5, frameW, frameH);
+      ctx.strokeRect(eyeGap - frameW * 0.5, eyeY - frameH * 0.5, frameW, frameH);
+
+      ctx.beginPath();
+      ctx.moveTo(-r * 0.08, eyeY);
+      ctx.lineTo(r * 0.08, eyeY);
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(27,27,27,0.6)";
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(-eyeGap - frameW * 0.5, eyeY + 3);
+      ctx.lineTo(-r * 0.86, eyeY + 9);
+      ctx.moveTo(eyeGap + frameW * 0.5, eyeY + 3);
+      ctx.lineTo(r * 0.86, eyeY + 10);
+      ctx.stroke();
+
+      ctx.fillStyle = "rgba(255,255,255,0.08)";
+      ctx.fillRect(-eyeGap - frameW * 0.5 + 4, eyeY - frameH * 0.5 + 4, frameW * 0.34, frameH * 0.18);
+      ctx.fillRect(eyeGap - frameW * 0.5 + 4, eyeY - frameH * 0.5 + 4, frameW * 0.34, frameH * 0.18);
+
+      ctx.fillStyle = "rgba(80, 58, 46, 0.08)";
+      ctx.beginPath();
+      ctx.ellipse(0, r * 0.7, r * 0.28, r * 0.1, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawFigure() {
+      drawShadow();
+
+      for (let i = 0; i < SEGMENT_DRAWS.length; i++) {
+        const def = SEGMENT_DRAWS[i];
+        if (def[0] === "neck") continue;
+        drawTaperedSegment(def[0], def[1], def[2], def[3]);
+      }
+
+      drawHairLineAlongSegment("shoulderL", "wristL", 9, 4.2, 0.46);
+      drawHairLineAlongSegment("shoulderR", "wristR", 9, 4.2, 0.46);
+      drawHairLineAlongSegment("hipL", "ankleL", 14, 4.0, 0.52);
+      drawHairLineAlongSegment("hipR", "ankleR", 14, 4.0, 0.52);
+
+      drawTorso();
+      drawTaperedSegment("neck", "head", VISUAL.neckA, VISUAL.neckB);
+      drawHandsAndFeet();
+      drawHead();
+    }
+
+    function render() {
+      drawBackground();
+      drawFigure();
+    }
+
+    function getPointer(evt) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: (evt.clientX - rect.left) * (canvas.width / rect.width),
+        y: (evt.clientY - rect.top) * (canvas.height / rect.height)
       };
+    }
 
-      function toCanvas(nx, ny) {
-        const scale = Math.min(canvas.width, canvas.height) * 0.56;
-        const centerX = canvas.width * 0.5;
-        const topOffset = canvas.height * 0.1;
-        return [
-          centerX + (nx - 0.5) * scale * 1.52,
-          topOffset + ny * scale
-        ];
+    function maybeResetTap(x, y) {
+      const now = performance.now();
+      if (!state.movedSinceDown && now - state.lastTapTime <= INTERACTION.doubleTapMs) {
+        if (dist(x, y, state.lastTapX, state.lastTapY) <= INTERACTION.tapDistance) {
+          resetSpawn();
+          state.lastTapTime = 0;
+          return;
+        }
       }
+      state.lastTapTime = now;
+      state.lastTapX = x;
+      state.lastTapY = y;
+    }
 
-      function createPoint(x, y) {
-        return { x, y, px: x, py: y };
-      }
+    function onPointerDown(evt) {
+      evt.preventDefault();
+      const p = getPointer(evt);
+      state.pointerX = p.x;
+      state.pointerY = p.y;
+      state.pointerVX = 0;
+      state.pointerVY = 0;
+      state.lastPointerTime = performance.now();
+      state.downX = p.x;
+      state.downY = p.y;
+      state.movedSinceDown = false;
 
-      function distance(a, b) {
-        return Math.hypot(b.x - a.x, b.y - a.y);
-      }
-
-      function midpoint(a, b) {
-        return { x: (a.x + b.x) * 0.5, y: (a.y + b.y) * 0.5 };
-      }
-
-      function createConstraint(aId, bId, stiffness, maxStretch) {
-        const a = state.points[aId];
-        const b = state.points[bId];
-        const rest = distance(a, b);
-        return {
-          a: aId,
-          b: bId,
-          rest,
-          stiffness,
-          max: rest * maxStretch
-        };
-      }
-
-      function initializeFigure() {
-        state.points = {};
-        state.baseRest = {};
-        state.rest = {};
-        state.constraints = [];
-        state.springs = [];
-
-        Object.entries(RIG).forEach(([id, normalized]) => {
-          const [x, y] = toCanvas(normalized[0], normalized[1]);
-          state.points[id] = createPoint(x, y);
-          state.baseRest[id] = { x, y };
-          state.rest[id] = { x, y };
-        });
-
-        BONE_LINKS.forEach((entry) => {
-          state.constraints.push(createConstraint(entry[0], entry[1], entry[2], entry[3]));
-        });
-
-        BRACES.forEach((entry) => {
-          state.constraints.push(createConstraint(entry[0], entry[1], entry[2], entry[3]));
-        });
-
-        Object.keys(state.points).forEach((id) => {
-          let stiffness = 0.024;
-          if (id.includes("ankle") || id.includes("foot")) {
-            stiffness = 0.062;
-          } else if (id.includes("knee") || id.includes("wrist")) {
-            stiffness = 0.04;
-          } else if (id === "waist" || id === "pelvis") {
-            stiffness = 0.032;
-          } else if (id === "head" || id === "neck") {
-            stiffness = 0.034;
-          }
-          state.springs.push({ id, stiffness });
-        });
-
-        state.groundY = canvas.height - 118;
-        state.headRadius = Math.max(52, Math.min(66, distance(state.points.head, state.points.neck) * 1.03));
-      }
-
-      function updateModePill() {
-        modePill.textContent = state.relaxedMode ? "Placement Mode" : "Stretch Mode";
-      }
-
-      function zeroVelocities() {
-        Object.values(state.points).forEach((point) => {
-          point.px = point.x;
-          point.py = point.y;
-        });
-      }
-
-      function getFootMidFrom(source) {
-        return midpoint(source.foot_left, source.foot_right);
-      }
-
-      function snapToStandingAtCurrentPlacement() {
-        const currentFootMid = getFootMidFrom(state.points);
-        const baseFootMid = getFootMidFrom(state.baseRest);
-        const dx = currentFootMid.x - baseFootMid.x;
-        const dy = currentFootMid.y - baseFootMid.y;
-
-        Object.keys(state.baseRest).forEach((id) => {
-          const target = {
-            x: state.baseRest[id].x + dx,
-            y: state.baseRest[id].y + dy
-          };
-          state.rest[id] = target;
-          state.points[id].x = target.x;
-          state.points[id].y = target.y;
-          state.points[id].px = target.x;
-          state.points[id].py = target.y;
-        });
-      }
-
-      function resetToDefaultPlacement() {
-        Object.keys(state.baseRest).forEach((id) => {
-          state.rest[id] = {
-            x: state.baseRest[id].x,
-            y: state.baseRest[id].y
-          };
-          state.points[id].x = state.baseRest[id].x;
-          state.points[id].y = state.baseRest[id].y;
-          state.points[id].px = state.baseRest[id].x;
-          state.points[id].py = state.baseRest[id].y;
-        });
-        state.draggedId = null;
-        state.dragType = null;
-        canvas.classList.remove("is-dragging");
-      }
-
-      function setRelaxedMode(enabled) {
-        state.relaxedMode = enabled;
-        state.draggedId = null;
-        state.dragType = null;
-        canvas.classList.remove("is-dragging");
-
-        if (enabled) {
-          snapToStandingAtCurrentPlacement();
+      if (state.relaxed) {
+        const handle = nearestHandle(p.x, p.y, true);
+        if (handle) {
+          state.dragKind = "pose";
+          state.draggedId = handle;
+        } else if (torsoHit(p.x, p.y) || figureHit(p.x, p.y)) {
+          state.dragKind = "figure";
+          state.draggedId = "";
         } else {
-          zeroVelocities();
-        }
-
-        updateModePill();
-      }
-
-      function applyConstraint(constraint) {
-        const a = state.points[constraint.a];
-        const b = state.points[constraint.b];
-        const dx = b.x - a.x;
-        const dy = b.y - a.y;
-        const currentDistance = Math.hypot(dx, dy) || 0.00001;
-
-        let target = constraint.rest;
-        let strength = constraint.stiffness;
-
-        if (currentDistance > constraint.max) {
-          target = constraint.max;
-          strength = Math.max(strength, 0.58);
-        }
-
-        const delta = (currentDistance - target) / currentDistance;
-        const offsetX = dx * 0.5 * delta * strength;
-        const offsetY = dy * 0.5 * delta * strength;
-
-        if (state.draggedId !== constraint.a) {
-          a.x += offsetX;
-          a.y += offsetY;
-        }
-
-        if (state.draggedId !== constraint.b) {
-          b.x -= offsetX;
-          b.y -= offsetY;
-        }
-      }
-
-      function applyHomeSpring(spring) {
-        if (spring.id === state.draggedId) {
           return;
         }
-        const point = state.points[spring.id];
-        const rest = state.rest[spring.id];
-        point.x += (rest.x - point.x) * spring.stiffness;
-        point.y += (rest.y - point.y) * spring.stiffness;
+      } else {
+        const handle = nearestHandle(p.x, p.y, false);
+        if (!handle) return;
+        state.dragKind = "stretch";
+        state.draggedId = handle;
       }
 
-      function moveWholeFigure(dx, dy) {
-        Object.keys(state.points).forEach((id) => {
-          state.points[id].x += dx;
-          state.points[id].y += dy;
-          state.points[id].px += dx;
-          state.points[id].py += dy;
-          state.rest[id].x += dx;
-          state.rest[id].y += dy;
-        });
+      canvas.classList.add("dragging");
+      canvas.setPointerCapture(evt.pointerId);
+    }
+
+    function onPointerMove(evt) {
+      const p = getPointer(evt);
+      const now = performance.now();
+      const dt = Math.max(8, now - state.lastPointerTime);
+
+      if (Math.abs(p.x - state.downX) > INTERACTION.tapDistance || Math.abs(p.y - state.downY) > INTERACTION.tapDistance) {
+        state.movedSinceDown = true;
       }
 
-      function stepRelaxedMode() {
-        Object.keys(state.points).forEach((id) => {
-          const point = state.points[id];
-          const rest = state.rest[id];
-          point.x += (rest.x - point.x) * 0.28;
-          point.y += (rest.y - point.y) * 0.28;
-          point.px = point.x;
-          point.py = point.y;
-        });
-      }
-
-      function stepStretchMode() {
-        const damping = 0.06;
-        const gravity = 0.79;
-        const floorBounce = 0.18;
-
-        Object.entries(state.points).forEach(([id, point]) => {
-          if (id === state.draggedId) {
-            return;
-          }
-
-          const vx = (point.x - point.px) * (1 - damping);
-          const vy = (point.y - point.py) * (1 - damping) + gravity;
-
-          point.px = point.x;
-          point.py = point.y;
-          point.x += vx;
-          point.y += vy;
-
-          if (point.y > state.groundY) {
-            point.y = state.groundY;
-            point.py = point.y + vy * -floorBounce;
-            point.px = point.x - vx * 0.7;
-          }
-
-          if (point.x < 76) {
-            point.x = 76;
-            point.px = point.x + vx * -0.28;
-          }
-
-          if (point.x > canvas.width - 76) {
-            point.x = canvas.width - 76;
-            point.px = point.x + vx * -0.28;
-          }
-        });
-
-        if (state.dragType === "point" && state.draggedId) {
-          const point = state.points[state.draggedId];
-          point.x = state.pointer.x;
-          point.y = state.pointer.y;
-          point.px = point.x - state.pointerVelocity.x * 0.16;
-          point.py = point.y - state.pointerVelocity.y * 0.16;
-        }
-
-        for (let i = 0; i < 17; i += 1) {
-          state.constraints.forEach(applyConstraint);
-          state.springs.forEach(applyHomeSpring);
-        }
-      }
-
-      function stepSimulation() {
-        if (state.relaxedMode) {
-          stepRelaxedMode();
-          return;
-        }
-        stepStretchMode();
-      }
-
-      function withTransform(x, y, angle, callback) {
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.rotate(angle);
-        callback();
-        ctx.restore();
-      }
-
-      function drawBackground() {
-        const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        bg.addColorStop(0, "#17130f");
-        bg.addColorStop(0.6, "#120f0c");
-        bg.addColorStop(1, "#0f0b08");
-        ctx.fillStyle = bg;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        const glowLeft = ctx.createRadialGradient(canvas.width * 0.18, canvas.height * 0.2, 20, canvas.width * 0.18, canvas.height * 0.2, 350);
-        glowLeft.addColorStop(0, "rgba(255, 213, 83, 0.18)");
-        glowLeft.addColorStop(1, "rgba(255, 213, 83, 0)");
-        ctx.fillStyle = glowLeft;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        const glowRight = ctx.createRadialGradient(canvas.width * 0.8, canvas.height * 0.16, 30, canvas.width * 0.8, canvas.height * 0.16, 330);
-        glowRight.addColorStop(0, "rgba(154, 31, 31, 0.18)");
-        glowRight.addColorStop(1, "rgba(154, 31, 31, 0)");
-        ctx.fillStyle = glowRight;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        const floorGrad = ctx.createLinearGradient(0, state.groundY - 18, 0, canvas.height);
-        floorGrad.addColorStop(0, "rgba(46, 36, 24, 0.15)");
-        floorGrad.addColorStop(1, "rgba(17, 13, 10, 0.95)");
-        ctx.fillStyle = floorGrad;
-        ctx.fillRect(0, state.groundY - 18, canvas.width, canvas.height - state.groundY + 18);
-
-        ctx.strokeStyle = "rgba(255, 215, 0, 0.14)";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(0, state.groundY + 1);
-        ctx.lineTo(canvas.width, state.groundY + 1);
-        ctx.stroke();
-      }
-
-      function drawShadow() {
-        const pelvis = state.points.pelvis;
-        if (!pelvis) {
-          return;
-        }
-        ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
-        ctx.beginPath();
-        ctx.ellipse(pelvis.x, state.groundY + 24, 186, 25, 0, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      function drawLimbSegment(aId, bId, width) {
-        const a = state.points[aId];
-        const b = state.points[bId];
-        if (!a || !b) {
-          return;
-        }
-
-        const gradient = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
-        gradient.addColorStop(0, SKIN.light);
-        gradient.addColorStop(0.42, SKIN.base);
-        gradient.addColorStop(1, SKIN.shade);
-        ctx.strokeStyle = gradient;
-        ctx.lineWidth = width;
-        ctx.lineCap = "round";
-        ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(b.x, b.y);
-        ctx.stroke();
-      }
-
-      function drawBodyHairOnSegment(aId, bId, count, size, color) {
-        const a = state.points[aId];
-        const b = state.points[bId];
-        if (!a || !b) {
-          return;
-        }
-
-        const dx = b.x - a.x;
-        const dy = b.y - a.y;
-        const length = Math.hypot(dx, dy) || 1;
-        const nx = -dy / length;
-        const ny = dx / length;
-
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 1;
-        ctx.lineCap = "round";
-
-        for (let i = 0; i < count; i += 1) {
-          const t = (i + 1) / (count + 1);
-          const px = a.x + dx * t;
-          const py = a.y + dy * t;
-          const direction = i % 2 === 0 ? 1 : -1;
-          ctx.beginPath();
-          ctx.moveTo(px, py);
-          ctx.lineTo(px + nx * size * direction, py + ny * size * direction);
-          ctx.stroke();
-        }
-      }
-
-      function drawLimbs() {
-        drawLimbSegment("neck", "head", 28);
-        drawLimbSegment("shoulder_left", "elbow_left", 24);
-        drawLimbSegment("elbow_left", "wrist_left", 20);
-        drawLimbSegment("shoulder_right", "elbow_right", 24);
-        drawLimbSegment("elbow_right", "wrist_right", 20);
-        drawLimbSegment("hip_left", "knee_left", 25);
-        drawLimbSegment("knee_left", "ankle_left", 20);
-        drawLimbSegment("hip_right", "knee_right", 25);
-        drawLimbSegment("knee_right", "ankle_right", 20);
-
-        ctx.fillStyle = "rgba(163, 124, 100, 0.28)";
-        ["elbow_left", "elbow_right", "knee_left", "knee_right"].forEach((id) => {
-          const point = state.points[id];
-          ctx.beginPath();
-          ctx.arc(point.x, point.y, 8, 0, Math.PI * 2);
-          ctx.fill();
-        });
-
-        drawBodyHairOnSegment("shoulder_left", "wrist_left", 12, 4.8, "rgba(82, 56, 40, 0.52)");
-        drawBodyHairOnSegment("shoulder_right", "wrist_right", 12, 4.8, "rgba(82, 56, 40, 0.52)");
-        drawBodyHairOnSegment("hip_left", "ankle_left", 16, 4.2, "rgba(82, 56, 40, 0.56)");
-        drawBodyHairOnSegment("hip_right", "ankle_right", 16, 4.2, "rgba(82, 56, 40, 0.56)");
-      }
-
-      function drawHand(wristId, elbowId, side) {
-        const wrist = state.points[wristId];
-        const elbow = state.points[elbowId];
-        if (!wrist || !elbow) {
-          return;
-        }
-
-        const angle = Math.atan2(wrist.y - elbow.y, wrist.x - elbow.x);
-        const flip = side === "left" ? -1 : 1;
-
-        withTransform(wrist.x, wrist.y + 1, angle, () => {
-          ctx.fillStyle = SKIN.base;
-          ctx.strokeStyle = SKIN.outline;
-          ctx.lineWidth = 1.5;
-
-          ctx.beginPath();
-          ctx.moveTo(-8, -10);
-          ctx.quadraticCurveTo(6, -15, 14, -6);
-          ctx.quadraticCurveTo(18, 1, 13, 10);
-          ctx.quadraticCurveTo(4, 14, -7, 10);
-          ctx.quadraticCurveTo(-12, 2, -8, -10);
-          ctx.closePath();
-          ctx.fill();
-          ctx.stroke();
-
-          ctx.beginPath();
-          ctx.moveTo(-2, 6);
-          ctx.lineTo(-12, 12 * flip * 0.08 + 15);
-          ctx.stroke();
-
-          [-7, -2, 3, 8].forEach((offset, index) => {
-            const fingerLength = 12 + index * 1.2;
-            ctx.beginPath();
-            ctx.moveTo(8, offset);
-            ctx.lineTo(18, offset - 1);
-            ctx.lineTo(22 + fingerLength * 0.12, offset + 1);
-            ctx.stroke();
-          });
-        });
-      }
-
-      function drawFoot(ankleId, footId, side) {
-        const ankle = state.points[ankleId];
-        const foot = state.points[footId];
-        if (!ankle || !foot) {
-          return;
-        }
-
-        const angle = Math.atan2(foot.y - ankle.y, foot.x - ankle.x);
-        const flip = side === "left" ? -1 : 1;
-
-        withTransform(foot.x, foot.y + 4, angle * 0.45, () => {
-          ctx.fillStyle = SKIN.base;
-          ctx.strokeStyle = SKIN.outline;
-          ctx.lineWidth = 1.5;
-
-          ctx.beginPath();
-          ctx.moveTo(-16, -5);
-          ctx.quadraticCurveTo(2, -11, 22, -2);
-          ctx.quadraticCurveTo(30, 2, 27, 10);
-          ctx.quadraticCurveTo(12, 16, -12, 10);
-          ctx.quadraticCurveTo(-22, 5, -16, -5);
-          ctx.closePath();
-          ctx.fill();
-          ctx.stroke();
-
-          [8, 13, 18, 22].forEach((toeX, index) => {
-            const toeLift = index % 2 === 0 ? -2 : -1;
-            ctx.beginPath();
-            ctx.moveTo(toeX, 1);
-            ctx.lineTo(toeX + 2, toeLift + flip * 0.02);
-            ctx.stroke();
-          });
-        });
-      }
-
-      function drawTorso() {
-        const shoulderLeft = state.points.shoulder_left;
-        const shoulderRight = state.points.shoulder_right;
-        const chest = state.points.chest;
-        const ribcageLeft = state.points.ribcage_left;
-        const ribcageRight = state.points.ribcage_right;
-        const waist = state.points.waist;
-        const pelvis = state.points.pelvis;
-        const hipLeft = state.points.hip_left;
-        const hipRight = state.points.hip_right;
-
-        if (!shoulderLeft || !shoulderRight || !chest || !ribcageLeft || !ribcageRight || !waist || !pelvis || !hipLeft || !hipRight) {
-          return;
-        }
-
-        const bodyGradient = ctx.createLinearGradient(0, shoulderLeft.y - 10, 0, pelvis.y + 28);
-        bodyGradient.addColorStop(0, SKIN.light);
-        bodyGradient.addColorStop(0.5, SKIN.base);
-        bodyGradient.addColorStop(1, SKIN.shade);
-
-        ctx.fillStyle = bodyGradient;
-        ctx.strokeStyle = SKIN.outline;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(shoulderLeft.x - 15, shoulderLeft.y + 6);
-        ctx.quadraticCurveTo(ribcageLeft.x - 32, chest.y - 4, ribcageLeft.x - 24, ribcageLeft.y + 24);
-        ctx.quadraticCurveTo(waist.x - 28, waist.y + 8, hipLeft.x - 18, hipLeft.y + 18);
-        ctx.quadraticCurveTo(pelvis.x - 10, pelvis.y + 18, pelvis.x - 9, pelvis.y + 28);
-        ctx.quadraticCurveTo(pelvis.x + 9, pelvis.y + 28, hipRight.x + 18, hipRight.y + 18);
-        ctx.quadraticCurveTo(waist.x + 28, waist.y + 8, ribcageRight.x + 24, ribcageRight.y + 24);
-        ctx.quadraticCurveTo(ribcageRight.x + 32, chest.y - 4, shoulderRight.x + 15, shoulderRight.y + 6);
-        ctx.quadraticCurveTo(chest.x, chest.y - 20, shoulderLeft.x - 15, shoulderLeft.y + 6);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.strokeStyle = "rgba(140, 103, 77, 0.34)";
-        ctx.lineWidth = 1.6;
-        ctx.beginPath();
-        ctx.moveTo(chest.x, chest.y - 6);
-        ctx.lineTo(waist.x, waist.y + 18);
-        ctx.stroke();
-
-        ctx.fillStyle = "rgba(108, 79, 58, 0.45)";
-        ctx.beginPath();
-        ctx.arc(waist.x, waist.y + 16, 3.3, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.strokeStyle = "rgba(80, 53, 38, 0.68)";
-        ctx.lineWidth = 1.3;
-        for (let i = 0; i < 20; i += 1) {
-          const t = i / 19;
-          const x = chest.x - 48 + t * 96;
-          const y = chest.y + 1 + Math.sin(i * 1.15) * 2;
-          ctx.beginPath();
-          ctx.moveTo(x, y);
-          ctx.quadraticCurveTo(x + (i % 2 === 0 ? 2 : -2), y + 9, x + (i % 2 === 0 ? -1 : 1), y + 14);
-          ctx.stroke();
-        }
-
-        for (let i = 0; i < 16; i += 1) {
-          const spread = (i - 7.5) * 3.1;
-          ctx.beginPath();
-          ctx.moveTo(waist.x + spread * 0.35, waist.y + 18);
-          ctx.lineTo(waist.x + spread, waist.y + 34 + Math.abs(spread) * 0.08);
-          ctx.stroke();
-        }
-
-        ctx.fillStyle = "rgba(66, 42, 28, 0.78)";
-        ctx.beginPath();
-        ctx.moveTo(pelvis.x - 15, pelvis.y + 10);
-        ctx.lineTo(pelvis.x + 15, pelvis.y + 10);
-        ctx.lineTo(pelvis.x + 8, pelvis.y + 26);
-        ctx.lineTo(pelvis.x - 8, pelvis.y + 26);
-        ctx.closePath();
-        ctx.fill();
-      }
-
-      function drawHead() {
-        const head = state.points.head;
-        if (!head) {
-          return;
-        }
-
-        const r = state.headRadius;
-        const neck = state.points.neck;
-        const neckWidth = 28;
-
-        ctx.fillStyle = SKIN.shade;
-        ctx.beginPath();
-        ctx.moveTo(neck.x - neckWidth, neck.y + 6);
-        ctx.quadraticCurveTo(head.x - 20, head.y + r * 0.55, head.x, head.y + r * 0.6);
-        ctx.quadraticCurveTo(head.x + 20, head.y + r * 0.55, neck.x + neckWidth, neck.y + 6);
-        ctx.closePath();
-        ctx.fill();
-
-        withTransform(head.x, head.y, 0, () => {
-          ctx.fillStyle = SKIN.base;
-          ctx.strokeStyle = SKIN.outline;
-          ctx.lineWidth = 2;
-
-          ctx.beginPath();
-          ctx.moveTo(0, -r);
-          ctx.bezierCurveTo(r * 0.72, -r * 0.98, r * 0.96, -r * 0.3, r * 0.88, r * 0.15);
-          ctx.bezierCurveTo(r * 0.81, r * 0.7, r * 0.42, r * 1.02, 0, r * 1.03);
-          ctx.bezierCurveTo(-r * 0.44, r * 1.02, -r * 0.84, r * 0.68, -r * 0.89, r * 0.14);
-          ctx.bezierCurveTo(-r * 0.96, -r * 0.32, -r * 0.7, -r * 0.99, 0, -r);
-          ctx.closePath();
-          ctx.fill();
-          ctx.stroke();
-
-          const scalpGlow = ctx.createRadialGradient(-r * 0.22, -r * 0.45, r * 0.12, 0, -r * 0.2, r * 1.06);
-          scalpGlow.addColorStop(0, "rgba(255, 244, 232, 0.22)");
-          scalpGlow.addColorStop(1, "rgba(255, 244, 232, 0)");
-          ctx.fillStyle = scalpGlow;
-          ctx.beginPath();
-          ctx.arc(0, -r * 0.1, r * 0.95, 0, Math.PI * 2);
-          ctx.fill();
-
-          ctx.fillStyle = SKIN.base;
-          ctx.beginPath();
-          ctx.ellipse(-r * 0.9, r * 0.02, r * 0.11, r * 0.17, 0, 0, Math.PI * 2);
-          ctx.ellipse(r * 0.9, r * 0.05, r * 0.11, r * 0.17, 0, 0, Math.PI * 2);
-          ctx.fill();
-
-          ctx.fillStyle = "rgba(168, 128, 101, 0.34)";
-          ctx.beginPath();
-          ctx.ellipse(0, r * 0.74, r * 0.35, r * 0.14, 0, 0, Math.PI * 2);
-          ctx.fill();
-
-          drawFaceDetails(r);
-        });
-      }
-
-      function drawFaceDetails(r) {
-        const eyeY = -r * 0.08;
-        const eyeGap = r * 0.29;
-
-        ctx.fillStyle = "rgba(164, 128, 101, 0.18)";
-        ctx.beginPath();
-        ctx.ellipse(-eyeGap, eyeY + 2, r * 0.17, r * 0.1, 0, 0, Math.PI * 2);
-        ctx.ellipse(eyeGap, eyeY + 2, r * 0.17, r * 0.1, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = FACE.white;
-        ctx.beginPath();
-        ctx.ellipse(-eyeGap, eyeY, r * 0.12, r * 0.07, -0.03, 0, Math.PI * 2);
-        ctx.ellipse(eyeGap, eyeY + 1, r * 0.118, r * 0.07, 0.03, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = FACE.eye;
-        ctx.beginPath();
-        ctx.arc(-eyeGap, eyeY, r * 0.034, 0, Math.PI * 2);
-        ctx.arc(eyeGap, eyeY + 1, r * 0.034, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = "#2b2b2b";
-        ctx.beginPath();
-        ctx.arc(-eyeGap, eyeY, r * 0.013, 0, Math.PI * 2);
-        ctx.arc(eyeGap, eyeY + 1, r * 0.013, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.strokeStyle = FACE.brow;
-        ctx.lineWidth = 2.4;
-        ctx.beginPath();
-        ctx.moveTo(-eyeGap - r * 0.11, eyeY - r * 0.1);
-        ctx.lineTo(-eyeGap + r * 0.1, eyeY - r * 0.12);
-        ctx.moveTo(eyeGap - r * 0.1, eyeY - r * 0.12);
-        ctx.lineTo(eyeGap + r * 0.11, eyeY - r * 0.1);
-        ctx.stroke();
-
-        ctx.strokeStyle = "rgba(101, 73, 57, 0.5)";
-        ctx.lineWidth = 2.2;
-        ctx.beginPath();
-        ctx.moveTo(-eyeGap - r * 0.08, eyeY + r * 0.09);
-        ctx.lineTo(-eyeGap + r * 0.08, eyeY + r * 0.09);
-        ctx.moveTo(eyeGap - r * 0.08, eyeY + r * 0.1);
-        ctx.lineTo(eyeGap + r * 0.08, eyeY + r * 0.1);
-        ctx.stroke();
-
-        ctx.strokeStyle = "rgba(84, 60, 47, 0.6)";
-        ctx.lineWidth = 2.2;
-        ctx.beginPath();
-        ctx.moveTo(r * 0.04, eyeY + r * 0.04);
-        ctx.quadraticCurveTo(r * 0.02, eyeY + r * 0.18, 0, eyeY + r * 0.32);
-        ctx.quadraticCurveTo(-r * 0.03, eyeY + r * 0.39, r * 0.02, eyeY + r * 0.46);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(-r * 0.04, eyeY + r * 0.49);
-        ctx.quadraticCurveTo(0, eyeY + r * 0.57, r * 0.05, eyeY + r * 0.5);
-        ctx.stroke();
-
-        ctx.strokeStyle = FACE.lip;
-        ctx.lineWidth = 2.2;
-        ctx.beginPath();
-        ctx.moveTo(-r * 0.16, r * 0.42);
-        ctx.quadraticCurveTo(-r * 0.04, r * 0.46, r * 0.06, r * 0.43);
-        ctx.quadraticCurveTo(r * 0.12, r * 0.42, r * 0.17, r * 0.39);
-        ctx.stroke();
-
-        ctx.strokeStyle = "rgba(120, 89, 68, 0.45)";
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(-r * 0.21, r * 0.25);
-        ctx.quadraticCurveTo(-r * 0.18, r * 0.38, -r * 0.14, r * 0.48);
-        ctx.moveTo(r * 0.16, r * 0.22);
-        ctx.quadraticCurveTo(r * 0.19, r * 0.36, r * 0.14, r * 0.47);
-        ctx.stroke();
-
-        ctx.strokeStyle = FACE.glasses;
-        ctx.lineWidth = 5;
-        const frameWidth = r * 0.54;
-        const frameHeight = r * 0.26;
-        ctx.strokeRect(-eyeGap - frameWidth / 2, eyeY - frameHeight / 2, frameWidth, frameHeight);
-        ctx.strokeRect(eyeGap - frameWidth / 2, eyeY - frameHeight / 2, frameWidth, frameHeight);
-        ctx.beginPath();
-        ctx.moveTo(-r * 0.07, eyeY);
-        ctx.lineTo(r * 0.07, eyeY);
-        ctx.stroke();
-
-        ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
-        ctx.fillRect(-eyeGap - frameWidth / 2 + 3, eyeY - frameHeight / 2 + 3, frameWidth * 0.34, frameHeight * 0.22);
-        ctx.fillRect(eyeGap - frameWidth / 2 + 3, eyeY - frameHeight / 2 + 3, frameWidth * 0.34, frameHeight * 0.22);
-      }
-
-      function drawHandsAndFeet() {
-        drawHand("wrist_left", "elbow_left", "left");
-        drawHand("wrist_right", "elbow_right", "right");
-        drawFoot("ankle_left", "foot_left", "left");
-        drawFoot("ankle_right", "foot_right", "right");
-      }
-
-      function drawFrame() {
-        drawBackground();
-        drawShadow();
-        drawLimbs();
-        drawTorso();
-        drawHandsAndFeet();
-        drawHead();
-      }
-
-      function getCanvasPointer(event) {
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        return {
-          x: (event.clientX - rect.left) * scaleX,
-          y: (event.clientY - rect.top) * scaleY
-        };
-      }
-
-      function getFigureBounds() {
-        const xs = [];
-        const ys = [];
-        Object.values(state.points).forEach((point) => {
-          xs.push(point.x);
-          ys.push(point.y);
-        });
-
-        const head = state.points.head;
-        return {
-          left: Math.min(...xs, head.x - state.headRadius - 28),
-          right: Math.max(...xs, head.x + state.headRadius + 28),
-          top: Math.min(...ys, head.y - state.headRadius - 28),
-          bottom: Math.max(...ys, head.y + state.headRadius + 28)
-        };
-      }
-
-      function hitTestWholeFigure(x, y) {
-        const bounds = getFigureBounds();
-        const withinBounds =
-          x >= bounds.left - 26 &&
-          x <= bounds.right + 26 &&
-          y >= bounds.top - 20 &&
-          y <= bounds.bottom + 20;
-
-        if (!withinBounds) {
-          return false;
-        }
-
-        const nearest = findNearestStretchHandle(x, y, 110);
-        return Boolean(nearest) || pointInsideHead(x, y);
-      }
-
-      function pointInsideHead(x, y) {
-        const head = state.points.head;
-        const dx = (x - head.x) / (state.headRadius * 0.92);
-        const dy = (y - head.y) / state.headRadius;
-        return (dx * dx) + (dy * dy) <= 1.1;
-      }
-
-      function findNearestStretchHandle(x, y, radius = 74) {
-        let winner = null;
-        let best = Infinity;
-
-        STRETCH_HANDLES.forEach((id) => {
-          const point = state.points[id];
-          const d = Math.hypot(point.x - x, point.y - y);
-          if (d < radius && d < best) {
-            winner = id;
-            best = d;
-          }
-        });
-
-        return winner;
-      }
-
-      function pointerDown(event) {
-        const p = getCanvasPointer(event);
-        state.pointer.x = p.x;
-        state.pointer.y = p.y;
-        state.pointerVelocity.x = 0;
-        state.pointerVelocity.y = 0;
-        state.lastPointerTime = performance.now();
-
-        if (state.relaxedMode) {
-          if (!hitTestWholeFigure(p.x, p.y)) {
-            return;
-          }
-
-          state.dragType = "figure";
-          canvas.classList.add("is-dragging");
-          canvas.setPointerCapture(event.pointerId);
-          return;
-        }
-
-        const handleId = findNearestStretchHandle(p.x, p.y);
-        if (!handleId) {
-          return;
-        }
-
-        state.dragType = "point";
-        state.draggedId = handleId;
-        canvas.classList.add("is-dragging");
-        canvas.setPointerCapture(event.pointerId);
-      }
-
-      function pointerMove(event) {
-        const p = getCanvasPointer(event);
-        const now = performance.now();
-        const dt = Math.max(8, now - state.lastPointerTime);
-
-        if (state.dragType === "figure" && state.relaxedMode) {
-          moveWholeFigure(p.x - state.pointer.x, p.y - state.pointer.y);
-          state.pointer.x = p.x;
-          state.pointer.y = p.y;
-          state.lastPointerTime = now;
-          return;
-        }
-
-        state.pointerVelocity.x = ((p.x - state.pointer.x) / dt) * 16;
-        state.pointerVelocity.y = ((p.y - state.pointer.y) / dt) * 16;
-        state.pointer.x = p.x;
-        state.pointer.y = p.y;
+      state.pointerVX = ((p.x - state.pointerX) / dt) * PHYSICS.dragVelocityScale;
+      state.pointerVY = ((p.y - state.pointerY) / dt) * PHYSICS.dragVelocityScale;
+
+      if (state.dragKind === "figure") {
+        const dx = p.x - state.pointerX;
+        const dy = p.y - state.pointerY;
+        translateFigure(dx, dy);
+        clampWholeFigureIntoScene();
+        state.pointerX = p.x;
+        state.pointerY = p.y;
         state.lastPointerTime = now;
+        return;
       }
 
-      function releaseDrag(event) {
-        if (state.dragType === "point" && state.draggedId) {
-          const point = state.points[state.draggedId];
-          point.px = point.x - state.pointerVelocity.x * 0.92;
-          point.py = point.y - state.pointerVelocity.y * 0.92;
-        }
+      state.pointerX = p.x;
+      state.pointerY = p.y;
+      state.lastPointerTime = now;
+    }
 
-        state.dragType = null;
-        state.draggedId = null;
-        canvas.classList.remove("is-dragging");
+    function onPointerUp(evt) {
+      const up = getPointer(evt);
 
-        if (event && canvas.hasPointerCapture(event.pointerId)) {
-          canvas.releasePointerCapture(event.pointerId);
-        }
+      if (state.dragKind === "stretch" && state.draggedId) {
+        const p = state.points[state.draggedId];
+        p.px = p.x - state.pointerVX * PHYSICS.dragImpulse;
+        p.py = p.y - state.pointerVY * PHYSICS.dragImpulse;
+      } else if (state.dragKind === "pose") {
+        captureTargetsFromPoints();
+        zeroVelocities();
       }
 
-      function attachEvents() {
-        canvas.addEventListener("pointerdown", pointerDown);
-        canvas.addEventListener("pointermove", pointerMove);
-        canvas.addEventListener("pointerup", releaseDrag);
-        canvas.addEventListener("pointercancel", releaseDrag);
-        canvas.addEventListener("dblclick", resetToDefaultPlacement);
+      maybeResetTap(up.x, up.y);
 
-        relaxToggle.addEventListener("change", () => {
-          setRelaxedMode(relaxToggle.checked);
-        });
+      state.dragKind = "";
+      state.draggedId = "";
+      canvas.classList.remove("dragging");
+
+      if (canvas.hasPointerCapture(evt.pointerId)) {
+        canvas.releasePointerCapture(evt.pointerId);
       }
+    }
 
-      function animate() {
-        stepSimulation();
-        drawFrame();
-        requestAnimationFrame(animate);
+    function onPointerCancel(evt) {
+      state.dragKind = "";
+      state.draggedId = "";
+      canvas.classList.remove("dragging");
+      if (canvas.hasPointerCapture(evt.pointerId)) {
+        canvas.releasePointerCapture(evt.pointerId);
       }
+    }
 
-      attachEvents();
-      initializeFigure();
-      updateModePill();
-      animate();
-    })();
+    function animate() {
+      step();
+      render();
+      requestAnimationFrame(animate);
+    }
+
+    placeNeutralAt(state.spawnX, state.spawnY);
+    buildBones();
+    buildJointSideConstraints();
+    render();
+
+    canvas.addEventListener("pointerdown", onPointerDown, { passive: false });
+    canvas.addEventListener("pointermove", onPointerMove, { passive: false });
+    canvas.addEventListener("pointerup", onPointerUp, { passive: false });
+    canvas.addEventListener("pointercancel", onPointerCancel, { passive: false });
+    canvas.addEventListener("dblclick", resetSpawn);
+    relaxToggle.addEventListener("change", () => setMode(relaxToggle.checked));
+
+    animate();
+  })();
   </script>
 </body>
 </html>
+```
