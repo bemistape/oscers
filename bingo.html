@@ -83,38 +83,90 @@
     }
 
     /* Bingo Table */
+    #bingoContainer {
+      width: min(96vw, 1120px);
+      margin: 0 auto 24px;
+      padding: clamp(16px, 2.4vw, 30px);
+      border-radius: 24px;
+      background: rgba(0, 0, 0, 0.14);
+      border: 1px solid rgba(255, 215, 0, 0.22);
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
+    }
+
     #bingo-table {
       margin: 0 auto;
       border-collapse: collapse;
-      width: 90%;
-      max-width: 800px;
+      width: 100%;
+      max-width: none;
       border-radius: 16px;
       overflow: hidden;
       border: 6px solid;
-      table-layout: fixed; /* uniform columns */
+      table-layout: fixed;
     }
-    /* Larger column labels for O S C E R */
+
     #bingo-table thead th {
-      width: 20%;
-      font-size: 24px; /* bigger header font */
+      width: 18.4%;
+      font-size: clamp(2rem, 3.4vw, 3.35rem);
+      font-family: "Cooper Black", "Cooper Std", "Bookman Old Style", Georgia, serif;
+      letter-spacing: 0.08em;
+      line-height: 1;
+      padding: 12px 8px;
+      height: clamp(72px, 8vw, 98px);
     }
+
+    #bingo-table thead th.corner-cell {
+      width: 8%;
+      font-size: 0;
+      padding: 0;
+    }
+
+    #bingo-table tbody th.side-label {
+      width: 8%;
+      min-width: 62px;
+      font-family: "Cooper Black", "Cooper Std", "Bookman Old Style", Georgia, serif;
+      font-size: clamp(2.2rem, 3.8vw, 3.5rem);
+      letter-spacing: 0.04em;
+      line-height: 1;
+      padding: 10px 4px;
+    }
+
     th, td {
       border: 2px solid;
       text-align: center;
-      font-size: 16px;
-      cursor: pointer;
       transition: background 0.2s, transform 0.2s, border-color 0.2s, color 0.2s;
-      padding: 8px;
+      padding: 12px 10px;
       vertical-align: middle;
       word-wrap: break-word;
       color: inherit;
-      /* Force squares with aspect-ratio (modern browsers) */
-      aspect-ratio: 1 / 1;
+      min-height: clamp(102px, 11.2vw, 150px);
+      height: clamp(102px, 11.2vw, 150px);
     }
+
+    #bingo-table tbody td.play-cell {
+      font-family: "Comic Sans MS", "Comic Sans", cursive;
+      font-size: clamp(1rem, 1.35vw, 1.85rem);
+      line-height: 1.12;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      padding: 14px 12px;
+      cursor: pointer;
+      overflow-wrap: anywhere;
+    }
+
     td.free-space {
       font-size: 18px;
       font-weight: bold;
+      cursor: default;
     }
+
+    .free-popcorn {
+      width: min(84%, 170px);
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.28));
+    }
+
     td.marked {
       transform: scale(1.05);
       font-weight: bold;
@@ -401,11 +453,28 @@
 
     /* Mobile Optimization */
     @media (max-width: 600px) {
+      #bingoContainer {
+        width: 100%;
+        padding: 10px;
+      }
       #bingo-table thead th {
-        font-size: 18px;
+        font-size: clamp(1.45rem, 6.6vw, 2.2rem);
+        height: auto;
+      }
+      #bingo-table tbody th.side-label {
+        font-size: clamp(1.6rem, 7.5vw, 2.3rem);
+        min-width: 48px;
       }
       th, td {
-        font-size: 14px;
+        min-height: 88px;
+        height: 88px;
+      }
+      #bingo-table tbody td.play-cell {
+        font-size: clamp(0.88rem, 3.5vw, 1.25rem);
+        padding: 8px 6px;
+      }
+      .free-popcorn {
+        width: min(82%, 110px);
       }
       button, select {
         font-size: 14px;
@@ -445,6 +514,7 @@
     <table id="bingo-table">
       <thead>
         <tr>
+          <th class="corner-cell" aria-hidden="true"></th>
           <th>O</th>
           <th>S</th>
           <th>C</th>
@@ -607,26 +677,40 @@
       const tbody = document.querySelector("#bingo-table tbody");
       tbody.innerHTML = "";
       let itemIndex = 0;
+      const sideLabels = ["O", "S", "C", "E", "R"];
       for (let row = 0; row < 5; row++) {
         const tr = document.createElement("tr");
+
+        const sideCell = document.createElement("th");
+        sideCell.classList.add("side-label");
+        sideCell.scope = "row";
+        sideCell.textContent = sideLabels[row];
+        tr.appendChild(sideCell);
+
         for (let col = 0; col < 5; col++) {
           const td = document.createElement("td");
-          td.onclick = () => {
-            const clickAudio = document.getElementById("clickSound");
-            clickAudio.currentTime = 0;
-            clickAudio.play();
-            td.classList.toggle("marked");
-            if (!td.classList.contains("marked")) {
-              td.classList.remove("bingo");
-            }
-            checkBingo();
-          };
+          td.classList.add("play-cell");
+
           if (row === 2 && col === 2) {
-            td.textContent = "🍿";
             td.classList.add("free-space", "marked");
+            const freePopcorn = document.createElement("img");
+            freePopcorn.src = "1_bag.png";
+            freePopcorn.alt = "Popcorn free space";
+            freePopcorn.className = "free-popcorn";
+            td.appendChild(freePopcorn);
           } else {
             td.textContent = items[itemIndex] || "";
             itemIndex++;
+            td.onclick = () => {
+              const clickAudio = document.getElementById("clickSound");
+              clickAudio.currentTime = 0;
+              clickAudio.play();
+              td.classList.toggle("marked");
+              if (!td.classList.contains("marked")) {
+                td.classList.remove("bingo");
+              }
+              checkBingo();
+            };
           }
           tr.appendChild(td);
         }
@@ -647,7 +731,10 @@
     }
     function checkBingo() {
       const rows = document.querySelectorAll("#bingo-table tbody tr");
-      const grid = Array.from(rows, row => Array.from(row.children));
+      const grid = Array.from(rows, row => Array.from(row.querySelectorAll("td.play-cell")));
+      if (grid.length !== 5 || grid.some(row => row.length !== 5)) {
+        return;
+      }
       let bingoFound = false;
       for (let i = 0; i < 5; i++) {
         if (grid[i].every(td => td.classList.contains("marked"))) {
