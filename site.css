@@ -477,6 +477,18 @@ body {
   color: rgba(255, 215, 0, 0.72);
 }
 
+.tip-link {
+  color: var(--gold);
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 215, 0, 0.55);
+  text-underline-offset: 2px;
+  font-weight: 700;
+}
+
+.tip-link:hover {
+  color: #fff2b3;
+}
+
 .helper-hero {
   padding-bottom: 40px;
 }
